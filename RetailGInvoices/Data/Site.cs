@@ -16,6 +16,6 @@ namespace RetailGInvoices.Data
         public string Address3 { get; set; }
         public string Address4 { get; set; }
         public string Postcode { get; set; }
-        public Company Company { get; set; }
+        public int FK_CompanyId { get; set; }
     }
 }

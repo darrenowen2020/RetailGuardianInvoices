@@ -26,10 +26,23 @@
 		</tr>
 		<tr>
 			<td>
-				<input type="date" class="form-control" @bind="invoiceDate" />
+				<input type="date" class="form-control" @bind="invoiceObj.Date" />
 			</td>
+
 			<td>
-				<input type="text" class="form-control" @bind="siteSelected" />
+				@if (sites != null)
+				{
+					<EditForm Model="@siteObj">
+						<InputSelect id="Site" @bind-Value="siteSelected" class="form-control">
+							@foreach (var site in sites)
+							{
+								<option value="@site.Id">@site.SiteName</option>
+							}
+						</InputSelect>
+					</EditForm>
+				}
+
+
 			</td>
 
 			<td>
@@ -57,8 +70,14 @@
 	private float net;
 
 	private Company[] companies;
+	private Site[] sites;
+	private Invoice[] invoices;
 
 	Company companyObj = new Company();
+	Invoice invoiceObj = new Invoice();
+	Site siteObj = new Site();
+	
+
 
 	string ids = "0";
 	bool showAddrow = false;
@@ -69,6 +88,8 @@
 	{
 		ids = "0";
 		companies = await Http.GetJsonAsync<Company[]>("/api/Companies/");
+		sites = await Http.GetJsonAsync<Site[]>("api/Sites");
+		invoiceObj.Date = DateTime.Today;
 	}
 
 

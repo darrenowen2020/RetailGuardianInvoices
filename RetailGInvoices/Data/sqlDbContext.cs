@@ -14,7 +14,7 @@ namespace RetailGInvoices.Data
         }
 
         public DbSet<RetailGInvoices.Data.Company> Company { get; set; }
-        public DbSet<RetailGInvoices.Data.Site> Sites { get; set; }
+        public DbSet<RetailGInvoices.Data.Site> Site { get; set; }
         public DbSet<RetailGInvoices.Data.Invoice> Invoice { get; set; }
         public DbSet<RetailGInvoices.Data.Category> Category { get; set; }
         public DbSet<RetailGInvoices.Data.VatRate> VatRate { get; set; }

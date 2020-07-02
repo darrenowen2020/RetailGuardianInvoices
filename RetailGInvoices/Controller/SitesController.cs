@@ -24,14 +24,14 @@ namespace RetailGInvoices.Controller
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Site>>> GetSites()
         {
-            return await _context.Sites.ToListAsync();
+            return await _context.Site.ToListAsync();
         }
 
         // GET: api/Sites/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Site>> GetSite(int id)
         {
-            var site = await _context.Sites.FindAsync(id);
+            var site = await _context.Site.FindAsync(id);
 
             if (site == null)
             {
@@ -79,7 +79,7 @@ namespace RetailGInvoices.Controller
         [HttpPost]
         public async Task<ActionResult<Site>> PostSite(Site site)
         {
-            _context.Sites.Add(site);
+            _context.Site.Add(site);
             await _context.SaveChangesAsync();
 
             return CreatedAtAction("GetSite", new { id = site.Id }, site);
@@ -89,13 +89,13 @@ namespace RetailGInvoices.Controller
         [HttpDelete("{id}")]
         public async Task<ActionResult<Site>> DeleteSite(int id)
         {
-            var site = await _context.Sites.FindAsync(id);
+            var site = await _context.Site.FindAsync(id);
             if (site == null)
             {
                 return NotFound();
             }
 
-            _context.Sites.Remove(site);
+            _context.Site.Remove(site);
             await _context.SaveChangesAsync();
 
             return site;
@@ -103,7 +103,7 @@ namespace RetailGInvoices.Controller
 
         private bool SiteExists(int id)
         {
-            return _context.Sites.Any(e => e.Id == id);
+            return _context.Site.Any(e => e.Id == id);
         }
     }
 }
