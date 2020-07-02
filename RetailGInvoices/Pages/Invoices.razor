@@ -1,0 +1,131 @@
+﻿@page "/Invoices"
+@using RetailGInvoices.Data
+@using System.Net.Http
+@inject HttpClient Http
+@using Microsoft.Extensions.Logging
+<h3>Invoices</h3>
+
+<form>
+	<table class="form-group">
+		<tr>
+			<td>
+				<label for="Invoice Date" class="control-label">Invoice Date</label>
+			</td>
+			<td>
+				<label for="Site" class="control-label">Site</label>
+			</td>
+			<td>
+				<label for="Supplier" class="control-label">Supplier</label>
+			</td>
+			<td>
+				<label for="Reference" class="control-label">Reference</label>
+			</td>
+			<td>
+				<label for="Description" class="control-label">Description</label>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<input type="date" class="form-control" @bind="invoiceDate" />
+			</td>
+			<td>
+				<input type="text" class="form-control" @bind="siteSelected" />
+			</td>
+
+			<td>
+				<input type="text" class="form-control" @bind="supplierSelected" />
+			</td>
+			<td>
+				<input type="text" class="form-control" @bind="invoiceReference" />
+			</td>
+			<td>
+				<input type="text" class="form-control" @bind="description" />
+			</td>
+		</tr>
+	</table>
+</form>
+
+@code {
+	private string siteSelected;
+	private string supplierSelected;
+	private DateTime invoiceDate = DateTime.Today;
+	private string invoiceReference;
+	private string description;
+	private string category;
+	private float grossAmount;
+	private float vat;
+	private float net;
+
+	private Company[] companies;
+
+	Company companyObj = new Company();
+
+	string ids = "0";
+	bool showAddrow = false;
+
+	bool loadFailed;
+
+	protected override async Task OnInitializedAsync()
+	{
+		ids = "0";
+		companies = await Http.GetJsonAsync<Company[]>("/api/Companies/");
+	}
+
+
+	void AddNewCustomer()
+	{
+		ids = "0";
+		showAddrow = true;
+		companyObj = new Company();
+	}
+	// Add New Customer Details Method
+	protected async Task AddCustomer()
+	{
+		if (ids == "0")
+
+		{
+			await Http.SendJsonAsync(HttpMethod.Post, "/api/Companies/", companyObj);
+			companies = await Http.GetJsonAsync<Company[]>("/api/Companies/");
+		}
+		else
+		{
+			await Http.SendJsonAsync(HttpMethod.Put, "/api/Companies/" + companyObj.Id, companyObj);
+			companies = await Http.GetJsonAsync<Company[]>("/api/Companies/");
+		}
+
+		showAddrow = false;
+	}
+	// Edit Method
+	protected async Task EditCustomer(string CustomerID)
+	{
+		showAddrow = true;
+
+		ids = "1";
+		//try
+		//{
+		loadFailed = false;
+		ids = CustomerID.ToString();
+		companyObj = await Http.GetJsonAsync<Company>("/api/Companies/" + CustomerID);
+
+		string s = companyObj.Id.ToString();
+
+		showAddrow = true;
+
+		//    }
+		//catch (Exception ex)
+		//{
+		//    loadFailed = true;
+		//    Logger.LogWarning(ex, "Failed to load product {ProductId}", CustomerID);
+		//}
+	}
+	// Delte Method
+	protected async Task DeleteCustomer(string CustomerID)
+	{
+		showAddrow = false;
+
+		ids = CustomerID.ToString();
+		await Http.DeleteAsync("/api/Companies/" + CustomerID);
+
+		companies = await Http.GetJsonAsync<Company[]>("/api/Companies/");
+	}
+}
