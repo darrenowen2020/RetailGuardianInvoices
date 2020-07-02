@@ -99,6 +99,11 @@
 				<input type="text" class="form-control" @bind="invoiceObj.NetAmount" />
 			</td>
 		</tr>
+		<tr>
+			<td>
+				<button type="submit" class="btn-primary" @onclick="AddNewInvoice">New</button>
+			</td>
+		</tr>
 	</table>
 </form>
 
@@ -106,6 +111,10 @@
 	private string siteSelected;
 	private string supplierSelected;
 	private string categorySelected;
+
+	private int defaultSiteId;
+	private int defaultSupplierId;
+	private int defaultCategoryId;
 
 	private DateTime invoiceDate = DateTime.Today;
 	private string invoiceReference;
@@ -120,6 +129,7 @@
 	private Invoice[] invoices;
 	private Supplier[] suppliers;
 	private Category[] categories;
+	private VatRate[] vatrates;
 
 	Company companyObj = new Company();
 	Invoice invoiceObj = new Invoice();
@@ -141,9 +151,51 @@
 		sites = await Http.GetJsonAsync<Site[]>("api/Sites");
 		suppliers = await Http.GetJsonAsync<Supplier[]>("api/Suppliers");
 		categories = await Http.GetJsonAsync<Category[]>("api/Categories");
+		vatrates = await Http.GetJsonAsync<VatRate[]>("api/VatRates");
+
 		invoiceObj.Date = DateTime.Today;
+
+		defaultSiteId = sites[0].Id;
+		defaultSupplierId = suppliers[0].Id;
+		defaultCategoryId = categories[0].Id;
+
+		siteSelected = defaultSiteId.ToString();
+		supplierSelected = defaultSupplierId.ToString();
+		categorySelected = defaultCategoryId.ToString();
 	}
 
+	
+
+	void AddNewInvoice()
+	{
+		try
+		{
+			invoiceObj.SiteID = int.Parse(siteSelected);
+		}
+		catch (Exception ex)
+		{
+			invoiceObj.SiteID = defaultSiteId;
+		}
+
+		try
+		{
+			invoiceObj.SupplierID = int.Parse(supplierSelected);
+		}
+		catch (Exception ex)
+		{
+			invoiceObj.SupplierID = defaultSupplierId;
+		}
+
+		try
+		{
+			invoiceObj.CategoryID = int.Parse(categorySelected);
+		}
+		catch (Exception ex)
+		{
+			invoiceObj.CategoryID = defaultCategoryId;
+		}
+
+	}
 
 	void AddNewCustomer()
 	{
