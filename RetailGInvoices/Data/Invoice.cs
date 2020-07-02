@@ -18,6 +18,10 @@ namespace RetailGInvoices.Data
         public float NetAmount { get; set; }
         public bool Paid { get; set; }
         public DateTime Date { get; set; }
+        public float VATRate { get; set; }
+        public float VATAmount { get; set; }
+        public bool VATExempt { get; set; }
+
 
     }
 }
