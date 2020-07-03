@@ -14,14 +14,15 @@ namespace RetailGInvoices.Data
         public string InvoiceReference { get; set; }
         public string Description { get; set; }
         public int CategoryID { get; set; }
-        public float GrossAmount { get; set; }
-        public float NetAmount { get; set; }
-        public bool Paid { get; set; }
+        public Decimal GrossAmount { get; set; }
+        public Decimal NetAmount { get; set; }
+        public int Paid { get; set; }
         public DateTime Date { get; set; }
-        public float VATRate { get; set; }
-        public float VATAmount { get; set; }
-        public bool VATExempt { get; set; }
-
+        public Decimal VATRate { get; set; }
+        public Decimal VATAmount { get; set; }
+        public int VATExempt { get; set; }
+        public int PaymentTypeID { get; set; }
+        
 
     }
 }

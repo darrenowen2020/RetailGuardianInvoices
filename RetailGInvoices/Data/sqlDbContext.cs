@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using RetailGInvoices.Data;
 
 namespace RetailGInvoices.Data
 {
@@ -19,6 +20,7 @@ namespace RetailGInvoices.Data
         public DbSet<RetailGInvoices.Data.Category> Category { get; set; }
         public DbSet<RetailGInvoices.Data.VatRate> VatRate { get; set; }
         public DbSet<RetailGInvoices.Data.Supplier> Supplier { get; set; }
+        public DbSet<RetailGInvoices.Data.PaymentType> PaymentType { get; set; }
 
     }
 }

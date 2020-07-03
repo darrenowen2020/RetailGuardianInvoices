@@ -24,7 +24,7 @@
 				<label for="Description" class="control-label">Description</label>
 			</td>
 			<td>
-				<label for="Category" class="control-label">Category</label>
+				<label for="PaymentType" class="control-label">Pay Type</label>
 			</td>
 			<td class="amount">
 				<label for="Gross Amount" class="control-label">Gross Amount</label>
@@ -77,13 +77,13 @@
 				<input type="text" class="form-control" @bind="invoiceObj.Description" style="width: 300px" />
 			</td>
 			<td>
-				@if (categories != null)
+				@if (paymentTypes != null)
 				{
-					<EditForm Model="@categoryObj">
-						<InputSelect id="Category" @bind-Value="categorySelected" class="form-control"  >
-							@foreach (var category in categories)
+					<EditForm Model="@paymentTypeObj">
+						<InputSelect id="Category" @bind-Value="paymentTypeSelected" class="form-control"  >
+							@foreach (var paymentType in paymentTypes)
 								{
-								<option value="@category.Id">@category.Description</option>
+								<option value="@paymentType.Id">@paymentType.Description</option>
 								}
 						</InputSelect>
 					</EditForm>
@@ -106,38 +106,67 @@
 		</tr>
 	</table>
 </form>
+@if (invoices == null)
+{
+	<p><em>Loading....</em></p>
+}
+else
+{
+	<table class="table">
+		<thead>
+			<tr>
+				<th>ID</th>
+				<th>Date</th>
+				<th>Site</th>
+				<th>Supplier</th>
+				<th>Reference</th>
+				<th>Description</th>
+				<th>Pay Type</th>
+				<th>Gross</th>
+				<th>VAT</th>
+				<th>Net</th>
+			</tr>
+		</thead>
+		<tbody>
+			@foreach (var invoice in invoices)
+			{
+				<tr>
+					<td>@invoice.ID</td>
+					<td>@invoice.Date</td>
+					<td>@invoice.SiteID</td>
+					<td>@invoice.SupplierID</td>
+					<td>@invoice.InvoiceReference</td>
+					<td>@invoice.Description</td>
+					<td>@invoice.PaymentTypeID</td>
+					<td>@invoice.GrossAmount</td>
+					<td>@invoice.VATAmount</td>
+					<td>@invoice.NetAmount</td>
+				</tr>
+			}
+		</tbody>
+	</table>
+}
 
 @code {
 	private string siteSelected;
 	private string supplierSelected;
-	private string categorySelected;
+	private string paymentTypeSelected;
 
 	private int defaultSiteId;
 	private int defaultSupplierId;
-	private int defaultCategoryId;
-
-	private DateTime invoiceDate = DateTime.Today;
-	private string invoiceReference;
-	private string description;
-	private string category;
-	private float grossAmount;
-	private float vat;
-	private float net;
+	private int defaultPaymentTypeId;
 
 	private Company[] companies;
 	private Site[] sites;
 	private Invoice[] invoices;
 	private Supplier[] suppliers;
-	private Category[] categories;
-	private VatRate[] vatrates;
+	private PaymentType[] paymentTypes;
 
 	Company companyObj = new Company();
 	Invoice invoiceObj = new Invoice();
 	Site siteObj = new Site();
 	Supplier supplierObj = new Supplier();
-	Category categoryObj = new Category();
-
-
+	PaymentType paymentTypeObj = new PaymentType();
 
 	string ids = "0";
 	bool showAddrow = false;
@@ -150,21 +179,21 @@
 		companies = await Http.GetJsonAsync<Company[]>("/api/Companies/");
 		sites = await Http.GetJsonAsync<Site[]>("api/Sites");
 		suppliers = await Http.GetJsonAsync<Supplier[]>("api/Suppliers");
-		categories = await Http.GetJsonAsync<Category[]>("api/Categories");
-		vatrates = await Http.GetJsonAsync<VatRate[]>("api/VatRates");
+		paymentTypes = await Http.GetJsonAsync<PaymentType[]>("api/PaymentTypes");
+		invoices = await Http.GetJsonAsync<Invoice[]>("/api/Invoices/");
 
 		invoiceObj.Date = DateTime.Today;
 
 		defaultSiteId = sites[0].Id;
 		defaultSupplierId = suppliers[0].Id;
-		defaultCategoryId = categories[0].Id;
+		defaultPaymentTypeId = paymentTypes[0].Id;
 
 		siteSelected = defaultSiteId.ToString();
 		supplierSelected = defaultSupplierId.ToString();
-		categorySelected = defaultCategoryId.ToString();
+		paymentTypeSelected = defaultPaymentTypeId.ToString();
 	}
 
-	
+
 
 	void AddNewInvoice()
 	{
@@ -188,21 +217,29 @@
 
 		try
 		{
-			invoiceObj.CategoryID = int.Parse(categorySelected);
+			invoiceObj.PaymentTypeID = int.Parse(paymentTypeSelected);
 		}
 		catch (Exception ex)
 		{
-			invoiceObj.CategoryID = defaultCategoryId;
+			invoiceObj.PaymentTypeID = defaultPaymentTypeId;
 		}
 
+		Task x = PostInvoice();
 	}
 
-	void AddNewCustomer()
+	void PostNewCustomer()
 	{
 		ids = "0";
 		showAddrow = true;
 		companyObj = new Company();
 	}
+
+	protected async Task PostInvoice()
+	{
+		await Http.SendJsonAsync(HttpMethod.Post, "/api/Invoices/", invoiceObj);
+		invoices = await Http.GetJsonAsync<Invoice[]>("/api/Invoices");
+	}
+
 	// Add New Customer Details Method
 	protected async Task AddCustomer()
 	{
