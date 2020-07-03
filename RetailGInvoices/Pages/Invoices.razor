@@ -106,7 +106,7 @@
 		</tr>
 	</table>
 </form>
-@if (invoices == null)
+@if (invoiceViews == null)
 {
 	<p><em>Loading....</em></p>
 }
@@ -128,19 +128,19 @@ else
 			</tr>
 		</thead>
 		<tbody>
-			@foreach (var invoice in invoices)
+			@foreach (var invoiceView in invoiceViews)
 			{
 				<tr>
-					<td>@invoice.ID</td>
-					<td>@invoice.Date</td>
-					<td>@invoice.SiteID</td>
-					<td>@invoice.SupplierID</td>
-					<td>@invoice.InvoiceReference</td>
-					<td>@invoice.Description</td>
-					<td>@invoice.PaymentTypeID</td>
-					<td>@invoice.GrossAmount</td>
-					<td>@invoice.VATAmount</td>
-					<td>@invoice.NetAmount</td>
+					<td>@invoiceView.InvoiceId</td>
+					<td>@invoiceView.InvoiceDate.ToShortDateString()</td>
+					<td>@invoiceView.SiteName</td>
+					<td>@invoiceView.SupplierName</td>
+					<td>@invoiceView.InvoiceReference</td>
+					<td>@invoiceView.InvoiceDescription</td>
+					<td>@invoiceView.InvoicePaymentDescription</td>
+					<td>@invoiceView.InvoiceGross</td>
+					<td>@invoiceView.InvoiceVAT</td>
+					<td>@invoiceView.InvoiceNet</td>
 				</tr>
 			}
 		</tbody>
@@ -161,12 +161,14 @@ else
 	private Invoice[] invoices;
 	private Supplier[] suppliers;
 	private PaymentType[] paymentTypes;
+	private InvoiceView[] invoiceViews;
 
 	Company companyObj = new Company();
 	Invoice invoiceObj = new Invoice();
 	Site siteObj = new Site();
 	Supplier supplierObj = new Supplier();
 	PaymentType paymentTypeObj = new PaymentType();
+	InvoiceView invoiceViewObj = new InvoiceView();
 
 	string ids = "0";
 	bool showAddrow = false;
@@ -180,7 +182,7 @@ else
 		sites = await Http.GetJsonAsync<Site[]>("api/Sites");
 		suppliers = await Http.GetJsonAsync<Supplier[]>("api/Suppliers");
 		paymentTypes = await Http.GetJsonAsync<PaymentType[]>("api/PaymentTypes");
-		invoices = await Http.GetJsonAsync<Invoice[]>("/api/Invoices/");
+		invoiceViews = await Http.GetJsonAsync<InvoiceView[]>("/api/InvoiceViews/");
 
 		invoiceObj.Date = DateTime.Today;
 

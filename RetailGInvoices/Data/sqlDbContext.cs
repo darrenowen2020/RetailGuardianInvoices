@@ -21,6 +21,6 @@ namespace RetailGInvoices.Data
         public DbSet<RetailGInvoices.Data.VatRate> VatRate { get; set; }
         public DbSet<RetailGInvoices.Data.Supplier> Supplier { get; set; }
         public DbSet<RetailGInvoices.Data.PaymentType> PaymentType { get; set; }
-
+        public DbSet<RetailGInvoices.Data.InvoiceView> InvoiceView { get; set; }
     }
 }
