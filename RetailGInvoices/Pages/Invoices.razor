@@ -141,6 +141,9 @@ else
 					<td>@invoiceView.InvoiceGross</td>
 					<td>@invoiceView.InvoiceVAT</td>
 					<td>@invoiceView.InvoiceNet</td>
+					<td>
+						<button class="btn btn-primary" @onclick="@(async () => await EditInvoice(invoiceView.InvoiceId))" style="width:110px;">Edit</button>
+					</td>
 				</tr>
 			}
 		</tbody>
@@ -148,6 +151,8 @@ else
 }
 
 @code {
+	private bool updateFlag = false;
+
 	private string siteSelected;
 	private string supplierSelected;
 	private string paymentTypeSelected;
@@ -238,50 +243,27 @@ else
 
 	protected async Task PostInvoice()
 	{
-		await Http.SendJsonAsync(HttpMethod.Post, "/api/Invoices/", invoiceObj);
-		invoices = await Http.GetJsonAsync<Invoice[]>("/api/Invoices");
+		if (updateFlag)
+		{
+			await Http.SendJsonAsync(HttpMethod.Put, "/api/Invoices/" + invoiceObj.ID, invoiceObj);
+			invoices = await Http.GetJsonAsync<Invoice[]>("/api/Invoices");
+		} else
+		{
+			await Http.SendJsonAsync(HttpMethod.Post, "/api/Invoices/", invoiceObj);
+			invoices = await Http.GetJsonAsync<Invoice[]>("/api/Invoices");
+		}
 	}
 
-	// Add New Customer Details Method
-	protected async Task AddCustomer()
-	{
-		if (ids == "0")
-
-		{
-			await Http.SendJsonAsync(HttpMethod.Post, "/api/Companies/", companyObj);
-			companies = await Http.GetJsonAsync<Company[]>("/api/Companies/");
-		}
-		else
-		{
-			await Http.SendJsonAsync(HttpMethod.Put, "/api/Companies/" + companyObj.Id, companyObj);
-			companies = await Http.GetJsonAsync<Company[]>("/api/Companies/");
-		}
-
-		showAddrow = false;
-	}
 	// Edit Method
-	protected async Task EditCustomer(string CustomerID)
+	protected async Task EditInvoice(int InvoiceId)
 	{
-		showAddrow = true;
+		invoiceObj = await Http.GetJsonAsync<Invoice>("/api/Invoices/" + InvoiceId);
+		updateFlag = true;
 
-		ids = "1";
-		//try
-		//{
-		loadFailed = false;
-		ids = CustomerID.ToString();
-		companyObj = await Http.GetJsonAsync<Company>("/api/Companies/" + CustomerID);
-
-		string s = companyObj.Id.ToString();
-
-		showAddrow = true;
-
-		//    }
-		//catch (Exception ex)
-		//{
-		//    loadFailed = true;
-		//    Logger.LogWarning(ex, "Failed to load product {ProductId}", CustomerID);
-		//}
 	}
+
+
+
 	// Delte Method
 	protected async Task DeleteCustomer(string CustomerID)
 	{
