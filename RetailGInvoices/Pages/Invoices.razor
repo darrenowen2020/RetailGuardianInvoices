@@ -8,7 +8,7 @@
 <form>
 	<table class="form-group">
 		<tr>
-			<td style="width:150px">
+			<td>
 				<label for="Invoice Date" class="control-label">Invoice Date</label>
 			</td>
 			<td>
@@ -40,35 +40,11 @@
 			<td>
 				<input type="date" class="form-control" @bind="invoiceObj.Date" />
 			</td>
-
-			<td style="width:250px">
-				@if (sites != null)
-				{
-					<EditForm Model="@siteObj">
-						<InputSelect id="Site" @bind-Value="siteSelected" class="form-control">
-							@foreach (var site in sites)
-								{
-								<option value="@site.Id">@site.SiteName</option>
-								}
-						</InputSelect>
-					</EditForm>
-				}
-
-
+			<td>
+				<input type="text" class="form-control" @bind="siteSelectedName" />
 			</td>
-
-			<td style="width:200px">
-				@if (suppliers != null)
-				{
-					<EditForm Model="@supplierObj">
-						<InputSelect id="Supplier" @bind-Value="supplierSelected" class="form-control">
-							@foreach (var supplier in suppliers)
-								{
-								<option value="@supplier.Id">@supplier.Name</option>
-								}
-						</InputSelect>
-					</EditForm>
-				}
+			<td>
+				<input type="text" class="form-control" @bind="supplierSelectedName" />
 			</td>
 			<td>
 				<input type="text" class="form-control" @bind="invoiceObj.InvoiceReference" />
@@ -79,14 +55,14 @@
 			<td>
 				@if (paymentTypes != null)
 				{
-					<EditForm Model="@paymentTypeObj">
-						<InputSelect id="Category" @bind-Value="paymentTypeSelected" class="form-control"  >
-							@foreach (var paymentType in paymentTypes)
-								{
-								<option value="@paymentType.Id">@paymentType.Description</option>
-								}
-						</InputSelect>
-					</EditForm>
+					<select class="form-control" @bind="paymentTypeSelected">
+						<option value=""></option>
+						@foreach (var paymentType in paymentTypes)
+						{
+							<option value="@paymentType.Id">@paymentType.Description</option>
+						}
+
+					</select>
 				}
 			</td>
 			<td>
@@ -101,7 +77,60 @@
 		</tr>
 		<tr>
 			<td>
-				<button type="submit" class="btn-primary" @onclick="AddNewInvoice">New</button>
+				
+			</td>
+
+			<td style="width:250px">
+				@if (sites != null)
+				{
+					<select class="form-control" @bind="siteSelected">
+						<option value=""></option>
+						@foreach (var site in sites)
+						{
+							<option value="@site.Id">@site.SiteName</option>
+						}
+
+					</select>
+				}
+
+
+			</td>
+
+			<td style="width:200px">
+				@if (suppliers != null)
+				{
+					<select class="form-control" @bind="supplierSelected">
+						<option value=""></option>
+						@foreach (var supplier in suppliers)
+						{
+							<option value="@supplier.Id">@supplier.Name</option>
+						}
+
+					</select>
+				}
+			</td>
+			<td>
+				
+			</td>
+			<td>
+				
+			</td>
+			<td>
+				
+			</td>
+			<td>
+				
+			</td>
+			<td>
+				
+			</td>
+			<td>
+				
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<button class="btn btn-info" @onclick="@AddNewInvoice">Update</button>
 			</td>
 		</tr>
 	</table>
@@ -142,7 +171,10 @@ else
 					<td>@invoiceView.InvoiceVAT</td>
 					<td>@invoiceView.InvoiceNet</td>
 					<td>
-						<button class="btn btn-primary" @onclick="@(async () => await EditInvoice(invoiceView.InvoiceId))" style="width:110px;">Edit</button>
+						<button class="btn btn-secondary" @onclick="@(async () => await EditInvoice(invoiceView.InvoiceId))" style="width:50px;">Edit</button>
+					</td>
+					<td>
+						<button class="btn btn-secondary" @onclick="@(async () => await DeleteInvoice(invoiceView.InvoiceId))" style="width:50px;">Del</button>
 					</td>
 				</tr>
 			}
@@ -153,13 +185,18 @@ else
 @code {
 	private bool updateFlag = false;
 
-	private string siteSelected;
-	private string supplierSelected;
+
+	private string siteSelectedName;
+	private string supplierSelectedName;
 	private string paymentTypeSelected;
+	private string paymentTypeSelectedName;
 
 	private int defaultSiteId;
+	private string defaultSiteName;
 	private int defaultSupplierId;
+	private string defaultSupplierName;
 	private int defaultPaymentTypeId;
+	private string defaultPaymentTypeName;
 
 	private Company[] companies;
 	private Site[] sites;
@@ -175,31 +212,96 @@ else
 	PaymentType paymentTypeObj = new PaymentType();
 	InvoiceView invoiceViewObj = new InvoiceView();
 
-	string ids = "0";
-	bool showAddrow = false;
+	public string _siteSelected;
 
-	bool loadFailed;
+	public string siteSelected {
+		get
+		{
+			return _siteSelected;
+		}
+
+		set
+		{
+			int intSiteId;
+			_siteSelected = value;
+			try
+			{
+				intSiteId = int.Parse(_siteSelected);
+			}
+			catch (Exception ex)
+			{
+				intSiteId = 0;
+			}
+			Site site = Array.Find<Site>(sites, p => p.Id == intSiteId);
+			siteSelectedName = site.SiteName;
+		}
+	}
+	public string _supplierSelected;
+
+	public string supplierSelected
+	{
+		get
+		{
+			return _supplierSelected;
+		}
+
+		set
+		{
+			int intSupplierId;
+			_supplierSelected = value;
+			try
+			{
+				intSupplierId = int.Parse(_supplierSelected);
+			}
+			catch (Exception ex)
+			{
+				intSupplierId = 0;
+			}
+			Supplier supplier = Array.Find<Supplier>(suppliers, p => p.Id == intSupplierId);
+			supplierSelectedName = supplier.Name;
+		}
+	}
 
 	protected override async Task OnInitializedAsync()
 	{
-		ids = "0";
+		invoiceViews = await Http.GetJsonAsync<InvoiceView[]>("/api/InvoiceViews/");
+
 		companies = await Http.GetJsonAsync<Company[]>("/api/Companies/");
 		sites = await Http.GetJsonAsync<Site[]>("api/Sites");
 		suppliers = await Http.GetJsonAsync<Supplier[]>("api/Suppliers");
 		paymentTypes = await Http.GetJsonAsync<PaymentType[]>("api/PaymentTypes");
-		invoiceViews = await Http.GetJsonAsync<InvoiceView[]>("/api/InvoiceViews/");
+
+
+		defaultSiteId = sites[0].Id;
+		defaultSiteName = sites[0].SiteName;
+		defaultSupplierId = suppliers[0].Id;
+		defaultSupplierName = suppliers[0].Name;
+		defaultPaymentTypeId = paymentTypes[0].Id;
+		defaultPaymentTypeName = paymentTypes[0].Description;
 
 		invoiceObj.Date = DateTime.Today;
 
-		defaultSiteId = sites[0].Id;
-		defaultSupplierId = suppliers[0].Id;
-		defaultPaymentTypeId = paymentTypes[0].Id;
-
 		siteSelected = defaultSiteId.ToString();
+		siteSelectedName = defaultSiteName;
 		supplierSelected = defaultSupplierId.ToString();
+		supplierSelectedName = defaultSupplierName;
 		paymentTypeSelected = defaultPaymentTypeId.ToString();
+
+
 	}
 
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		if (true)
+		{
+
+		}
+	}
+
+	private void updateField()
+	{
+		string x = "hello";
+	}
 
 
 	void AddNewInvoice()
@@ -231,27 +333,24 @@ else
 			invoiceObj.PaymentTypeID = defaultPaymentTypeId;
 		}
 
-		Task x = PostInvoice();
+		Task d = PostInvoice();
+
 	}
 
-	void PostNewCustomer()
-	{
-		ids = "0";
-		showAddrow = true;
-		companyObj = new Company();
-	}
 
 	protected async Task PostInvoice()
 	{
 		if (updateFlag)
 		{
 			await Http.SendJsonAsync(HttpMethod.Put, "/api/Invoices/" + invoiceObj.ID, invoiceObj);
-			invoices = await Http.GetJsonAsync<Invoice[]>("/api/Invoices");
-		} else
+			invoiceViews = await Http.GetJsonAsync<InvoiceView[]>("/api/InvoiceViews");
+		}
+		else
 		{
 			await Http.SendJsonAsync(HttpMethod.Post, "/api/Invoices/", invoiceObj);
-			invoices = await Http.GetJsonAsync<Invoice[]>("/api/Invoices");
+			invoiceViews = await Http.GetJsonAsync<InvoiceView[]>("/api/InvoiceViews");
 		}
+
 	}
 
 	// Edit Method
@@ -259,19 +358,18 @@ else
 	{
 		invoiceObj = await Http.GetJsonAsync<Invoice>("/api/Invoices/" + InvoiceId);
 		updateFlag = true;
+		siteSelected = invoiceObj.ID.ToString();
 
 	}
 
 
 
 	// Delte Method
-	protected async Task DeleteCustomer(string CustomerID)
+	protected async Task DeleteInvoice(int InvoiceID)
 	{
-		showAddrow = false;
 
-		ids = CustomerID.ToString();
-		await Http.DeleteAsync("/api/Companies/" + CustomerID);
+		await Http.DeleteAsync("/api/Invoices/" + InvoiceID);
 
-		companies = await Http.GetJsonAsync<Company[]>("/api/Companies/");
+		invoiceViews = await Http.GetJsonAsync<InvoiceView[]>("/api/InvoiceViews");
 	}
 }

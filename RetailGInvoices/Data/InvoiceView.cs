@@ -15,9 +15,9 @@ namespace RetailGInvoices.Data
         public string SiteName { get; set; }
         public string InvoiceReference { get; set; }
         public string InvoiceDescription { get; set; }
-        public decimal InvoiceGross { get; set; }
-        public decimal InvoiceVAT { get; set; }
-        public decimal InvoiceNet { get; set; }
+        public string InvoiceGross { get; set; }
+        public string InvoiceVAT { get; set; }
+        public string InvoiceNet { get; set; }
         public string InvoicePaymentType { get; set; }
         public string InvoicePaymentDescription { get; set; }
     }
