@@ -7,7 +7,7 @@
 <h3>Invoices</h3>
 
 <EditForm Model="@invoiceObj" >
-	<table class="form-group" id="inputFields">
+	<table class="table-bordered">
 		<tr>
 			<td>
 				<label for="Invoice Date" class="control-label">Invoice Date</label>
@@ -305,18 +305,17 @@ else
 		{
 			if (_VatAmount == 0)
 			{
-				if (value != GrossAmount)
+				if (_GrossAmount != value)
 				{
-					GrossAmount = value;
+					VatAmount = value - _GrossAmount;
 				}
-				else
+			}
+			else
+			{
+				if (_GrossAmount == 0)
 				{
-					if ((_VatAmount + _GrossAmount) != value)
-					{
-						value = _VatAmount + _GrossAmount;
-					}
+					GrossAmount = value - _VatAmount;
 				}
-
 			}
 			_NetAmount = value;
 		}
@@ -336,6 +335,16 @@ else
 		{
 			NetAmount = GrossAmount + VatAmount;
 		}
+	}
+
+	private void clearInputValues()
+	{
+		supplierSelectedName = suppliers[0].Name;
+		siteSelectedName = sites[0].SiteName;
+		paymentTypeSelected = paymentTypes[0].Description;
+		GrossAmount = 0;
+		VatAmount = 0;
+		NetAmount = 0;
 	}
 
 	protected override async Task OnInitializedAsync()
@@ -402,8 +411,13 @@ else
 		{
 			invoiceObj.PaymentTypeID = defaultPaymentTypeId;
 		}
+		invoiceObj.GrossAmount = GrossAmount;
+		invoiceObj.VATAmount = VatAmount;
+		invoiceObj.NetAmount = NetAmount;
+		invoiceObj.EditDate = DateTime.Now;
 
 		Task d = PostInvoice();
+		clearInputValues();
 	}
 
 
@@ -415,6 +429,7 @@ else
 		}
 		else
 		{
+			invoiceObj.CreatedDate = DateTime.Now;
 			await Http.SendJsonAsync(HttpMethod.Post, "/api/Invoices/", invoiceObj);
 		}
 		invoiceViews = await Http.GetJsonAsync<InvoiceView[]>("/api/InvoiceViews");

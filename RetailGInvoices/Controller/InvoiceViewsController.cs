@@ -24,7 +24,8 @@ namespace RetailGInvoices.Controller
         [HttpGet]
         public async Task<ActionResult<IEnumerable<InvoiceView>>> GetInvoiceView()
         {
-            return await _context.InvoiceView.ToListAsync();
+            return await _context.InvoiceView.OrderByDescending(x => x.InvoiceEditDate).ToListAsync();
+            
         }
 
         // GET: api/InvoiceViews/5
@@ -32,7 +33,6 @@ namespace RetailGInvoices.Controller
         public async Task<ActionResult<InvoiceView>> GetInvoiceView(int id)
         {
             var invoiceView = await _context.InvoiceView.FindAsync(id);
-
             if (invoiceView == null)
             {
                 return NotFound();

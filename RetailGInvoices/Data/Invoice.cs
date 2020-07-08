@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Reflection.Metadata.Ecma335;
 using System.Threading.Tasks;
 
 namespace RetailGInvoices.Data
@@ -26,7 +27,9 @@ namespace RetailGInvoices.Data
         public Decimal VATAmount { get; set; }
         public int VATExempt { get; set; }
         public int PaymentTypeID { get; set; }
-        
+        public DateTime CreatedDate { get; set; }
+        public DateTime EditDate { get; set; }
+
 
     }
 }
