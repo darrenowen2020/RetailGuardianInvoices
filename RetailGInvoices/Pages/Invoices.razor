@@ -7,7 +7,7 @@
 <h3>Invoices</h3>
 
 <EditForm Model="@invoiceObj" >
-	<table class="form-group">
+	<table class="form-group" id="inputFields">
 		<tr>
 			<td>
 				<label for="Invoice Date" class="control-label">Invoice Date</label>
@@ -77,7 +77,7 @@
 				<input type="text" class="form-control" @bind="VatAmount" />
 			</td>
 			<td>
-				<input type="text" class="form-control" @bind-value="NetAmount" onkeypress="NetAmountKeyPress"/>
+				<input type="text" class="form-control" @bind-value="NetAmount" @onblur="@(e => NetAmountKeyPress())"/>
 			</td>
 			<td>
 				<InputCheckbox class="form-control" @bind-Value="invoiceObj.Paid" />
@@ -322,12 +322,22 @@ else
 		}
 
 	}
-	
 
-	void NetAmountKeyPress(KeyboardEventArgs args)
+
+	private void NetAmountKeyPress()
 	{
-		string c = "hello";
+		if (GrossAmount == 0)
+		{
+			if (VatAmount != 0 && NetAmount != 0)
+			{
+				GrossAmount = NetAmount - VatAmount;
+			}
+		} else
+		{
+			NetAmount = GrossAmount + VatAmount;
+		}
 	}
+
 	protected override async Task OnInitializedAsync()
 	{
 		invoiceViews = await Http.GetJsonAsync<InvoiceView[]>("/api/InvoiceViews/");
@@ -394,8 +404,6 @@ else
 		}
 
 		Task d = PostInvoice();
-		clearForm();
-
 	}
 
 
