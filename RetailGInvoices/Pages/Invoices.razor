@@ -36,9 +36,6 @@
 			<td class="amount">
 				<label for="Net Amount" class="control-label">Net Amount</label>
 			</td>
-			<td>
-				<label for="Paid" class="control-label">Paid</label>
-			</td>
 		</tr>
 		<tr>
 			<td>
@@ -54,8 +51,7 @@
 				<input type="text" class="form-control" @bind="invoiceObj.InvoiceReference" />
 			</td>
 			<td>
-				<input type="text" class="form-control" @bind="invoiceObj.Description" style="width: 300px" />
-				<ValidationMessage For="@(() => invoiceObj.Description)" />
+				<input type="text" class="form-control" @bind="invoiceHeadingSelectedName" style="width: 300px" />
 			</td>
 			<td>
 				@if (paymentTypes != null)
@@ -78,9 +74,6 @@
 			</td>
 			<td>
 				<input type="text" class="form-control" @bind-value="NetAmount" @onblur="@(e => NetAmountKeyPress())"/>
-			</td>
-			<td>
-				<InputCheckbox class="form-control" @bind-Value="invoiceObj.Paid" />
 			</td>
 		</tr>
 		<tr>
@@ -107,7 +100,6 @@
 				@if (suppliers != null)
 				{
 					<select class="form-control" @bind="supplierSelected">
-						<option value=""></option>
 						@foreach (var supplier in suppliers)
 						{
 							<option value="@supplier.Id">@supplier.Name</option>
@@ -119,6 +111,15 @@
 			<td>
 			</td>
 			<td>
+				@if (invoiceHeadings != null)
+				{
+					<select class="form-control" @bind="invoiceHeadingSelected">
+						@foreach (var invoiceHeading in invoiceHeadings)
+						{
+							<option value="@invoiceHeading.Id">@invoiceHeading.Description</option>
+						}
+					</select>
+				}
 			</td>
 			<td>
 			</td>
@@ -155,7 +156,6 @@ else
 				<th>Gross</th>
 				<th>VAT</th>
 				<th>Net</th>
-				<th>Paid</th>
 			</tr>
 		</thead>
 		<tbody>
@@ -173,9 +173,6 @@ else
 				<td>@invoiceView.InvoiceVAT</td>
 				<td>@invoiceView.InvoiceNet</td>
 				<td>
-					<input type="checkbox" checked="@invoiceView.InvoicePaid" disabled="disabled" />
-				</td>
-				<td>
 					<button class="btn btn-secondary" @onclick="@(async () => await EditInvoice(invoiceView.InvoiceId))" style="width:50px;">Edit</button>
 				</td>
 				<td>
@@ -191,6 +188,83 @@ else
 @code {
 	private bool updateFlag = false;
 
+	private int defaultSiteId;
+	private string defaultSiteName;
+	private int defaultSupplierId;
+	private string defaultSupplierName;
+	private int defaultPaymentTypeId;
+	private string defaultPaymentTypeName;
+
+	private Company[] companies;
+	private Site[] sites;
+	private Invoice[] invoices;
+	private Supplier[] suppliers;
+	private PaymentType[] paymentTypes;
+	private InvoiceView[] invoiceViews;
+	private InvoiceHeading[] invoiceHeadings;
+
+	Company companyObj = new Company();
+	Invoice invoiceObj = new Invoice();
+	Site siteObj = new Site();
+	Supplier supplierObj = new Supplier();
+	PaymentType paymentTypeObj = new PaymentType();
+	InvoiceView invoiceViewObj = new InvoiceView();
+	InvoiceHeading invoiceHeadingObj = new InvoiceHeading();
+
+	private string _invoiceHeadingSelected;
+	private string invoiceHeadingSelected
+	{
+		get
+		{
+			return _invoiceHeadingSelected;
+		}
+
+		set
+		{
+			int intInvoiceHeadingSelected;
+			try
+			{
+				intInvoiceHeadingSelected = int.Parse(value);
+				InvoiceHeading tmpInvoiceHeading = Array.Find<InvoiceHeading>(invoiceHeadings, f => f.Id == intInvoiceHeadingSelected);
+				invoiceHeadingSelectedName = tmpInvoiceHeading.Description;
+				_invoiceHeadingSelected = value;
+			}
+			catch (Exception ex)
+			{
+				intInvoiceHeadingSelected = 0;
+			}
+		}
+	}
+
+	private string _invoiceHeadingSelectedName;
+	private string invoiceHeadingSelectedName
+	{
+		get
+		{
+			return _invoiceHeadingSelectedName;
+		}
+
+		set
+		{
+			InvoiceHeading tempInvoiceHeading = Array.Find<InvoiceHeading>(invoiceHeadings, f => f.Description == value);
+			if (tempInvoiceHeading == null)
+			{
+				InvoiceHeading invoiceHeading = new InvoiceHeading();
+				invoiceHeading.Description = value;
+
+				Task temp = addNewInvoiceHeading(invoiceHeading);
+			}
+
+			_invoiceHeadingSelectedName = value;
+		}
+	}
+
+	private async Task addNewInvoiceHeading(InvoiceHeading newInvoiceHeading)
+	{
+		await Http.PostJsonAsync<InvoiceHeading>("/api/InvoiceHeadings", newInvoiceHeading);
+		invoiceHeadings = await Http.GetJsonAsync<InvoiceHeading[]>("/api/InvoiceHeadings");
+		this.StateHasChanged();
+	}
 
 	private string siteSelectedName;
 	private string paymentTypeSelected;
@@ -229,26 +303,7 @@ else
 		this.StateHasChanged();
 	}
 
-	private int defaultSiteId;
-	private string defaultSiteName;
-	private int defaultSupplierId;
-	private string defaultSupplierName;
-	private int defaultPaymentTypeId;
-	private string defaultPaymentTypeName;
 
-	private Company[] companies;
-	private Site[] sites;
-	private Invoice[] invoices;
-	private Supplier[] suppliers;
-	private PaymentType[] paymentTypes;
-	private InvoiceView[] invoiceViews;
-
-	Company companyObj = new Company();
-	Invoice invoiceObj = new Invoice();
-	Site siteObj = new Site();
-	Supplier supplierObj = new Supplier();
-	PaymentType paymentTypeObj = new PaymentType();
-	InvoiceView invoiceViewObj = new InvoiceView();
 
 	public string _siteSelected;
 
@@ -287,17 +342,22 @@ else
 		set
 		{
 			int intSupplierId;
-			_supplierSelected = value;
+
 			try
 			{
-				intSupplierId = int.Parse(_supplierSelected);
+				if (value != null)
+				{
+					_supplierSelected = value;
+					intSupplierId = int.Parse(_supplierSelected);
+					Supplier supplier = Array.Find<Supplier>(suppliers, p => p.Id == intSupplierId);
+					supplierSelectedName = supplier.Name;
+				}
 			}
 			catch (Exception ex)
 			{
 				intSupplierId = 0;
 			}
-			Supplier supplier = Array.Find<Supplier>(suppliers, p => p.Id == intSupplierId);
-			supplierSelectedName = supplier.Name;
+
 		}
 	}
 	public decimal _VatAmount = 0;
@@ -389,7 +449,7 @@ else
 		sites = await Http.GetJsonAsync<Site[]>("api/Sites");
 		suppliers = await Http.GetJsonAsync<Supplier[]>("api/Suppliers");
 		paymentTypes = await Http.GetJsonAsync<PaymentType[]>("api/PaymentTypes");
-
+		invoiceHeadings = await Http.GetJsonAsync<InvoiceHeading[]>("api/InvoiceHeadings");
 
 		defaultSiteId = sites[0].Id;
 		defaultSiteName = sites[0].SiteName;
@@ -398,6 +458,7 @@ else
 		defaultPaymentTypeId = paymentTypes[0].Id;
 		defaultPaymentTypeName = paymentTypes[0].Description;
 
+
 		invoiceObj.Date = DateTime.Today;
 
 		siteSelected = defaultSiteId.ToString();
@@ -405,8 +466,8 @@ else
 		supplierSelected = defaultSupplierId.ToString();
 		supplierSelectedName = defaultSupplierName;
 		paymentTypeSelected = defaultPaymentTypeId.ToString();
-
-
+		invoiceHeadingSelected = invoiceHeadings[0].ToString();
+		invoiceHeadingSelectedName = invoiceHeadings[0].Description;
 	}
 
 	protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -449,6 +510,7 @@ else
 		invoiceObj.VATAmount = VatAmount;
 		invoiceObj.NetAmount = NetAmount;
 		invoiceObj.EditDate = DateTime.Now;
+		invoiceObj.Paid = true; // defaulting this to true
 
 		Task d = PostInvoice();
 		clearInputValues();
