@@ -20,5 +20,6 @@ namespace RetailGInvoices.Data
         public string InvoiceNet { get; set; }
         public string InvoicePaymentType { get; set; }
         public string InvoicePaymentDescription { get; set; }
+        public bool InvoicePaid { get; set; }
     }
 }

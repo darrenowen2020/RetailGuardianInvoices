@@ -3,9 +3,10 @@
 @using System.Net.Http
 @inject HttpClient Http
 @using Microsoft.Extensions.Logging
+
 <h3>Invoices</h3>
 
-<form>
+<EditForm Model="@invoiceObj" >
 	<table class="form-group">
 		<tr>
 			<td>
@@ -35,6 +36,9 @@
 			<td class="amount">
 				<label for="Net Amount" class="control-label">Net Amount</label>
 			</td>
+			<td>
+				<label for="Paid" class="control-label">Paid</label>
+			</td>
 		</tr>
 		<tr>
 			<td>
@@ -51,6 +55,7 @@
 			</td>
 			<td>
 				<input type="text" class="form-control" @bind="invoiceObj.Description" style="width: 300px" />
+				<ValidationMessage For="@(() => invoiceObj.Description)" />
 			</td>
 			<td>
 				@if (paymentTypes != null)
@@ -66,18 +71,20 @@
 				}
 			</td>
 			<td>
-				<input type="text" class="form-control" @bind="invoiceObj.GrossAmount" />
+				<input type="text" class="form-control" @bind="GrossAmount" />
 			</td>
 			<td>
-				<input type="text" class="form-control" @bind="invoiceObj.VATAmount" />
+				<input type="text" class="form-control" @bind="VatAmount" />
 			</td>
 			<td>
-				<input type="text" class="form-control" @bind="invoiceObj.NetAmount" />
+				<input type="text" class="form-control" @bind-value="NetAmount" onkeypress="NetAmountKeyPress"/>
+			</td>
+			<td>
+				<InputCheckbox class="form-control" @bind-Value="invoiceObj.Paid" />
 			</td>
 		</tr>
 		<tr>
 			<td>
-				
 			</td>
 
 			<td style="width:250px">
@@ -110,31 +117,25 @@
 				}
 			</td>
 			<td>
-				
 			</td>
 			<td>
-				
 			</td>
 			<td>
-				
 			</td>
 			<td>
-				
 			</td>
 			<td>
-				
 			</td>
 			<td>
-				
 			</td>
 		</tr>
 		<tr>
 			<td>
-				<button class="btn btn-info" @onclick="@AddNewInvoice">Update</button>
+				<button type="submit" class="btn btn-info" @onclick="@AddNewInvoice">Update</button>
 			</td>
 		</tr>
 	</table>
-</form>
+</EditForm>
 @if (invoiceViews == null)
 {
 	<p><em>Loading....</em></p>
@@ -154,29 +155,34 @@ else
 				<th>Gross</th>
 				<th>VAT</th>
 				<th>Net</th>
+				<th>Paid</th>
 			</tr>
 		</thead>
 		<tbody>
 			@foreach (var invoiceView in invoiceViews)
 			{
-				<tr>
-					<td>@invoiceView.InvoiceId</td>
-					<td>@invoiceView.InvoiceDate.ToShortDateString()</td>
-					<td>@invoiceView.SiteName</td>
-					<td>@invoiceView.SupplierName</td>
-					<td>@invoiceView.InvoiceReference</td>
-					<td>@invoiceView.InvoiceDescription</td>
-					<td>@invoiceView.InvoicePaymentDescription</td>
-					<td>@invoiceView.InvoiceGross</td>
-					<td>@invoiceView.InvoiceVAT</td>
-					<td>@invoiceView.InvoiceNet</td>
-					<td>
-						<button class="btn btn-secondary" @onclick="@(async () => await EditInvoice(invoiceView.InvoiceId))" style="width:50px;">Edit</button>
-					</td>
-					<td>
-						<button class="btn btn-secondary" @onclick="@(async () => await DeleteInvoice(invoiceView.InvoiceId))" style="width:50px;">Del</button>
-					</td>
-				</tr>
+			<tr>
+				<td>@invoiceView.InvoiceId</td>
+				<td>@invoiceView.InvoiceDate.ToShortDateString()</td>
+				<td>@invoiceView.SiteName</td>
+				<td>@invoiceView.SupplierName</td>
+				<td>@invoiceView.InvoiceReference</td>
+				<td>@invoiceView.InvoiceDescription</td>
+				<td>@invoiceView.InvoicePaymentDescription</td>
+				<td>@invoiceView.InvoiceGross</td>
+				<td>@invoiceView.InvoiceVAT</td>
+				<td>@invoiceView.InvoiceNet</td>
+				<td>
+					<input type="checkbox" checked="@invoiceView.InvoicePaid" disabled="disabled" />
+				</td>
+				<td>
+					<button class="btn btn-secondary" @onclick="@(async () => await EditInvoice(invoiceView.InvoiceId))" style="width:50px;">Edit</button>
+				</td>
+				<td>
+					<button class="btn btn-secondary" @onclick="@(async () => await DeleteInvoice(invoiceView.InvoiceId))" style="width:50px;">Del</button>
+				</td>
+
+			</tr>
 			}
 		</tbody>
 	</table>
@@ -214,7 +220,8 @@ else
 
 	public string _siteSelected;
 
-	public string siteSelected {
+	public string siteSelected
+	{
 		get
 		{
 			return _siteSelected;
@@ -261,7 +268,73 @@ else
 			supplierSelectedName = supplier.Name;
 		}
 	}
+	public decimal _VatAmount = 0;
+	public decimal VatAmount {
+		get
+		{
+			return _VatAmount;
+		}
 
+		set
+		{
+			_VatAmount = value;
+		}
+	}
+
+	public decimal _GrossAmount = 0;
+	public decimal GrossAmount {
+		get
+		{
+			return _GrossAmount;
+		}
+
+		set
+		{
+			_GrossAmount = value;
+		}
+	}
+
+	public decimal _NetAmount;
+	public decimal NetAmount
+	{
+		get
+		{
+			return _NetAmount;
+		}
+		set
+		{
+			if (_VatAmount == 0)
+			{
+				if (value != GrossAmount)
+				{
+					GrossAmount = value;
+				}
+				else
+				{
+					if ((_VatAmount + _GrossAmount) != value)
+					{
+						value = _VatAmount + _GrossAmount;
+					}
+				}
+
+			}
+			_NetAmount = value;
+		}
+
+	}
+	public void clearForm()
+	{
+		invoiceObj = new Invoice();
+		GrossAmount = 0;
+		VatAmount = 0;
+		NetAmount = 0;
+		invoiceObj.Date = DateTime.Today;
+	}
+
+	void NetAmountKeyPress(KeyboardEventArgs args)
+	{
+		string c = "hello";
+	}
 	protected override async Task OnInitializedAsync()
 	{
 		invoiceViews = await Http.GetJsonAsync<InvoiceView[]>("/api/InvoiceViews/");
@@ -298,12 +371,6 @@ else
 		}
 	}
 
-	private void updateField()
-	{
-		string x = "hello";
-	}
-
-
 	void AddNewInvoice()
 	{
 		try
@@ -334,6 +401,7 @@ else
 		}
 
 		Task d = PostInvoice();
+		clearForm();
 
 	}
 
@@ -343,14 +411,13 @@ else
 		if (updateFlag)
 		{
 			await Http.SendJsonAsync(HttpMethod.Put, "/api/Invoices/" + invoiceObj.ID, invoiceObj);
-			invoiceViews = await Http.GetJsonAsync<InvoiceView[]>("/api/InvoiceViews");
 		}
 		else
 		{
 			await Http.SendJsonAsync(HttpMethod.Post, "/api/Invoices/", invoiceObj);
-			invoiceViews = await Http.GetJsonAsync<InvoiceView[]>("/api/InvoiceViews");
 		}
-
+		invoiceViews = await Http.GetJsonAsync<InvoiceView[]>("/api/InvoiceViews");
+		this.StateHasChanged();
 	}
 
 	// Edit Method
@@ -358,8 +425,14 @@ else
 	{
 		invoiceObj = await Http.GetJsonAsync<Invoice>("/api/Invoices/" + InvoiceId);
 		updateFlag = true;
-		siteSelected = invoiceObj.ID.ToString();
+		Supplier supplier = Array.Find<Supplier>(suppliers, p => p.Id == invoiceObj.SupplierID);
+		Site site = Array.Find<Site>(sites, p => p.Id == invoiceObj.SiteID);
 
+		siteSelectedName = site.SiteName;
+		supplierSelectedName = supplier.Name;
+		GrossAmount = invoiceObj.GrossAmount;
+		VatAmount = invoiceObj.VATAmount;
+		NetAmount = invoiceObj.NetAmount;
 	}
 
 
