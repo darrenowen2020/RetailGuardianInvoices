@@ -4,9 +4,7 @@
 @inject HttpClient Http
 @using Microsoft.Extensions.Logging
 
-<h3>Invoices</h3>
-
-<EditForm Model="@invoiceObj" >
+<EditForm Model="@invoiceObj">
 	<table class="table-bordered">
 		<tr>
 			<td>
@@ -73,7 +71,7 @@
 				<input type="text" class="form-control" @bind="VatAmount" />
 			</td>
 			<td>
-				<input type="text" class="form-control" @bind-value="NetAmount" @onblur="@(e => NetAmountKeyPress())"/>
+				<input type="text" class="form-control" @bind-value="NetAmount" @onblur="@(e => NetAmountKeyPress())" />
 			</td>
 		</tr>
 		<tr>
@@ -161,31 +159,34 @@ else
 		<tbody>
 			@foreach (var invoiceView in invoiceViews)
 			{
-			<tr>
-				<td>@invoiceView.InvoiceId</td>
-				<td>@invoiceView.InvoiceDate.ToShortDateString()</td>
-				<td>@invoiceView.SiteName</td>
-				<td>@invoiceView.SupplierName</td>
-				<td>@invoiceView.InvoiceReference</td>
-				<td>@invoiceView.InvoiceDescription</td>
-				<td>@invoiceView.InvoicePaymentDescription</td>
-				<td>@invoiceView.InvoiceGross</td>
-				<td>@invoiceView.InvoiceVAT</td>
-				<td>@invoiceView.InvoiceNet</td>
-				<td>
-					<button class="btn btn-secondary" @onclick="@(async () => await EditInvoice(invoiceView.InvoiceId))" style="width:50px;">Edit</button>
-				</td>
-				<td>
-					<button class="btn btn-secondary" @onclick="@(async () => await DeleteInvoice(invoiceView.InvoiceId))" style="width:50px;">Del</button>
-				</td>
+				<tr>
+					<td>@invoiceView.InvoiceId</td>
+					<td>@invoiceView.InvoiceDate.ToShortDateString()</td>
+					<td>@invoiceView.SiteName</td>
+					<td>@invoiceView.SupplierName</td>
+					<td>@invoiceView.InvoiceReference</td>
+					<td>@invoiceView.InvoiceDescription</td>
+					<td>@invoiceView.InvoicePaymentDescription</td>
+					<td>@invoiceView.InvoiceGross</td>
+					<td>@invoiceView.InvoiceVAT</td>
+					<td>@invoiceView.InvoiceNet</td>
+					<td>
+						<button class="btn btn-secondary" @onclick="@(async () => await EditInvoice(invoiceView.InvoiceId))" style="width:50px;">Edit</button>
+					</td>
+					<td>
+						<button class="btn btn-secondary" @onclick="@(async () => await DeleteInvoice(invoiceView.InvoiceId))" style="width:50px;">Del</button>
+					</td>
 
-			</tr>
+				</tr>
 			}
 		</tbody>
 	</table>
 }
 
 @code {
+	[Parameter]
+	public RenderFragment ChildContent { get; set; }
+
 	private bool updateFlag = false;
 
 	private int defaultSiteId;
@@ -361,7 +362,8 @@ else
 		}
 	}
 	public decimal _VatAmount = 0;
-	public decimal VatAmount {
+	public decimal VatAmount
+	{
 		get
 		{
 			return _VatAmount;
@@ -374,7 +376,8 @@ else
 	}
 
 	public decimal _GrossAmount = 0;
-	public decimal GrossAmount {
+	public decimal GrossAmount
+	{
 		get
 		{
 			return _GrossAmount;
@@ -423,7 +426,8 @@ else
 			{
 				GrossAmount = NetAmount - VatAmount;
 			}
-		} else
+		}
+		else
 		{
 			NetAmount = GrossAmount + VatAmount;
 		}
