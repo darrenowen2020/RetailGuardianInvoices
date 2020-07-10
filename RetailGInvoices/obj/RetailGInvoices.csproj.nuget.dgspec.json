@@ -38,6 +38,10 @@
       "frameworks": {
         "netcoreapp3.1": {
           "dependencies": {
+            "BlazorTable": {
+              "target": "Package",
+              "version": "[1.11.1, )"
+            },
             "Blazored.Modal": {
               "target": "Package",
               "version": "[4.1.0, )"

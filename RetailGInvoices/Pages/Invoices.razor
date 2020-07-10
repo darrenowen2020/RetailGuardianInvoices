@@ -4,6 +4,19 @@
 @inject HttpClient Http
 @using Microsoft.Extensions.Logging
 
+@if (invoiceViews == null)
+{ 
+	<p>Loading the stuff..</p>
+}
+else
+{
+
+	<Table TableItem="InvoiceView" Items="invoiceViews" PageSize="10" ColumnReorder="true">
+		<Column TableItem="InvoiceView" Title="ID" Field="@(x => x.InvoiceId)" Sortable="true" Width="10%" DefaultSortColumn="true" />
+		<Column TableItem="InvoiceView" Title="Supplier" Field="@(x => x.SupplierName)" Sortable="true" Width="10%" />
+
+	</Table>
+}
 <EditForm Model="@invoiceObj">
 	<table class="table-bordered">
 		<tr>
