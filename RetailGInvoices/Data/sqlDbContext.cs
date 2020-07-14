@@ -23,5 +23,6 @@ namespace RetailGInvoices.Data
         public DbSet<RetailGInvoices.Data.PaymentType> PaymentType { get; set; }
         public DbSet<RetailGInvoices.Data.InvoiceView> InvoiceView { get; set; }
         public DbSet<RetailGInvoices.Data.InvoiceHeading> InvoiceHeading { get; set; }
+        public DbSet<RetailGInvoices.Data.Period> Period { get; set; }
     }
 }

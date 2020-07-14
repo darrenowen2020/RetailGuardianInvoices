@@ -159,7 +159,11 @@ else
 	<button class="btn btn-sm btn-danger" title="Toggle Edit Mode" @onclick="@((x) => ToggleEdit())">Toggle Edit Mode</button>
 	<Table TableItem="InvoiceView" Items="invoiceViews" @ref="Table" PageSize="10" ColumnReorder="true">
 		<Column TableItem="InvoiceView" Title="ID" Field="@(x => x.InvoiceId)" Sortable="true" Width="10%" DefaultSortColumn="true" />
-		<Column TableItem="InvoiceView" Title="Invoice Date" Field="@(x => x.InvoiceDate)" Sortable="true" Width="10%" DefaultSortColumn="true" />
+		<Column TableItem="InvoiceView" Title="Invoice Date" Field="@(x => x.InvoiceDate)" Sortable="true" Width="10%" DefaultSortColumn="true">
+			<Template>
+				@(context.InvoiceDate.ToShortDateString())
+			</Template>
+		</Column>
 		<Column TableItem="InvoiceView" Title="Site" Field="@(x => x.SiteName)" Sortable="true" Width="10%" DefaultSortColumn="true" />
 		<Column TableItem="InvoiceView" Title="Supplier" Field="@(x => x.SupplierName)" Sortable="true" Width="10%" />
 		<Column TableItem="InvoiceView" Title="Reference" Field="@(x => x.InvoiceReference)" Sortable="true" Width="10%" DefaultSortColumn="true" />

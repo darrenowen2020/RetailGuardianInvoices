@@ -1,0 +1,130 @@
+﻿@page "/Periods"
+@using RetailGInvoices.Data
+@using System.Net.Http
+@inject HttpClient Http
+
+@if (periods == null)
+{
+	<p>Loading the period data..</p>
+}
+else
+{
+<EditForm Model="@periodObj">
+	<table class="table-borderless">
+		<thead>
+			<tr>
+				<th>Period No</th>
+				<th>Start Date</th>
+				<th>End Date</th>
+				<th></th>
+			</tr>
+		</thead>
+
+		<tr>
+			<td>
+				<input type="number" @bind="periodObj.PeriodNo" />
+			</td>
+			<td>
+				<input type="date" @bind="periodObj.StartDate" />
+			</td>
+			<td>
+				<input type="date" @bind="periodObj.EndDate" />
+			</td>
+			<td>
+				<button class="btn btn-info" title="Add" @onclick="@((x) => AddPeriod())">Add</button>
+			</td>
+		</tr>
+	</table>
+</EditForm>
+	<button class="btn btn-sm btn-danger" title="Toggle Edit Mode" @onclick="@((x) => ToggleEdit())">Toggle Edit Mode</button>
+
+
+	<Table TableItem="Period" Items="periods" @ref="Table" PageSize="20" ColumnReorder="true">
+		<Column TableItem="Period" Title="Period No" Field="@(x => x.PeriodNo)" Sortable="true" Width="10%" DefaultSortColumn="true">
+			<EditTemplate>
+				<input type="number" @bind-value="@context.PeriodNo" class="form-control form-control-sm" oninput="" />
+			</EditTemplate>
+		</Column>
+		<Column TableItem="Period" Title="Start Date" Field="@(x => x.StartDate)" Sortable="true" Width="10%">
+			<Template>
+				@(context.StartDate.ToShortDateString())
+			</Template>
+			<EditTemplate>
+				<input type="date" @bind-value="@context.StartDate" class="form-control form-control-sm" />
+			</EditTemplate>
+		</Column>
+		<Column TableItem="Period" Title="End Date" Field="@(x => x.EndDate)" Sortable="true" Width="10%">
+			<Template>
+				@(context.EndDate.ToShortDateString())
+			</Template>
+			<EditTemplate>
+				<input type="date" @bind-value="@context.EndDate" class="form-control form-control-sm" />
+			</EditTemplate>
+		</Column>
+		<EmptyDataTemplate>
+			<div class="text-center">
+				No rows found!
+			</div>
+		</EmptyDataTemplate>
+		<Pager ShowPageNumber="true" ShowTotalCount="true" />
+	</Table>
+
+	<button class="btn btn-info" title="Submit Changes" @onclick="@((x) => submitChanges())">Submit Changes</button>
+}
+@code {
+	private ITable<Period> Table;
+	private Period[] periods;
+	private bool changedFlag = false;
+
+	private int newPeriodNo;
+	private DateTime newStartDate;
+	private DateTime newEndDate;
+
+	private Period periodObj = new Period();
+
+	protected override async Task OnInitializedAsync()
+	{
+		periods = await Http.GetJsonAsync<Period[]>("/api/Periods");
+	}
+	private void ToggleEdit()
+	{
+		Table.ToggleEditMode();
+	}
+
+	private void setChangedFlag()
+	{
+		changedFlag = true;
+	}
+
+	private void AddPeriod()
+	{
+		Task tmp = PostPeriod();
+	}
+
+	private async Task PostPeriod()
+	{
+		await Http.PostJsonAsync<Period>("/api/Periods", periodObj);
+		await refreshTable();
+
+	}
+
+	private async Task UpdatePeriod(Period updatePeriod)
+	{
+		await Http.SendJsonAsync(HttpMethod.Put, "/api/Periods/" + updatePeriod.Id, updatePeriod);
+	}
+
+	private void submitChanges()
+	{
+		foreach (var period in periods)
+		{
+			Task tmpTask = UpdatePeriod(period);
+
+		}
+	}
+
+	private async Task refreshTable()
+	{
+		periods = await Http.GetJsonAsync<Period[]>("/api/Periods");
+		this.StateHasChanged();
+	}
+}

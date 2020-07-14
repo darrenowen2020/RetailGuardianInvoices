@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "0b3aO5twOI3WijBMxh5fSEpHUsjIB69Bespg9qXp9K2a05J1YecP60c8lpJ3d9D0cjUz/cjlUVjYD4ncfU4O3w==",
+  "dgSpecHash": "wvFz0+pMbVL4v8khPd0l4xGURby9HkJ9aHMjjODtTFwtAQ/lbv1DPtuUpLDn1HexEmNyWrh5D0/Wa9eK+BpFDQ==",
   "success": true,
   "projectFilePath": "C:\\Users\\darre\\source\\repos\\RetailGInvoices\\RetailGInvoices\\RetailGInvoices.csproj",
   "expectedPackageFiles": [
@@ -81,6 +81,7 @@
     "C:\\Users\\darre\\.nuget\\packages\\netstandard.library\\1.6.1\\netstandard.library.1.6.1.nupkg.sha512",
     "C:\\Users\\darre\\.nuget\\packages\\newtonsoft.json\\11.0.2\\newtonsoft.json.11.0.2.nupkg.sha512",
     "C:\\Users\\darre\\.nuget\\packages\\nuget.frameworks\\4.7.0\\nuget.frameworks.4.7.0.nupkg.sha512",
+    "C:\\Users\\darre\\.nuget\\packages\\popper.js\\1.16.1\\popper.js.1.16.1.nupkg.sha512",
     "C:\\Users\\darre\\.nuget\\packages\\runtime.debian.8-x64.runtime.native.system.security.cryptography.openssl\\4.3.0\\runtime.debian.8-x64.runtime.native.system.security.cryptography.openssl.4.3.0.nupkg.sha512",
     "C:\\Users\\darre\\.nuget\\packages\\runtime.fedora.23-x64.runtime.native.system.security.cryptography.openssl\\4.3.0\\runtime.fedora.23-x64.runtime.native.system.security.cryptography.openssl.4.3.0.nupkg.sha512",
     "C:\\Users\\darre\\.nuget\\packages\\runtime.fedora.24-x64.runtime.native.system.security.cryptography.openssl\\4.3.0\\runtime.fedora.24-x64.runtime.native.system.security.cryptography.openssl.4.3.0.nupkg.sha512",
