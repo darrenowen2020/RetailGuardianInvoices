@@ -10,7 +10,7 @@
 else
 {
 <EditForm Model="@periodObj">
-	<table class="table-borderless">
+	<table class="table-borderless" contenteditable="@addTableActive">
 		<thead>
 			<tr>
 				<th>Period No</th>
@@ -31,7 +31,7 @@ else
 				<input type="date" @bind="periodObj.EndDate" />
 			</td>
 			<td>
-				<button class="btn btn-info" title="Add" @onclick="@((x) => AddPeriod())">Add</button>
+				<button class="btn btn-info" title="Add" @onclick="@((x) => AddPeriod())" disabled="@(!addTableActive)">Add</button>
 			</td>
 		</tr>
 	</table>
@@ -91,6 +91,8 @@ else
 
 	private Period periodObj = new Period();
 	private bool hideButtons = true;
+	private bool addTableActive = true;
+
 	private string rowID;
 	private Period activePeriod;
 
@@ -105,8 +107,12 @@ else
 		{
 			hideButtons = true;
 			activePeriod = null;
+			addTableActive = true;
 		}
-
+		else
+		{
+			addTableActive = false;
+		}
 	}
 
 	private void setChangedFlag()

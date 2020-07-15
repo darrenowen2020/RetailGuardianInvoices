@@ -3,25 +3,135 @@
 @using System.Net.Http
 @inject HttpClient Http
 
-	<Table TableItem="Site" Items="sites" @ref="Table" PageSize="20" ColumnReorder="true" SelectionType="SelectionType.Single" RowClickAction="RowClick">
-		<Column TableItem="Site" Title="Site Name" Field="@(x => x.SiteName)" Sortable="true" Width="30%" DefaultSortColumn="true">
-			<EditTemplate>
-				<input type="text" @bind-value="@context.SiteName" class="form-control form-control-sm" />
-			</EditTemplate>
-		</Column>
-		<Column TableItem="Site" Title="Postcode" Field="@(x => x.Postcode)" Sortable="true" Width="10%" DefaultSortColumn="true">
-			<EditTemplate>
-				<input type="text" @bind-value="@context.Postcode" class="form-control form-control-sm" />
-			</EditTemplate>
-		</Column>
-		<Column TableItem="Site" Title="VAT No" Field="@(x => x.VATCode)" Sortable="true" Width="10%" DefaultSortColumn="true">
-			<EditTemplate>
-				<input type="text" @bind-value="@context.VATCode" class="form-control form-control-sm" />
-			</EditTemplate>
-		</Column>
-	</Table>
+	<EditForm Model="@siteObj">
+		<table class="table-borderless" contenteditable="@addTableActive">
+			<thead>
+				<tr>
+					<th>Site Name</th>
+					<th>Postcode</th>
+					<th>VAT No</th>
+					<th></th>
+				</tr>
+			</thead>
+
+			<tr>
+				<td>
+					<input type="text" @bind="siteObj.SiteName" />
+				</td>
+				<td>
+					<input type="text" @bind="siteObj.Postcode" />
+				</td>
+				<td>
+					<input type="text" @bind="siteObj.VATCode" />
+				</td>
+				<td>
+					<button class="btn btn-info" title="Add" @onclick="@((x) => AddSite())" disabled="@(!addTableActive)">Add</button>
+				</td>
+			</tr>
+		</table>
+	</EditForm>
+<button class="btn btn-sm btn-danger" title="Toggle Edit Mode" @onclick="@((x) => ToggleEdit())">Toggle Edit Mode</button>
+
+<Table TableItem="Site" Items="sites" @ref="Table" PageSize="20" ColumnReorder="true" SelectionType="SelectionType.Single" RowClickAction="RowClick">
+	<Column TableItem="Site" Title="Site Name" Field="@(x => x.SiteName)" Sortable="true" Width="30%" DefaultSortColumn="true">
+		<EditTemplate>
+			<input type="text" @bind-value="@context.SiteName" class="form-control form-control-sm" />
+		</EditTemplate>
+	</Column>
+	<Column TableItem="Site" Title="Postcode" Field="@(x => x.Postcode)" Sortable="true" Width="10%" DefaultSortColumn="true">
+		<EditTemplate>
+			<input type="text" @bind-value="@context.Postcode" class="form-control form-control-sm" />
+		</EditTemplate>
+	</Column>
+	<Column TableItem="Site" Title="VAT No" Field="@(x => x.VATCode)" Sortable="true" Width="10%" DefaultSortColumn="true">
+		<EditTemplate>
+			<input type="text" @bind-value="@context.VATCode" class="form-control form-control-sm" />
+		</EditTemplate>
+	</Column>
+</Table>
+
+<table hidden="@hideButtons" class="table-borderless">
+	<tr>
+		<td>
+			<button class="btn btn-info" title="Submit Changes" @onclick="@((x) => SubmitChanges())">Submit Changes</button>
+		</td>
+		<td>
+			<button class="btn btn-danger" title="Delete" @onclick="@((x) => DeleteRow())">Delete Site @selectedSiteName</button>
+		</td>
+	</tr>
+</table>
 
 @code {
+	private ITable<Site> Table;
 	private Site[] sites;
+	private Site siteObj = new Site();
+	private bool addTableActive = true;
+	private bool hideButtons = true;
+	private string selectedSiteName = "";
 
+	protected override async Task OnInitializedAsync()
+	{
+		sites = await Http.GetJsonAsync<Site[]>("/api/Sites");
+	}
+	private void ToggleEdit()
+	{
+		Table.ToggleEditMode();
+
+		if (Table.IsEditMode == true)
+		{
+			addTableActive = false;
+		}
+		else
+		{
+			hideButtons = true;
+			addTableActive = true;
+		}
+	}
+
+	private void RowClick(Site siteSelected)
+	{
+		if (Table.IsEditMode == true)
+		{
+			selectedSiteName = siteSelected.SiteName;
+			hideButtons = false;
+			this.StateHasChanged();
+		}
+	}
+	private void AddSite()
+	{
+		Task tmp = PostSite(siteObj);
+	}
+
+	private void SubmitChanges()
+	{
+		Task tmp;
+		foreach (var site in sites)
+		{
+			tmp = UpdateSite(site);
+		}
+	
+		ToggleEdit();
+	}
+
+	private async Task DeleteRow()
+	{
+		await Http.DeleteAsync("api/Sites/" + siteObj.Id);
+		sites = await Http.GetJsonAsync<Site[]>("api/Sites");
+		hideButtons = true;
+	}
+
+	private async Task PostSite(Site newSite)
+	{
+		await Http.PostJsonAsync<Site>("/api/Sites", siteObj);
+		sites = await Http.GetJsonAsync<Site[]>("/api/Sites");
+
+		siteObj = new Site();
+
+		this.StateHasChanged();
+	}
+
+	private async Task UpdateSite(Site inSite)
+	{
+		await Http.SendJsonAsync(HttpMethod.Put, "/api/Sites/" + inSite.Id, inSite);
+	}
 }

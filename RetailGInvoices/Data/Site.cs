@@ -8,6 +8,18 @@ namespace RetailGInvoices.Data
 {
     public class Site
     {
+        public Site()
+        {
+            SiteName = "";
+            Address1 = "";
+            Address2 = "";
+            Address3 = "";
+            Address4 = "";
+            Postcode = "";
+            VATCode = "";
+            FK_CompanyId = 1;
+        }
+
         [Key]
         public int Id { get; set; }
         public string SiteName { get; set; }
