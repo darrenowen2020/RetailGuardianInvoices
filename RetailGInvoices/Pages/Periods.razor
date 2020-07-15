@@ -39,7 +39,7 @@ else
 	<button class="btn btn-sm btn-danger" title="Toggle Edit Mode" @onclick="@((x) => ToggleEdit())">Toggle Edit Mode</button>
 
 
-	<Table TableItem="Period" Items="periods" @ref="Table" PageSize="20" ColumnReorder="true">
+	<Table TableItem="Period" Items="periods" @ref="Table" PageSize="20" ColumnReorder="true" SelectionType="SelectionType.Single" RowClickAction="RowClick">
 		<Column TableItem="Period" Title="Period No" Field="@(x => x.PeriodNo)" Sortable="true" Width="10%" DefaultSortColumn="true">
 			<EditTemplate>
 				<input type="number" @bind-value="@context.PeriodNo" class="form-control form-control-sm" oninput="" />
@@ -68,8 +68,17 @@ else
 		</EmptyDataTemplate>
 		<Pager ShowPageNumber="true" ShowTotalCount="true" />
 	</Table>
-
-	<button class="btn btn-info" title="Submit Changes" @onclick="@((x) => submitChanges())">Submit Changes</button>
+	<table hidden="@hideButtons" class="table-borderless">
+		<tr>
+			<td>
+				<button class="btn btn-info" title="Submit Changes" @onclick="@((x) => submitChanges())">Submit Changes</button>
+			</td>
+			<td>
+				<button class="btn btn-danger" title="Delete" @onclick="@((x) => DeleteRow())">Delete Period @rowID</button>
+			</td>
+		</tr>
+	</table>
+	
 }
 @code {
 	private ITable<Period> Table;
@@ -81,6 +90,9 @@ else
 	private DateTime newEndDate;
 
 	private Period periodObj = new Period();
+	private bool hideButtons = true;
+	private string rowID;
+	private Period activePeriod;
 
 	protected override async Task OnInitializedAsync()
 	{
@@ -89,6 +101,12 @@ else
 	private void ToggleEdit()
 	{
 		Table.ToggleEditMode();
+		if (Table.IsEditMode == false)
+		{
+			hideButtons = true;
+			activePeriod = null;
+		}
+
 	}
 
 	private void setChangedFlag()
@@ -125,6 +143,26 @@ else
 	private async Task refreshTable()
 	{
 		periods = await Http.GetJsonAsync<Period[]>("/api/Periods");
+		this.StateHasChanged();
+	}
+
+	private void RowClick(Period periodSelected)
+	{
+		rowID = periodSelected.PeriodNo.ToString();
+		activePeriod = periodSelected;
+
+		if (Table.IsEditMode)
+		{
+			hideButtons = false;
+			this.StateHasChanged();
+		}
+	}
+
+	private async Task DeleteRow()
+	{
+		await Http.DeleteAsync("/api/Periods/" + activePeriod.Id);
+		periods = await Http.GetJsonAsync<Period[]>("/api/Periods");
+		hideButtons = true;
 		this.StateHasChanged();
 	}
 }

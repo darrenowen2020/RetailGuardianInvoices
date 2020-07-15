@@ -17,5 +17,6 @@ namespace RetailGInvoices.Data
         public string Address4 { get; set; }
         public string Postcode { get; set; }
         public int FK_CompanyId { get; set; }
+        public string VATCode { get; set; }
     }
 }

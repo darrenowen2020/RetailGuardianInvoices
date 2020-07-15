@@ -1,0 +1,27 @@
+﻿@page "/SiteMaint"
+@using RetailGInvoices.Data
+@using System.Net.Http
+@inject HttpClient Http
+
+	<Table TableItem="Site" Items="sites" @ref="Table" PageSize="20" ColumnReorder="true" SelectionType="SelectionType.Single" RowClickAction="RowClick">
+		<Column TableItem="Site" Title="Site Name" Field="@(x => x.SiteName)" Sortable="true" Width="30%" DefaultSortColumn="true">
+			<EditTemplate>
+				<input type="text" @bind-value="@context.SiteName" class="form-control form-control-sm" />
+			</EditTemplate>
+		</Column>
+		<Column TableItem="Site" Title="Postcode" Field="@(x => x.Postcode)" Sortable="true" Width="10%" DefaultSortColumn="true">
+			<EditTemplate>
+				<input type="text" @bind-value="@context.Postcode" class="form-control form-control-sm" />
+			</EditTemplate>
+		</Column>
+		<Column TableItem="Site" Title="VAT No" Field="@(x => x.VATCode)" Sortable="true" Width="10%" DefaultSortColumn="true">
+			<EditTemplate>
+				<input type="text" @bind-value="@context.VATCode" class="form-control form-control-sm" />
+			</EditTemplate>
+		</Column>
+	</Table>
+
+@code {
+	private Site[] sites;
+
+}

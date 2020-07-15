@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 namespace RetailGInvoices.Data
 {
     public class Invoice { 
+        [Key]
         public int ID { get; set; }
         public string Reference { get; set; }
         [Required]
