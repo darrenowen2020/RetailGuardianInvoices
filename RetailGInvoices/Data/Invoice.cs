@@ -30,6 +30,7 @@ namespace RetailGInvoices.Data
         public int PaymentTypeID { get; set; }
         public DateTime CreatedDate { get; set; }
         public DateTime EditDate { get; set; }
+        public string Notes { get; set; }
 
 
     }

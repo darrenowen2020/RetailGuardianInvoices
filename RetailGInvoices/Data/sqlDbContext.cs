@@ -24,5 +24,6 @@ namespace RetailGInvoices.Data
         public DbSet<RetailGInvoices.Data.InvoiceView> InvoiceView { get; set; }
         public DbSet<RetailGInvoices.Data.InvoiceHeading> InvoiceHeading { get; set; }
         public DbSet<RetailGInvoices.Data.Period> Period { get; set; }
+        public DbSet<RetailGInvoices.Data.ViewInvoiceGroup> viewInvoiceGroup { get; set; }
     }
 }

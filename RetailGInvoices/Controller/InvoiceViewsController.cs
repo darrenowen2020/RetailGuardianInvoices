@@ -40,7 +40,7 @@ namespace RetailGInvoices.Controller
 
             return invoiceView;
         }
-
+        
         // PUT: api/InvoiceViews/5
         // To protect from overposting attacks, enable the specific properties you want to bind to, for
         // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
