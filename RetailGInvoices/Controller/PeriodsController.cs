@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -27,9 +28,14 @@ namespace RetailGInvoices.Controller
             return await _context.Period.ToListAsync();
         }
 
+        [HttpGet("Year/{year}")]
+        public async Task<ActionResult<IEnumerable<Period>>> GetPeriod(int year)
+        {
+            return await _context.Period.FromSqlRaw("select PeriodKey,PeriodNo,YearNo,StartDate,EndDate from Period where YearNo = " + year).ToListAsync();
+        }
         // GET: api/Periods/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Period>> GetPeriod(int id)
+        public async Task<ActionResult<Period>> GetPeriod(string id)
         {
             var period = await _context.Period.FindAsync(id);
 
@@ -45,9 +51,9 @@ namespace RetailGInvoices.Controller
         // To protect from overposting attacks, enable the specific properties you want to bind to, for
         // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutPeriod(int id, Period period)
+        public async Task<IActionResult> PutPeriod(string id, Period period)
         {
-            if (id != period.Id)
+            if (id != period.PeriodKey)
             {
                 return BadRequest();
             }
@@ -80,14 +86,28 @@ namespace RetailGInvoices.Controller
         public async Task<ActionResult<Period>> PostPeriod(Period period)
         {
             _context.Period.Add(period);
-            await _context.SaveChangesAsync();
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException)
+            {
+                if (PeriodExists(period.PeriodKey))
+                {
+                    return Conflict();
+                }
+                else
+                {
+                    throw;
+                }
+            }
 
-            return CreatedAtAction("GetPeriod", new { id = period.Id }, period);
+            return CreatedAtAction("GetPeriod", new { id = period.PeriodKey }, period);
         }
 
         // DELETE: api/Periods/5
         [HttpDelete("{id}")]
-        public async Task<ActionResult<Period>> DeletePeriod(int id)
+        public async Task<ActionResult<Period>> DeletePeriod(string id)
         {
             var period = await _context.Period.FindAsync(id);
             if (period == null)
@@ -101,9 +121,9 @@ namespace RetailGInvoices.Controller
             return period;
         }
 
-        private bool PeriodExists(int id)
+        private bool PeriodExists(string id)
         {
-            return _context.Period.Any(e => e.Id == id);
+            return _context.Period.Any(e => e.PeriodKey == id);
         }
     }
 }

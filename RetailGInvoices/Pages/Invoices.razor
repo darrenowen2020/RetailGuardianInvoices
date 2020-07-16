@@ -191,14 +191,16 @@ else
 
 @code {
 
-	[Parameter]
-	public RenderFragment ChildContent { get; set; }
+		[Parameter]
+		public RenderFragment ChildContent { get; set; }
 	private ITable<InvoiceView> Table;
 	private void ToggleEdit()
 	{
 		Table.ToggleEditMode();
 	}
 	private bool updateFlag = false;
+	private int currentPeriod = 1;
+	private int currentYear = DateTime.Today.Year;
 
 	private int defaultSiteId;
 	private string defaultSiteName;
@@ -214,6 +216,7 @@ else
 	private InvoiceView[] invoiceViews;
 	private InvoiceHeading[] invoiceHeadings;
 	private ViewInvoiceGroup[] viewInvoiceGroups;
+	private Period[] periods;
 
 	Company companyObj = new Company();
 	Invoice invoiceObj = new Invoice();
@@ -474,6 +477,7 @@ else
 		paymentTypes = await Http.GetJsonAsync<PaymentType[]>("api/PaymentTypes");
 		invoiceHeadings = await Http.GetJsonAsync<InvoiceHeading[]>("api/InvoiceHeadings");
 		viewInvoiceGroups = await Http.GetJsonAsync<ViewInvoiceGroup[]>("api/viewInvoiceGroups");
+		periods = await Http.GetJsonAsync<Period[]>("api/Periods/Year/" + currentYear);
 
 		defaultSiteId = sites[0].Id;
 		defaultSiteName = sites[0].SiteName;
@@ -533,6 +537,17 @@ else
 
 	}
 
+	private Period getCurrentPeriod()
+	{
+		Period tmp = new Period();
+		return tmp;
+	}
+
+	private Period getPeriod(DateTime inDateTime)
+	{
+		Period tmp = Array.Find<Period>(periods, f => f.StartDate >= inDateTime && f.EndDate <= inDateTime);
+		return tmp;
+	}
 
 	protected async Task PostInvoice()
 	{

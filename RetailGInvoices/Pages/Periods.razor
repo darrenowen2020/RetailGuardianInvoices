@@ -14,6 +14,7 @@ else
 		<thead>
 			<tr>
 				<th>Period No</th>
+				<th>Year</th>
 				<th>Start Date</th>
 				<th>End Date</th>
 				<th></th>
@@ -23,6 +24,9 @@ else
 		<tr>
 			<td>
 				<input type="number" @bind="periodObj.PeriodNo" />
+			</td>
+			<td>
+				<input type="number" @bind="periodObj.YearNo" />
 			</td>
 			<td>
 				<input type="date" @bind="periodObj.StartDate" />
@@ -41,6 +45,11 @@ else
 
 	<Table TableItem="Period" Items="periods" @ref="Table" PageSize="20" ColumnReorder="true" SelectionType="SelectionType.Single" RowClickAction="RowClick">
 		<Column TableItem="Period" Title="Period No" Field="@(x => x.PeriodNo)" Sortable="true" Width="10%" DefaultSortColumn="true">
+			<EditTemplate>
+				<input type="number" @bind-value="@context.PeriodNo" class="form-control form-control-sm" oninput="" />
+			</EditTemplate>
+		</Column>
+		<Column TableItem="Period" Title="Year" Field="@(x => x.YearNo)" Sortable="true" Width="10%" DefaultSortColumn="true">
 			<EditTemplate>
 				<input type="number" @bind-value="@context.PeriodNo" class="form-control form-control-sm" oninput="" />
 			</EditTemplate>
@@ -122,6 +131,7 @@ else
 
 	private void AddPeriod()
 	{
+		periodObj.PeriodKey =periodObj.PeriodNo.ToString("D2") + periodObj.YearNo.ToString("D2");
 		Task tmp = PostPeriod();
 	}
 
@@ -134,7 +144,7 @@ else
 
 	private async Task UpdatePeriod(Period updatePeriod)
 	{
-		await Http.SendJsonAsync(HttpMethod.Put, "/api/Periods/" + updatePeriod.Id, updatePeriod);
+		//await Http.SendJsonAsync(HttpMethod.Put, "/api/Periods/" + updatePeriod.Id, updatePeriod);
 	}
 
 	private void submitChanges()
@@ -166,7 +176,7 @@ else
 
 	private async Task DeleteRow()
 	{
-		await Http.DeleteAsync("/api/Periods/" + activePeriod.Id);
+		//await Http.DeleteAsync("/api/Periods/" + activePeriod.Id);
 		periods = await Http.GetJsonAsync<Period[]>("/api/Periods");
 		hideButtons = true;
 		this.StateHasChanged();
