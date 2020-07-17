@@ -29,10 +29,9 @@ namespace RetailGInvoices.Controller
         }
         // GET: api/InvoiceViews/Year
         [HttpGet("Year/{year}")]
-        public async Task<ActionResult<IEnumerable<InvoiceView>>> GetInvoiceView(string year)
+        public async Task<ActionResult<IEnumerable<InvoiceView>>> GetInvoiceViewYear(int year)
         {
-            return await _context.InvoiceView.Where(y => y.InvoicePeriod.Substring(3,2) == year).OrderByDescending(x => x.InvoiceEditDate).ToListAsync();
-
+            return await _context.InvoiceView.Where(y => y.PeriodYearNo == year).OrderByDescending(x => x.InvoiceEditDate).ToListAsync();
         }
 
         // GET: api/InvoiceViews/5

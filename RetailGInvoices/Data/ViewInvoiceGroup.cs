@@ -8,10 +8,12 @@ namespace RetailGInvoices.Data
 {
     public class ViewInvoiceGroup
     {
+        public string InvoiceHeading { get; set; }
         [Key]
-        public string InvoiceDescription { get; set; }
+        public int InvoiceHeadingId { get; set; }
         public decimal InvoiceGross { get; set; }
         public decimal InvoiceVAT { get; set; }
         public decimal InvoiceNet { get; set; }
+        public int InvoicePaymentId { get; set; }
     }
 }

@@ -27,9 +27,14 @@ namespace RetailGInvoices.Controller
             return await _context.viewInvoiceGroup.ToListAsync();
         }
 
+        [HttpGet("/PayType/{paytype}")]
+        public async Task<ActionResult<IEnumerable<ViewInvoiceGroup>>> GetviewInvoiceGroup(int paytype)
+        {
+            return await _context.viewInvoiceGroup.Where(f => f.InvoicePaymentId == paytype).ToListAsync();
+        }
         // GET: api/ViewInvoiceGroups/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<ViewInvoiceGroup>> GetViewInvoiceGroup(string id)
+        public async Task<ActionResult<ViewInvoiceGroup>> GetViewInvoiceGroup(int id)
         {
             var viewInvoiceGroup = await _context.viewInvoiceGroup.FindAsync(id);
 
@@ -45,9 +50,9 @@ namespace RetailGInvoices.Controller
         // To protect from overposting attacks, enable the specific properties you want to bind to, for
         // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutViewInvoiceGroup(string id, ViewInvoiceGroup viewInvoiceGroup)
+        public async Task<IActionResult> PutViewInvoiceGroup(int id, ViewInvoiceGroup viewInvoiceGroup)
         {
-            if (id != viewInvoiceGroup.InvoiceDescription)
+            if (id != viewInvoiceGroup.InvoiceHeadingId)
             {
                 return BadRequest();
             }
@@ -80,28 +85,14 @@ namespace RetailGInvoices.Controller
         public async Task<ActionResult<ViewInvoiceGroup>> PostViewInvoiceGroup(ViewInvoiceGroup viewInvoiceGroup)
         {
             _context.viewInvoiceGroup.Add(viewInvoiceGroup);
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateException)
-            {
-                if (ViewInvoiceGroupExists(viewInvoiceGroup.InvoiceDescription))
-                {
-                    return Conflict();
-                }
-                else
-                {
-                    throw;
-                }
-            }
+            await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetViewInvoiceGroup", new { id = viewInvoiceGroup.InvoiceDescription }, viewInvoiceGroup);
+            return CreatedAtAction("GetViewInvoiceGroup", new { id = viewInvoiceGroup.InvoiceHeadingId }, viewInvoiceGroup);
         }
 
         // DELETE: api/ViewInvoiceGroups/5
         [HttpDelete("{id}")]
-        public async Task<ActionResult<ViewInvoiceGroup>> DeleteViewInvoiceGroup(string id)
+        public async Task<ActionResult<ViewInvoiceGroup>> DeleteViewInvoiceGroup(int id)
         {
             var viewInvoiceGroup = await _context.viewInvoiceGroup.FindAsync(id);
             if (viewInvoiceGroup == null)
@@ -115,9 +106,9 @@ namespace RetailGInvoices.Controller
             return viewInvoiceGroup;
         }
 
-        private bool ViewInvoiceGroupExists(string id)
+        private bool ViewInvoiceGroupExists(int id)
         {
-            return _context.viewInvoiceGroup.Any(e => e.InvoiceDescription == id);
+            return _context.viewInvoiceGroup.Any(e => e.InvoiceHeadingId == id);
         }
     }
 }

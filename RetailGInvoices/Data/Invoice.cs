@@ -31,7 +31,7 @@ namespace RetailGInvoices.Data
         public DateTime CreatedDate { get; set; }
         public DateTime EditDate { get; set; }
         public string Notes { get; set; }
-
-
+        public string PeriodNo { get; set; }
+        public int Heading { get; set; }
     }
 }

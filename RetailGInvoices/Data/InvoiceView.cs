@@ -24,5 +24,12 @@ namespace RetailGInvoices.Data
         public DateTime InvoiceCreatedDate { get; set; }
         public DateTime InvoiceEditDate { get; set; }
         public string InvoicePeriod { get; set; }
+        public int PeriodYearNo { get; set; }
+        public string InvoiceHeading { get; set; }
+        public int InvoiceHeadingId { get; set; }
+        public int InvoicePaymentId { get; set; }
+        public int InvoiceSupplierId { get; set; }
+        public int InvoiceSiteId { get; set; }
+        public string InvoiceNotes { get; set; }
     }
 }
