@@ -23,5 +23,6 @@ namespace RetailGInvoices.Data
         public bool InvoicePaid { get; set; }
         public DateTime InvoiceCreatedDate { get; set; }
         public DateTime InvoiceEditDate { get; set; }
+        public string InvoicePeriod { get; set; }
     }
 }

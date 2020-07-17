@@ -4,33 +4,57 @@
 @inject HttpClient Http
 @using Microsoft.Extensions.Logging
 
+
+@if (viewPeriodYears == null)
+{
+	<p>Loading ..</p>
+}
+else
+{
+	<table class="table-borderless" style="width: 200px;">
+		<tr>
+			<td style="width:50px;">
+				<p>Period Year</p>
+			</td>
+			<td style="width:50px;">
+				<select class="form-control" @bind="viewPeriodYearsSelected">
+					<option value=""></option>
+					@foreach (var viewPeriodYear in viewPeriodYears)
+					{
+						<option value="@viewPeriodYear.YearNo">@viewPeriodYear.YearNo</option>
+					}
+
+				</select>
+			</td>
+		</tr>
+	</table>
+
+}
 @if (invoiceViews == null)
 {
 	<p>Loading the stuff..</p>
 }
 else
 {
-	
-
-<Table TableItem="ViewInvoiceGroup" Items="viewInvoiceGroups" PageSize="10" ColumnReorder="true" ShowFooter="true">
-	<Column TableItem="ViewInvoiceGroup" Title="Description" Field="@(x => x.InvoiceDescription)" Sortable="true" Width="10%" SetFooterValue="Totals" />
-	<Column TableItem="ViewInvoiceGroup" Title="Gross" Field="@(x => x.InvoiceGross)" Sortable="true" Width="10%" Aggregate="AggregateType.Sum" Format="C" />
-	<Column TableItem="ViewInvoiceGroup" Title="VAT" Field="@(x => x.InvoiceVAT)" Sortable="true" Width="10%" Aggregate="AggregateType.Sum" Format="C" />
-	<Column TableItem="ViewInvoiceGroup" Title="Total" Field="@(x => x.InvoiceNet)" Sortable="true" Width="10%" Aggregate="AggregateType.Sum" Format="C" />
-	<DetailTemplate TableItem="ViewInvoiceGroup">
-		<Table TableItem="InvoiceView" Items="@getGroup(context.InvoiceDescription)" PageSize="10" ColumnReorder="true" ShowFooter="true">
-			<Column TableItem="InvoiceView" Title="Site" Field="@(x => x.SiteName)" Sortable="true" Width="10%" DefaultSortColumn="true" />
-			<Column TableItem="InvoiceView" Title="Supplier" Field="@(x => x.SupplierName)" Sortable="true" Width="10%" />
-			<Column TableItem="InvoiceView" Title="Reference" Field="@(x => x.InvoiceReference)" Sortable="true" Width="10%" DefaultSortColumn="true" />
-			<Column TableItem="InvoiceView" Title="Description" Field="@(x => x.InvoiceDescription)" Sortable="true" Width="10%" />
-			<Column TableItem="InvoiceView" Title="Payment Type" Field="@(x => x.InvoicePaymentDescription)" Sortable="true" Width="10%" DefaultSortColumn="true" />
-			<Column TableItem="InvoiceView" Title="Gross" Field="@(x => x.InvoiceGross)" Format="C" Sortable="true" Width="10%" DefaultSortColumn="true" />
-			<Column TableItem="InvoiceView" Title="Vat" Field="@(x => x.InvoiceVAT)" Format="C" Sortable="true" Width="10%" DefaultSortColumn="true" />
-			<Column TableItem="InvoiceView" Title="Total" Field="@(x => x.InvoiceNet)" Format="C" Sortable="true" Width="10%" />
-		</Table>
-	</DetailTemplate>
-	<Pager ShowPageNumber="true" ShowTotalCount="true" />
-</Table>
+	<Table TableItem="ViewInvoiceGroup" Items="viewInvoiceGroups" PageSize="10" ColumnReorder="true" ShowFooter="true">
+		<Column TableItem="ViewInvoiceGroup" Title="Description" Field="@(x => x.InvoiceDescription)" Sortable="true" Width="10%" SetFooterValue="Totals" />
+		<Column TableItem="ViewInvoiceGroup" Title="Gross" Field="@(x => x.InvoiceGross)" Sortable="true" Width="10%" Aggregate="AggregateType.Sum" Format="C" />
+		<Column TableItem="ViewInvoiceGroup" Title="VAT" Field="@(x => x.InvoiceVAT)" Sortable="true" Width="10%" Aggregate="AggregateType.Sum" Format="C" />
+		<Column TableItem="ViewInvoiceGroup" Title="Total" Field="@(x => x.InvoiceNet)" Sortable="true" Width="10%" Aggregate="AggregateType.Sum" Format="C" />
+		<DetailTemplate TableItem="ViewInvoiceGroup">
+			<Table TableItem="InvoiceView" Items="@getGroup(context.InvoiceDescription)" PageSize="10" ColumnReorder="true" ShowFooter="true">
+				<Column TableItem="InvoiceView" Title="Site" Field="@(x => x.SiteName)" Sortable="true" Width="10%" DefaultSortColumn="true" />
+				<Column TableItem="InvoiceView" Title="Supplier" Field="@(x => x.SupplierName)" Sortable="true" Width="10%" />
+				<Column TableItem="InvoiceView" Title="Reference" Field="@(x => x.InvoiceReference)" Sortable="true" Width="10%" DefaultSortColumn="true" />
+				<Column TableItem="InvoiceView" Title="Description" Field="@(x => x.InvoiceDescription)" Sortable="true" Width="10%" />
+				<Column TableItem="InvoiceView" Title="Payment Type" Field="@(x => x.InvoicePaymentDescription)" Sortable="true" Width="10%" DefaultSortColumn="true" />
+				<Column TableItem="InvoiceView" Title="Gross" Field="@(x => x.InvoiceGross)" Format="C" Sortable="true" Width="10%" DefaultSortColumn="true" />
+				<Column TableItem="InvoiceView" Title="Vat" Field="@(x => x.InvoiceVAT)" Format="C" Sortable="true" Width="10%" DefaultSortColumn="true" />
+				<Column TableItem="InvoiceView" Title="Total" Field="@(x => x.InvoiceNet)" Format="C" Sortable="true" Width="10%" />
+			</Table>
+		</DetailTemplate>
+		<Pager ShowPageNumber="true" ShowTotalCount="true" />
+	</Table>
 }
 <EditForm Model="@invoiceObj">
 	<table class="table-bordered">
@@ -185,14 +209,14 @@ else
 		<Column TableItem="InvoiceView" Title="Vat" Field="@(x => x.InvoiceVAT)" Format="C" Sortable="true" Width="10%" DefaultSortColumn="true" />
 		<Column TableItem="InvoiceView" Title="Total" Field="@(x => x.InvoiceNet)" Format="C" Sortable="true" Width="10%" />
 	</Table>
-	
-	
+
+
 }
 
 @code {
 
-		[Parameter]
-		public RenderFragment ChildContent { get; set; }
+	[Parameter]
+	public RenderFragment ChildContent { get; set; }
 	private ITable<InvoiceView> Table;
 	private void ToggleEdit()
 	{
@@ -200,7 +224,8 @@ else
 	}
 	private bool updateFlag = false;
 	private int currentPeriod = 1;
-	private int currentYear = DateTime.Today.Year;
+	private string currentPeriodYear = DateTime.Today.ToString("yy");
+	private string today = DateTime.Today.ToString("dd/MM/yyyy");
 
 	private int defaultSiteId;
 	private string defaultSiteName;
@@ -217,6 +242,7 @@ else
 	private InvoiceHeading[] invoiceHeadings;
 	private ViewInvoiceGroup[] viewInvoiceGroups;
 	private Period[] periods;
+	private ViewPeriodYears[] viewPeriodYears;
 
 	Company companyObj = new Company();
 	Invoice invoiceObj = new Invoice();
@@ -225,7 +251,9 @@ else
 	PaymentType paymentTypeObj = new PaymentType();
 	InvoiceView invoiceViewObj = new InvoiceView();
 	InvoiceHeading invoiceHeadingObj = new InvoiceHeading();
+	ViewPeriodYears viewPeriodYearsObj = new ViewPeriodYears();
 
+	private int viewPeriodYearsSelected;
 	private InvoiceView[] getGroup(string groupName)
 	{
 		InvoiceView[] groupInvoices;
@@ -469,6 +497,10 @@ else
 
 	protected override async Task OnInitializedAsync()
 	{
+		viewPeriodYears = await Http.GetJsonAsync<ViewPeriodYears[]>("api/ViewPeriodYears");
+		viewPeriodYearsSelected = viewPeriodYears[0].YearNo;
+
+
 		invoiceViews = await Http.GetJsonAsync<InvoiceView[]>("/api/InvoiceViews/");
 
 		companies = await Http.GetJsonAsync<Company[]>("/api/Companies/");
@@ -477,7 +509,8 @@ else
 		paymentTypes = await Http.GetJsonAsync<PaymentType[]>("api/PaymentTypes");
 		invoiceHeadings = await Http.GetJsonAsync<InvoiceHeading[]>("api/InvoiceHeadings");
 		viewInvoiceGroups = await Http.GetJsonAsync<ViewInvoiceGroup[]>("api/viewInvoiceGroups");
-		periods = await Http.GetJsonAsync<Period[]>("api/Periods/Year/" + currentYear);
+		periods = await Http.GetJsonAsync<Period[]>("api/Periods/Year/" + currentPeriodYear);
+
 
 		defaultSiteId = sites[0].Id;
 		defaultSiteName = sites[0].SiteName;
@@ -496,6 +529,7 @@ else
 		paymentTypeSelected = defaultPaymentTypeId.ToString();
 		invoiceHeadingSelected = invoiceHeadings[0].Id.ToString();
 		invoiceHeadingSelectedName = invoiceHeadings[0].Description;
+		Period tmp = getCurrentPeriod();
 	}
 
 	void AddNewInvoice()
@@ -539,14 +573,13 @@ else
 
 	private Period getCurrentPeriod()
 	{
-		Period tmp = new Period();
-		return tmp;
+		return getPeriod(DateTime.Now);
 	}
 
 	private Period getPeriod(DateTime inDateTime)
 	{
-		Period tmp = Array.Find<Period>(periods, f => f.StartDate >= inDateTime && f.EndDate <= inDateTime);
-		return tmp;
+		Period period = Array.Find<Period>(periods, f => DateTime.Compare(inDateTime, f.StartDate) >= 0 && DateTime.Compare(inDateTime, f.EndDate) <= 0);
+		return period;
 	}
 
 	protected async Task PostInvoice()
