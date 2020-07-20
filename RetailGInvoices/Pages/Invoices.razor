@@ -4,6 +4,7 @@
 @inject HttpClient Http
 @using Microsoft.Extensions.Logging
 
+	<RetailGInvoices.Components.InvoiceNotes @ref="InvoiceNotesModal"></RetailGInvoices.Components.InvoiceNotes>
 
 @if (viewPeriodYears == null)
 {
@@ -79,6 +80,9 @@ else
 		<Pager ShowPageNumber="true" ShowTotalCount="true" />
 	</Table>
 }
+
+<!-- Add a new Invoice -->
+
 <EditForm Model="@invoiceObj">
 	<table class="table-borderless">
 		<tr>
@@ -218,6 +222,9 @@ else
 		</tr>
 		<tr>
 			<td>
+				<button class="btn btn-info" @onclick="@AddInvoiceNotes">Notes</button>
+			</td>
+			<td>
 				<button type="submit" class="btn btn-info" @onclick="@AddNewInvoice">Update</button>
 			</td>
 		</tr>
@@ -229,7 +236,7 @@ else
 }
 else
 {
-	<Table TableItem="InvoiceView" Items="invoiceViews" @ref="Table" PageSize="10" ColumnReorder="true" RowClickAction="EditInvoice">
+	<Table TableItem="InvoiceView" Items="invoiceViews" @ref="Table" PageSize="10" ColumnReorder="true" RowClickAction="EditInvoice" TableRowClass="x => x.RowClass">
 		<Column TableItem="InvoiceView" Title="ID" Field="@(x => x.InvoiceId)" Sortable="true" Width="10%" DefaultSortColumn="true" />
 		<Column TableItem="InvoiceView" Title="Invoice Date" Field="@(x => x.InvoiceDate)" Sortable="true" Width="10%" DefaultSortColumn="true">
 			<Template>
@@ -253,7 +260,7 @@ else
 }
 
 @code {
-
+	private InvoiceNotes InvoiceNotesModal { get; set; }
 	private ITable<InvoiceView> Table;
 	private void ToggleEdit()
 	{
@@ -263,6 +270,7 @@ else
 	private int currentPeriod = 1;
 	private string currentPeriodYear = DateTime.Today.ToString("yy");
 	private string today = DateTime.Today.ToString("dd/MM/yyyy");
+	public string invoiceNotes = "These are the notes";
 
 	private int defaultSiteId;
 	private string defaultSiteName;
@@ -671,6 +679,11 @@ else
 	{
 		viewInvoiceGroups = await Http.GetJsonAsync<ViewInvoiceGroup[]>("/api/ViewInvoiceGroups");
 		this.StateHasChanged();
+	}
+
+	private void AddInvoiceNotes()
+	{
+		InvoiceNotesModal.Open();
 	}
 
 	// Edit Method

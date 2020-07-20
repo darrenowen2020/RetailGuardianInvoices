@@ -439,7 +439,6 @@ C:\Users\darre\source\repos\RetailGInvoices\RetailGInvoices\bin\Debug\netcoreapp
 C:\Users\darre\source\repos\RetailGInvoices\RetailGInvoices\bin\Debug\netcoreapp3.1\Microsoft.AspNetCore.Components.Web.dll
 C:\Users\darre\source\repos\RetailGInvoices\RetailGInvoices\bin\Debug\netcoreapp3.1\Microsoft.AspNetCore.Metadata.dll
 C:\Users\darre\source\repos\RetailGInvoices\RetailGInvoices\bin\Debug\netcoreapp3.1\Microsoft.JSInterop.dll
-C:\Users\darre\source\repos\RetailGInvoices\RetailGInvoices\obj\Debug\netcoreapp3.1\RazorDeclaration\Components\ReconciliationComponent.razor.g.cs
 C:\Users\darre\source\repos\RetailGInvoices\RetailGInvoices\bin\Debug\netcoreapp3.1\BlazorTable.dll
 C:\Users\darre\source\repos\RetailGInvoices\RetailGInvoices\bin\Debug\netcoreapp3.1\LinqKit.Core.dll
 C:\Users\darre\source\repos\RetailGInvoices\RetailGInvoices\obj\Debug\netcoreapp3.1\RazorDeclaration\Pages\Periods.razor.g.cs
@@ -448,7 +447,6 @@ C:\Users\darre\source\repos\RetailGInvoices\RetailGInvoices\obj\Debug\netcoreapp
 C:\Users\darre\source\repos\RetailGInvoices\RetailGInvoices\obj\Debug\netcoreapp3.1\RetailGInvoices.MvcApplicationPartsAssemblyInfo.cache
 C:\Users\darre\source\repos\RetailGInvoices\RetailGInvoices\obj\Debug\netcoreapp3.1\RazorDeclaration\RetailGInvoices.dll
 C:\Users\darre\source\repos\RetailGInvoices\RetailGInvoices\obj\Debug\netcoreapp3.1\Razor\App.razor.g.cs
-C:\Users\darre\source\repos\RetailGInvoices\RetailGInvoices\obj\Debug\netcoreapp3.1\Razor\Components\ReconciliationComponent.razor.g.cs
 C:\Users\darre\source\repos\RetailGInvoices\RetailGInvoices\obj\Debug\netcoreapp3.1\Razor\Pages\Counter.razor.g.cs
 C:\Users\darre\source\repos\RetailGInvoices\RetailGInvoices\obj\Debug\netcoreapp3.1\Razor\Pages\Error.razor.g.cs
 C:\Users\darre\source\repos\RetailGInvoices\RetailGInvoices\obj\Debug\netcoreapp3.1\Razor\Pages\Index.razor.g.cs
@@ -466,3 +464,5 @@ C:\Users\darre\source\repos\RetailGInvoices\RetailGInvoices\obj\Debug\netcoreapp
 C:\Users\darre\source\repos\RetailGInvoices\RetailGInvoices\obj\Debug\netcoreapp3.1\RazorDeclaration\Shared\Confirm.razor.g.cs
 C:\Users\darre\source\repos\RetailGInvoices\RetailGInvoices\obj\Debug\netcoreapp3.1\Razor\Shared\Confirm.razor.g.cs
 C:\Users\darre\source\repos\RetailGInvoices\RetailGInvoices\bin\Debug\netcoreapp3.1\Microsoft.JSInterop.WebAssembly.dll
+C:\Users\darre\source\repos\RetailGInvoices\RetailGInvoices\obj\Debug\netcoreapp3.1\RazorDeclaration\Components\InvoiceNotes.razor.g.cs
+C:\Users\darre\source\repos\RetailGInvoices\RetailGInvoices\obj\Debug\netcoreapp3.1\Razor\Components\InvoiceNotes.razor.g.cs
