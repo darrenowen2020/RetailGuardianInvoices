@@ -26,10 +26,14 @@ else
 				</select>
 			</td>
 			<td>
+
+			</td>
+			<td>
 				<p>Payment Type</p>
 			</td>
 			<td style="width:250px;">
-				<select class="form-control" @bind="viewPeriodYearsSelected">
+				<select class="form-control" @bind="reconPaymentTypeSelected">
+					<option value="ALL">All</option>
 					@foreach (var paymentType in paymentTypes)
 					{
 						@if (paymentType.Type == "DD")
@@ -50,25 +54,26 @@ else
 }
 @if (invoiceViews == null)
 {
-	<p>Loading ..</p>
+	<p>Loading Reconciliation Data..</p>
 }
 else
 {
+	<h1>Reconciliation Table</h1>
 	<Table TableItem="ViewInvoiceGroup" Items="viewInvoiceGroups" PageSize="10" ColumnReorder="true">
-		<Column TableItem="ViewInvoiceGroup" Title="Heading" Field="@(x => x.InvoiceHeading)" Sortable="true" Width="10%" />
-		<Column TableItem="ViewInvoiceGroup" Title="Gross" Field="@(x => x.InvoiceGross)" Sortable="true" Width="10%" Format="C" />
-		<Column TableItem="ViewInvoiceGroup" Title="VAT" Field="@(x => x.InvoiceVAT)" Sortable="true" Width="10%" Aggregate="AggregateType.Sum" Format="C" />
-		<Column TableItem="ViewInvoiceGroup" Title="Total" Field="@(x => x.InvoiceNet)" Sortable="true" Width="10%" Aggregate="AggregateType.Sum" Format="C" />
+		<Column TableItem="ViewInvoiceGroup" Title="Heading " Field="@(x => x.InvoiceHeading)" Sortable="true" Width="10%" />
+		<Column TableItem="ViewInvoiceGroup" Title="Gross" Field="@(x => x.InvoiceGross)" Sortable="true" Width="10%" Format="C"  Align="Align.Right"/>
+		<Column TableItem="ViewInvoiceGroup" Title="VAT" Field="@(x => x.InvoiceVAT)" Sortable="true" Width="10%" Aggregate="AggregateType.Sum" Format="C"  Align="Align.Right"/>
+		<Column TableItem="ViewInvoiceGroup" Title="Total" Field="@(x => x.InvoiceNet)" Sortable="true" Width="10%" Aggregate="AggregateType.Sum" Format="C"  Align="Align.Right"/>
 		<DetailTemplate TableItem="ViewInvoiceGroup">
-			<Table TableItem="InvoiceView" Items="@getHeading(context.InvoiceHeadingId)" PageSize="10" ColumnReorder="true" ShowFooter="true">
+			<Table TableItem="InvoiceView" Items="@getHeading(context.InvoiceHeadingId, context.InvoicePaymentId)" PageSize="10" ColumnReorder="true" ShowFooter="true">
 				<Column TableItem="InvoiceView" Title="Site" Field="@(x => x.SiteName)" Width="10%" DefaultSortColumn="true" SetFooterValue="Totals" />
 				<Column TableItem="InvoiceView" Title="Supplier" Field="@(x => x.SupplierName)" Width="10%" />
 				<Column TableItem="InvoiceView" Title="Reference" Field="@(x => x.InvoiceReference)" Width="10%" DefaultSortColumn="true" />
 				<Column TableItem="InvoiceView" Title="Description" Field="@(x => x.InvoiceDescription)" Width="10%" />
-				<Column TableItem="InvoiceView" Title="Payment Type" Field="@(x => x.InvoicePaymentDescription)" Width="10%" DefaultSortColumn="true" />
-				<Column TableItem="InvoiceView" Title="Gross" Field="@(x => x.InvoiceGross)" Format="C" Width="10%" DefaultSortColumn="true" Aggregate="AggregateType.Sum" />
-				<Column TableItem="InvoiceView" Title="Vat" Field="@(x => x.InvoiceVAT)" Format="C" Width="10%" DefaultSortColumn="true" Aggregate="AggregateType.Sum" />
-				<Column TableItem="InvoiceView" Title="Total" Field="@(x => x.InvoiceNet)" Format="C" Width="10%" Aggregate="AggregateType.Sum" />
+				<Column TableItem="InvoiceView" Title="Payment Type" Field="@(x => x.InvoicePaymentDescription)" Width="10%" DefaultSortColumn="true"/>
+				<Column TableItem="InvoiceView" Title="Gross" Field="@(x => x.InvoiceGross)" Format="C" Width="10%" DefaultSortColumn="true" Aggregate="AggregateType.Sum" Align="Align.Right" />
+				<Column TableItem="InvoiceView" Title="Vat" Field="@(x => x.InvoiceVAT)" Format="C" Width="10%" DefaultSortColumn="true" Aggregate="AggregateType.Sum" Align="Align.Right" />
+				<Column TableItem="InvoiceView" Title="Total" Field="@(x => x.InvoiceNet)" Format="C" Width="10%" Aggregate="AggregateType.Sum" Align="Align.Right" />
 			</Table>
 		</DetailTemplate>
 		<Pager ShowPageNumber="true" ShowTotalCount="true" />
@@ -125,16 +130,23 @@ else
 				<input type="text" class="form-control" @bind="invoiceObj.Description" />
 			</td>
 			<td>
-				<input type="text" class="form-control" @bind="invoiceHeadingSelectedName" style="width: 300px" />
+				<input type="text" class="form-control" @bind="invoiceHeadingSelectedName" style="width: 150px" />
 			</td>
-			<td>
+			<td style="width: 50px">
 				@if (paymentTypes != null)
 				{
 					<select class="form-control" @bind="paymentTypeSelected">
 						<option value=""></option>
 						@foreach (var paymentType in paymentTypes)
 						{
-							<option value="@paymentType.Id">@paymentType.Description</option>
+							@if (paymentType.Type == "DD")
+							{
+								<option selected="selected" value="@paymentType.Id">@paymentType.Description</option>
+							}
+							else
+							{
+								<option value="@paymentType.Id">@paymentType.Description</option>
+							}
 						}
 
 					</select>
@@ -154,7 +166,7 @@ else
 			<td>
 			</td>
 
-			<td style="width:250px">
+			<td style="width:200px">
 				@if (sites != null)
 				{
 					<select class="form-control" @bind="siteSelected">
@@ -231,9 +243,9 @@ else
 		<Column TableItem="InvoiceView" Title="Description" Field="@(x => x.InvoiceDescription)" Sortable="true" Width="10%" />
 		<Column TableItem="InvoiceView" Title="Heading" Field="@(x => x.InvoiceHeading)" Sortable="true" Width="10%" />
 		<Column TableItem="InvoiceView" Title="Payment Type" Field="@(x => x.InvoicePaymentDescription)" Sortable="true" Width="10%" DefaultSortColumn="true" />
-		<Column TableItem="InvoiceView" Title="Gross" Field="@(x => x.InvoiceGross)" Format="C" Sortable="true" Width="10%" DefaultSortColumn="true" />
-		<Column TableItem="InvoiceView" Title="Vat" Field="@(x => x.InvoiceVAT)" Format="C" Sortable="true" Width="10%" DefaultSortColumn="true" />
-		<Column TableItem="InvoiceView" Title="Total" Field="@(x => x.InvoiceNet)" Format="C" Sortable="true" Width="10%" />
+		<Column TableItem="InvoiceView" Title="Gross" Field="@(x => x.InvoiceGross)" Format="C" Sortable="true" Width="10%" DefaultSortColumn="true"  Align="Align.Right"/>
+		<Column TableItem="InvoiceView" Title="Vat" Field="@(x => x.InvoiceVAT)" Format="C" Sortable="true" Width="10%" DefaultSortColumn="true"  Align="Align.Right"/>
+		<Column TableItem="InvoiceView" Title="Total" Field="@(x => x.InvoiceNet)" Format="C" Sortable="true" Width="10%"  Align="Align.Right"/>
 	</Table>
 
 
@@ -241,8 +253,6 @@ else
 
 @code {
 
-	[Parameter]
-	public RenderFragment ChildContent { get; set; }
 	private ITable<InvoiceView> Table;
 	private void ToggleEdit()
 	{
@@ -281,10 +291,10 @@ else
 	ViewPeriodYears viewPeriodYearsObj = new ViewPeriodYears();
 
 	private int viewPeriodYearsSelected;
-	private InvoiceView[] getHeading(int headingId)
+	private InvoiceView[] getHeading(int headingId, int paymentType)
 	{
 		InvoiceView[] groupInvoices;
-		groupInvoices = Array.FindAll(invoiceViews, f => f.InvoiceHeadingId == headingId);
+		groupInvoices = Array.FindAll(invoiceViews, f => (f.InvoiceHeadingId == headingId) && (f.InvoicePaymentId == paymentType));
 
 		return groupInvoices;
 
@@ -346,6 +356,29 @@ else
 
 	private string siteSelectedName;
 	private string paymentTypeSelected;
+
+	private string _reconPaymentTypeSelected;
+	private string reconPaymentTypeSelected
+	{
+		get
+		{
+			return _reconPaymentTypeSelected;
+		}
+
+		set
+		{
+			_reconPaymentTypeSelected = value;
+			if (value == "ALL")
+			{
+				Task tmp = GetAllViewGroups();
+			}
+			else
+			{
+				Task tmp = GetViewGroup(int.Parse(value));
+			}
+		}
+	}
+
 	private string paymentTypeSelectedName;
 
 	private string _supplierSelectedName;
@@ -380,8 +413,6 @@ else
 
 		this.StateHasChanged();
 	}
-
-
 
 	public string _siteSelected;
 
@@ -528,23 +559,23 @@ else
 		viewPeriodYears = await Http.GetJsonAsync<ViewPeriodYears[]>("api/ViewPeriodYears");
 		viewPeriodYearsSelected = int.Parse(currentPeriodYear);
 
-
 		invoiceViews = await Http.GetJsonAsync<InvoiceView[]>("/api/InvoiceViews/Year/" + viewPeriodYearsSelected);
 
 		companies = await Http.GetJsonAsync<Company[]>("/api/Companies/");
 		sites = await Http.GetJsonAsync<Site[]>("api/Sites");
 		suppliers = await Http.GetJsonAsync<Supplier[]>("api/Suppliers");
-		paymentTypes = await Http.GetJsonAsync<PaymentType[]>("api/PaymentTypes");
 		invoiceHeadings = await Http.GetJsonAsync<InvoiceHeading[]>("api/InvoiceHeadings");
-		viewInvoiceGroups = await Http.GetJsonAsync<ViewInvoiceGroup[]>("api/viewInvoiceGroups");
 		periods = await Http.GetJsonAsync<Period[]>("api/Periods/Year/" + currentPeriodYear);
 
+		paymentTypes = await Http.GetJsonAsync<PaymentType[]>("api/PaymentTypes");
+		defaultPaymentTypeId = Array.Find(paymentTypes, f => f.Type == "DD").Id;
+		await GetViewGroup(defaultPaymentTypeId);
 
 		defaultSiteId = sites[0].Id;
 		defaultSiteName = sites[0].SiteName;
 		defaultSupplierId = suppliers[0].Id;
 		defaultSupplierName = suppliers[0].Name;
-		defaultPaymentTypeId = paymentTypes[0].Id;
+
 		defaultPaymentTypeName = paymentTypes[0].Description;
 
 
@@ -629,6 +660,18 @@ else
 
 	}
 
+	private async Task GetViewGroup(int paymentType)
+	{
+		viewInvoiceGroups = await Http.GetJsonAsync<ViewInvoiceGroup[]>("/api/ViewInvoiceGroups/PayType/" + paymentType);
+		this.StateHasChanged();
+	}
+
+	private async Task GetAllViewGroups()
+	{
+		viewInvoiceGroups = await Http.GetJsonAsync<ViewInvoiceGroup[]>("/api/ViewInvoiceGroups");
+		this.StateHasChanged();
+	}
+
 	// Edit Method
 	private void EditInvoice(InvoiceView invoiceView)
 	{
@@ -658,8 +701,6 @@ else
 		this.StateHasChanged();
 	}
 
-
-
 	// Delete Method
 	protected async Task DeleteInvoice(int InvoiceID)
 	{
@@ -668,8 +709,5 @@ else
 
 		invoiceViews = await Http.GetJsonAsync<InvoiceView[]>("/api/InvoiceViews");
 	}
-	private void EditNotes(int Id)
-	{
 
-	}
 }

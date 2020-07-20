@@ -24,10 +24,10 @@ namespace RetailGInvoices.Controller
         [HttpGet]
         public async Task<ActionResult<IEnumerable<ViewInvoiceGroup>>> GetviewInvoiceGroup()
         {
-            return await _context.viewInvoiceGroup.ToListAsync();
+            return await _context.viewInvoiceGroup.OrderBy(x => x.InvoiceHeadingId).ToListAsync();
         }
-
-        [HttpGet("/PayType/{paytype}")]
+        
+        [HttpGet("PayType/{paytype}")]
         public async Task<ActionResult<IEnumerable<ViewInvoiceGroup>>> GetviewInvoiceGroup(int paytype)
         {
             return await _context.viewInvoiceGroup.Where(f => f.InvoicePaymentId == paytype).ToListAsync();
