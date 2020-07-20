@@ -3,53 +3,59 @@
 @using System.Net.Http
 @inject HttpClient Http
 
-	<EditForm Model="@siteObj">
-		<table class="table-borderless" contenteditable="@addTableActive">
-			<thead>
-				<tr>
-					<th>Site Name</th>
-					<th>Postcode</th>
-					<th>VAT No</th>
-					<th></th>
-				</tr>
-			</thead>
-
+<EditForm Model="@siteObj">
+	<table class="table-borderless" contenteditable="@addTableActive">
+		<thead>
 			<tr>
-				<td>
-					<input type="text" @bind="siteObj.SiteName" />
-				</td>
-				<td>
-					<input type="text" @bind="siteObj.Postcode" />
-				</td>
-				<td>
-					<input type="text" @bind="siteObj.VATCode" />
-				</td>
-				<td>
-					<button class="btn btn-info" title="Add" @onclick="@((x) => AddSite())" disabled="@(!addTableActive)">Add</button>
-				</td>
+				<th>Site Name</th>
+				<th>Postcode</th>
+				<th>VAT No</th>
+				<th></th>
 			</tr>
-		</table>
-	</EditForm>
+		</thead>
+
+		<tr>
+			<td>
+				<input type="text" @bind="siteObj.SiteName" />
+			</td>
+			<td>
+				<input type="text" @bind="siteObj.Postcode" />
+			</td>
+			<td>
+				<input type="text" @bind="siteObj.VATCode" />
+			</td>
+			<td>
+				<button class="btn btn-info" title="Add" @onclick="@((x) => AddSite())" disabled="@(!addTableActive)">Add</button>
+			</td>
+		</tr>
+	</table>
+</EditForm>
 <button class="btn btn-sm btn-danger" title="Toggle Edit Mode" @onclick="@((x) => ToggleEdit())">Toggle Edit Mode</button>
 
-<Table TableItem="Site" Items="sites" @ref="Table" PageSize="20" ColumnReorder="true" SelectionType="SelectionType.Single" RowClickAction="RowClick">
-	<Column TableItem="Site" Title="Site Name" Field="@(x => x.SiteName)" Sortable="true" Width="30%" DefaultSortColumn="true">
-		<EditTemplate>
-			<input type="text" @bind-value="@context.SiteName" class="form-control form-control-sm" />
-		</EditTemplate>
-	</Column>
-	<Column TableItem="Site" Title="Postcode" Field="@(x => x.Postcode)" Sortable="true" Width="10%" DefaultSortColumn="true">
-		<EditTemplate>
-			<input type="text" @bind-value="@context.Postcode" class="form-control form-control-sm" />
-		</EditTemplate>
-	</Column>
-	<Column TableItem="Site" Title="VAT No" Field="@(x => x.VATCode)" Sortable="true" Width="10%" DefaultSortColumn="true">
-		<EditTemplate>
-			<input type="text" @bind-value="@context.VATCode" class="form-control form-control-sm" />
-		</EditTemplate>
-	</Column>
-</Table>
-
+@if (sites == null)
+{
+	<p>Loading Sites ....</p>
+}
+else
+{
+	<Table TableItem="Site" Items="sites" @ref="Table" PageSize="20" ColumnReorder="true" SelectionType="SelectionType.Single" RowClickAction="RowClick">
+		<Column TableItem="Site" Title="Site Name" Field="@(x => x.SiteName)" Sortable="true" Width="30%" DefaultSortColumn="true">
+			<EditTemplate>
+				<input type="text" @bind-value="@context.SiteName" class="form-control form-control-sm" />
+			</EditTemplate>
+		</Column>
+		<Column TableItem="Site" Title="Postcode" Field="@(x => x.Postcode)" Sortable="false" Width="10%" DefaultSortColumn="true">
+			<EditTemplate>
+				<input type="text" @bind-value="@context.Postcode" class="form-control form-control-sm" />
+			</EditTemplate>
+		</Column>
+		<Column TableItem="Site" Title="VAT No" Field="@(x => x.VATCode)" Sortable="false" Width="10%" DefaultSortColumn="true">
+			<EditTemplate>
+				<input type="text" @bind-value="@context.VATCode" class="form-control form-control-sm" />
+			</EditTemplate>
+		</Column>
+	</Table>
+}
 <table hidden="@hideButtons" class="table-borderless">
 	<tr>
 		<td>
@@ -109,7 +115,7 @@
 		{
 			tmp = UpdateSite(site);
 		}
-	
+
 		ToggleEdit();
 	}
 

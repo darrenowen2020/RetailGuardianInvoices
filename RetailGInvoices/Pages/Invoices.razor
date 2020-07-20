@@ -123,7 +123,7 @@ else
 			<td>
 				<input type="text" class="form-control" @bind="supplierSelectedName" />
 			</td>
-			<td>
+			<td style="width: 100px">
 				<input type="text" class="form-control" @bind="invoiceObj.InvoiceReference" />
 			</td>
 			<td>
@@ -132,7 +132,7 @@ else
 			<td>
 				<input type="text" class="form-control" @bind="invoiceHeadingSelectedName" style="width: 150px" />
 			</td>
-			<td style="width: 50px">
+			<td style="width: 100px">
 				@if (paymentTypes != null)
 				{
 					<select class="form-control" @bind="paymentTypeSelected">
@@ -141,11 +141,11 @@ else
 						{
 							@if (paymentType.Type == "DD")
 							{
-								<option selected="selected" value="@paymentType.Id">@paymentType.Description</option>
+								<option selected="selected" value="@paymentType.Id">@paymentType.Type</option>
 							}
 							else
 							{
-								<option value="@paymentType.Id">@paymentType.Description</option>
+								<option value="@paymentType.Id">@paymentType.Type</option>
 							}
 						}
 
@@ -246,6 +246,7 @@ else
 		<Column TableItem="InvoiceView" Title="Gross" Field="@(x => x.InvoiceGross)" Format="C" Sortable="true" Width="10%" DefaultSortColumn="true"  Align="Align.Right"/>
 		<Column TableItem="InvoiceView" Title="Vat" Field="@(x => x.InvoiceVAT)" Format="C" Sortable="true" Width="10%" DefaultSortColumn="true"  Align="Align.Right"/>
 		<Column TableItem="InvoiceView" Title="Total" Field="@(x => x.InvoiceNet)" Format="C" Sortable="true" Width="10%"  Align="Align.Right"/>
+		<Pager ShowPageNumber="true" ShowTotalCount="true" />
 	</Table>
 
 
