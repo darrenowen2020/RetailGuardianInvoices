@@ -1,5 +1,7 @@
 ﻿@inherits RetailGInvoices.Pages.Invoices
 
+@if (showModal)
+{
 <div class="modal @ModalClass" tabindex="-1" role="dialog" style="display:@ModalDisplay">
 	<div class="modal-dialog" role="document">
 		<div class="modal-content">
@@ -10,15 +12,16 @@
 				</button>
 			</div>
 			<div class="modal-body">
-				<textarea class="form-control" @bind="invoiceNotes" />
+				<textarea class="form-control" @bind="notes" />
 			</div>
 			<div class="modal-footer">
-				<button type="button" class="btn btn-primary">Save changes</button>
+				<button type="button" class="btn btn-primary" @onclick="() => SaveChanges()">Save changes</button>
 				<button type="button" class="btn btn-secondary" data-dismiss="modal" @onclick="() => Close()">Close</button>
 			</div>
 		</div>
 	</div>
 </div>
+}
 
 
 @if (ShowBackdrop)
@@ -28,25 +31,61 @@
 
 
 @code {
+	private string _notes;
+
+	[Parameter]
+	public string notes
+	{
+		get => _notes;
+
+		set
+		{
+			if (_notes == value) return;
+			_notes = value;
+			NotesChanged.InvokeAsync(value);
+		}
+	}
+
+	[Parameter]
+	public EventCallback<string> NotesChanged { get; set; }
+
+	private bool _showModal;
+	[Parameter]
+	public bool showModal {
+		get
+		{
+			return _showModal;
+		}
+		set
+		{
+			_showModal = value;
+			if (value)
+			{
+				ModalDisplay = "block;";
+				ModalClass = "Show";
+				ShowBackdrop = true;
+			}
+			else
+			{
+				ModalDisplay = "none";
+				ModalClass = "";
+				ShowBackdrop = false;
+			}
+		}
+	}
 
 	public Guid Guid = Guid.NewGuid();
 	public string ModalDisplay = "none;";
 	public string ModalClass = "";
 	public bool ShowBackdrop = false;
 
-	public void Open()
-	{
-		ModalDisplay = "block;";
-		ModalClass = "Show";
-		ShowBackdrop = true;
-		StateHasChanged();
-	}
-
 	public void Close()
 	{
-		ModalDisplay = "none";
-		ModalClass = "";
-		ShowBackdrop = false;
-		StateHasChanged();
+		showModal = false;
+	}
+
+	public void SaveChanges()
+	{
+		showModal = false;
 	}
 }

@@ -31,6 +31,6 @@ namespace RetailGInvoices.Data
         public int InvoiceSupplierId { get; set; }
         public int InvoiceSiteId { get; set; }
         public string InvoiceNotes { get; set; }
-        public string RowClass => (InvoiceNotes == null) ? null: "table-danger";
+        public string RowClass => (InvoiceNotes == null) ? null: "table-info";
     }
 }
