@@ -7,7 +7,7 @@
 
 @if (showNotes)
 {
-	<InvoiceNotes showModal="true" @bind-notes="@invoiceNotes" />
+	<InvoiceNotes showModal="@showNotes" @bind-notes="@invoiceNotes" />
 }
 @if (viewPeriodYears == null)
 {
@@ -142,7 +142,6 @@ else
 				@if (paymentTypes != null)
 				{
 					<select class="form-control" @bind="paymentTypeSelected">
-						<option value=""></option>
 						@foreach (var paymentType in paymentTypes)
 						{
 							@if (paymentType.Type == "DD")
@@ -176,7 +175,6 @@ else
 				@if (sites != null)
 				{
 					<select class="form-control" @bind="siteSelected">
-						<option value=""></option>
 						@foreach (var site in sites)
 						{
 							<option value="@site.Id">@site.SiteName</option>
@@ -274,7 +272,18 @@ else
 	private string currentPeriodYear = DateTime.Today.ToString("yy");
 	private string today = DateTime.Today.ToString("dd/MM/yyyy");
 
-	public string invoiceNotes { get; set; }
+	private string _invoiceNotes;
+	public string invoiceNotes {
+		get
+		{
+			return _invoiceNotes;
+				}
+		set
+		{
+			_invoiceNotes = value;
+			showNotes = false;
+		}
+	}
 
 	private int defaultSiteId;
 	private string defaultSiteName;
