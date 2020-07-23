@@ -466,3 +466,7 @@ C:\Users\darre\source\repos\RetailGInvoices\RetailGInvoices\obj\Debug\netcoreapp
 C:\Users\darre\source\repos\RetailGInvoices\RetailGInvoices\bin\Debug\netcoreapp3.1\Microsoft.JSInterop.WebAssembly.dll
 C:\Users\darre\source\repos\RetailGInvoices\RetailGInvoices\obj\Debug\netcoreapp3.1\RazorDeclaration\Components\InvoiceNotes.razor.g.cs
 C:\Users\darre\source\repos\RetailGInvoices\RetailGInvoices\obj\Debug\netcoreapp3.1\Razor\Components\InvoiceNotes.razor.g.cs
+C:\Users\darre\source\repos\RetailGInvoices\RetailGInvoices\obj\Debug\netcoreapp3.1\RazorDeclaration\Pages\PaymentTypes.razor.g.cs
+C:\Users\darre\source\repos\RetailGInvoices\RetailGInvoices\obj\Debug\netcoreapp3.1\Razor\Pages\PaymentTypes.razor.g.cs
+C:\Users\darre\source\repos\RetailGInvoices\RetailGInvoices\obj\Debug\netcoreapp3.1\RazorDeclaration\Components\AreYouSure.razor.g.cs
+C:\Users\darre\source\repos\RetailGInvoices\RetailGInvoices\obj\Debug\netcoreapp3.1\Razor\Components\AreYouSure.razor.g.cs
