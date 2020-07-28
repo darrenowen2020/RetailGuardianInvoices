@@ -14,5 +14,6 @@ namespace RetailGInvoices.Data
         public string Description { get; set; }
         public string CardIssuer { get; set; }
         public string CardNumber { get; set; }
+        public bool ReconcileFlag { get; set; }
     }
 }

@@ -21,5 +21,7 @@ namespace RetailGInvoices.Data
         public int YearNo { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
+        public Nullable<bool> PeriodClosed { get; set; }
+        public Nullable<DateTime> DatePeriodClosed { get; set; }
     }
 }

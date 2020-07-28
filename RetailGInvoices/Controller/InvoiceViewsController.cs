@@ -34,6 +34,13 @@ namespace RetailGInvoices.Controller
             return await _context.InvoiceView.Where(y => y.PeriodYearNo == year).OrderByDescending(x => x.InvoiceEditDate).ToListAsync();
         }
 
+        // GET: api/InvoiceViews/Paid
+        [HttpGet("Paid/{paid}")]
+        public async Task<ActionResult<IEnumerable<InvoiceView>>> GetInvoiceViewPaid(bool paid)
+        {
+            return await _context.InvoiceView.Where(y => y.InvoicePaid == paid && y.InvoicePaymentReconcile == true).ToListAsync();
+        }
+
         // GET: api/InvoiceViews/5
         [HttpGet("{id}")]
         public async Task<ActionResult<InvoiceView>> GetInvoiceView(int id)

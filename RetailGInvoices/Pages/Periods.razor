@@ -70,6 +70,22 @@ else
 				<input type="date" @bind-value="@context.EndDate" class="form-control form-control-sm" />
 			</EditTemplate>
 		</Column>
+		<Column TableItem="Period" Title="Closed" Field="@(x => x.PeriodClosed)" Sortable="true" Width="10%">
+			<Template>
+				<input type="checkbox" @bind-value="@(context.PeriodClosed)" checked="@(context.PeriodClosed)" disabled/>
+			</Template>
+			<EditTemplate>
+				<input type="checkbox" @bind-value="@(context.PeriodClosed)" checked="@(context.PeriodClosed)" />
+			</EditTemplate>
+		</Column>
+		<Column TableItem="Period" Title="Date Closed" Field="@(x => x.DatePeriodClosed)" Sortable="true" Width="10%">
+			<Template>
+				@(context.DatePeriodClosed.HasValue? context.DatePeriodClosed.ToString():"")
+			</Template>
+			<EditTemplate>
+				<input type="date" @bind-value="@context.DatePeriodClosed" class="form-control form-control-sm" />
+			</EditTemplate>
+		</Column>
 		<EmptyDataTemplate>
 			<div class="text-center">
 				No rows found!
@@ -121,6 +137,7 @@ else
 		else
 		{
 			addTableActive = false;
+			hideButtons = false;
 		}
 	}
 
@@ -144,7 +161,8 @@ else
 
 	private async Task UpdatePeriod(Period updatePeriod)
 	{
-		//await Http.SendJsonAsync(HttpMethod.Put, "/api/Periods/" + updatePeriod.Id, updatePeriod);
+		await Http.SendJsonAsync(HttpMethod.Put, "/api/Periods/" + updatePeriod.PeriodKey, updatePeriod);
+		ToggleEdit();
 	}
 
 	private void submitChanges()
@@ -176,7 +194,7 @@ else
 
 	private async Task DeleteRow()
 	{
-		//await Http.DeleteAsync("/api/Periods/" + activePeriod.Id);
+		await Http.DeleteAsync("/api/Periods/" + activePeriod.PeriodKey);
 		periods = await Http.GetJsonAsync<Period[]>("/api/Periods");
 		hideButtons = true;
 		this.StateHasChanged();

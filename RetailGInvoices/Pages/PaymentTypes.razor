@@ -7,7 +7,6 @@
 {
 	<AreYouSure showModal="true" @bind-reply="@areYouSure" />
 }
-<button class="btn-block" @onclick="x => showModalScreen()">Test</button>
 <EditForm Model="@newPaymentTypeObj">
 	<table class="table-borderless">
 		<thead>
@@ -23,6 +22,9 @@
 				</td>
 				<td>
 					Card Number
+				</td>
+				<td>
+					Reconcile
 				</td>
 				<td>
 				</td>
@@ -41,6 +43,9 @@
 				</td>
 				<td>
 					<input @bind="newPaymentTypeObj.CardNumber" />
+				</td>
+				<td>
+					<input type="checkbox" @bind="newPaymentTypeObj.ReconcileFlag" />
 				</td>
 				<td>
 					<button type="submit" class="btn btn-info" @onclick="x => addNewPaymentType()">Add</button>
@@ -75,6 +80,14 @@ else
 		<Column TableItem="PaymentType" Title="Card Number" Field="@(x => x.CardNumber)" Width="10%">
 			<EditTemplate>
 				<input type="text" @bind-value="@context.CardNumber" class="form-control form-control-sm" />
+			</EditTemplate>
+		</Column>
+		<Column TableItem="PaymentType" Title="Reconcile" Field="@(x => x.ReconcileFlag)" Width="10%">
+			<Template>
+				<input type="checkbox" @bind-value="@context.ReconcileFlag" checked="@context.ReconcileFlag" disabled />
+			</Template>
+			<EditTemplate>
+				<input type="checkbox" @bind-value="@context.ReconcileFlag" checked="@context.ReconcileFlag" class="form-control form-control-sm" />
 			</EditTemplate>
 		</Column>
 	</Table>
@@ -116,7 +129,7 @@ else
 			{
 				if (value == "YES")
 				{
-					DeleteRecord(paymentTypeObj.Id);
+					Task tmp = DeleteRecord(paymentTypeObj.Id);
 				}
 				showAreYouSure = false;
 			}
@@ -159,6 +172,7 @@ else
 	{
 		Task tmp = PutChanges(paymentTypeObj);
 		paymentTypeObj = new PaymentType();
+		ToggleEdit();
 	}
 
 	private void deletePaymentType()

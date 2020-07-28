@@ -470,3 +470,5 @@ C:\Users\darre\source\repos\RetailGInvoices\RetailGInvoices\obj\Debug\netcoreapp
 C:\Users\darre\source\repos\RetailGInvoices\RetailGInvoices\obj\Debug\netcoreapp3.1\Razor\Pages\PaymentTypes.razor.g.cs
 C:\Users\darre\source\repos\RetailGInvoices\RetailGInvoices\obj\Debug\netcoreapp3.1\RazorDeclaration\Components\AreYouSure.razor.g.cs
 C:\Users\darre\source\repos\RetailGInvoices\RetailGInvoices\obj\Debug\netcoreapp3.1\Razor\Components\AreYouSure.razor.g.cs
+C:\Users\darre\source\repos\RetailGInvoices\RetailGInvoices\obj\Debug\netcoreapp3.1\RazorDeclaration\Pages\Reconciliation.razor.g.cs
+C:\Users\darre\source\repos\RetailGInvoices\RetailGInvoices\obj\Debug\netcoreapp3.1\Razor\Pages\Reconciliation.razor.g.cs
