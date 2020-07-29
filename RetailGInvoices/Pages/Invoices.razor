@@ -79,7 +79,7 @@ else
 				<Column TableItem="InvoiceView" Title="Total" Field="@(x => x.InvoiceNet)" Format="C" Width="10%" Aggregate="AggregateType.Sum" Align="Align.Right" />
 			</Table>
 		</DetailTemplate>
-		<Pager ShowPageNumber="true" ShowTotalCount="true" />
+		<Pager ShowPageNumber="true" ShowTotalCount="true" ShowPageSizes="true"/>
 	</Table>
 }
 
@@ -247,7 +247,7 @@ else
 		<Column TableItem="InvoiceView" Title="Gross" Field="@(x => x.InvoiceGross)" Format="C" Sortable="true" Width="10%" DefaultSortColumn="true" Align="Align.Right" />
 		<Column TableItem="InvoiceView" Title="Vat" Field="@(x => x.InvoiceVAT)" Format="C" Sortable="true" Width="10%" DefaultSortColumn="true" Align="Align.Right" />
 		<Column TableItem="InvoiceView" Title="Total" Field="@(x => x.InvoiceNet)" Format="C" Sortable="true" Width="10%" Align="Align.Right" />
-		<Pager ShowPageNumber="true" ShowTotalCount="true" />
+		<Pager ShowPageNumber="true" ShowTotalCount="true" ShowPageSizes="true"/>
 	</Table>
 
 
@@ -255,7 +255,6 @@ else
 
 @code {
 	private bool showNotes = false;
-	//private InvoiceNotes InvoiceNotesModal { get; set; }
 	private ITable<InvoiceView> Table;
 	private void ToggleEdit()
 	{

@@ -75,7 +75,7 @@ else
 				<input type="checkbox" @bind-value="@(context.PeriodClosed)" checked="@(context.PeriodClosed)" disabled/>
 			</Template>
 			<EditTemplate>
-				<input type="checkbox" @bind-value="@(context.PeriodClosed)" checked="@(context.PeriodClosed)" />
+				<input type="checkbox" @bind-value="@(context.PeriodClosed)" @onclick="c => togglePeriodClosed(context)" checked="@(context.PeriodClosed)" />
 			</EditTemplate>
 		</Column>
 		<Column TableItem="Period" Title="Date Closed" Field="@(x => x.DatePeriodClosed)" Sortable="true" Width="10%">
@@ -162,7 +162,6 @@ else
 	private async Task UpdatePeriod(Period updatePeriod)
 	{
 		await Http.SendJsonAsync(HttpMethod.Put, "/api/Periods/" + updatePeriod.PeriodKey, updatePeriod);
-		ToggleEdit();
 	}
 
 	private void submitChanges()
@@ -172,6 +171,8 @@ else
 			Task tmpTask = UpdatePeriod(period);
 
 		}
+		StateHasChanged();
+		ToggleEdit();
 	}
 
 	private async Task refreshTable()
@@ -198,5 +199,19 @@ else
 		periods = await Http.GetJsonAsync<Period[]>("/api/Periods");
 		hideButtons = true;
 		this.StateHasChanged();
+	}
+
+	private void togglePeriodClosed(Period selectedPeriod)
+	{
+
+		if (selectedPeriod.PeriodClosed == true)
+		{
+			Array.Find(periods, f => f.PeriodKey == selectedPeriod.PeriodKey).DatePeriodClosed = null;
+		}
+		else
+		{
+			Array.Find(periods, f => f.PeriodKey == selectedPeriod.PeriodKey).DatePeriodClosed = DateTime.Today;
+		}
+		StateHasChanged();
 	}
 }

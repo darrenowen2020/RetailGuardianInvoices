@@ -1,0 +1,103 @@
+﻿
+
+
+<div class="modal @ModalClass" tabindex="-1" role="dialog" style="display:@ModalDisplay">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title">@modalTextHeader</h5>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close" @onclick="() => Close()">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				<p>@modalTextBody</p>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-primary" @onclick="() => Yes()">Yes</button>
+				<button type="button" class="btn btn-secondary" data-dismiss="modal" @onclick="() => Close()">No</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+
+@if (ShowBackdrop)
+{
+	<div class="modal-backdrop fade show"></div>
+}
+
+
+@code {
+	private bool finished = false;
+	private string _reply;
+
+	[Parameter]
+	public string reply
+	{
+		get => _reply;
+
+		set
+		{
+			_reply = value;
+			if (finished)
+			{
+				showModal = false;
+				replyChanged.InvokeAsync(value);
+			}
+		}
+	}
+
+	[Parameter]
+	public EventCallback<string> replyChanged { get; set; }
+
+	private bool _showModal;
+	[Parameter]
+	public bool showModal
+	{
+		get
+		{
+			return _showModal;
+		}
+		set
+		{
+			_showModal = value;
+			if (value)
+			{
+				ModalDisplay = "block;";
+				ModalClass = "Show";
+				ShowBackdrop = true;
+			}
+			else
+			{
+				ModalDisplay = "none";
+				ModalClass = "";
+				ShowBackdrop = false;
+			}
+		}
+	}
+
+	[Parameter]
+	public string modalTextBody { get; set; }
+
+	[Parameter]
+	public string modalTextHeader { get; set; }
+
+	public Guid Guid = Guid.NewGuid();
+	public string ModalDisplay = "none;";
+	public string ModalClass = "";
+	public bool ShowBackdrop = false;
+
+	public void Close()
+	{
+		finished = true;
+		reply = "NO";
+	}
+
+	public void Yes()
+	{
+		finished = true;
+		reply = "YES";
+	}
+}

@@ -29,12 +29,14 @@ namespace RetailGInvoices.Controller
             return await _context.Period.ToListAsync();
         }
 
+        /*
         [HttpGet("Date/{date}")]
         public async Task<ActionResult<IEnumerable<Period>>> GetPeriodForDate(string date)
         {
             DateTime intDate = DateTime.Parse(date.ToString());
             return await _context.Period.Where(p => p.StartDate <= intDate && p.EndDate >= intDate).ToListAsync();
         }
+        */
 
         [HttpGet("Year/{year}")]
         public async Task<ActionResult<IEnumerable<Period>>> GetPeriod(int year)
