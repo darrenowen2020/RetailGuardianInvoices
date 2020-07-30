@@ -3,6 +3,11 @@
 @using System.Net.Http
 @inject HttpClient Http
 
+@if (showModal)
+{
+	<AreYouSureGeneric showModal="@showModal" @bind-reply="@areYouSure" modalTextBody="@modalDeleteBody" modalTextHeader="Delete" />
+}
+
 @if (periods == null)
 {
 	<p>Loading the period data..</p>
@@ -99,7 +104,7 @@ else
 				<button class="btn btn-info" title="Submit Changes" @onclick="@((x) => submitChanges())">Submit Changes</button>
 			</td>
 			<td>
-				<button class="btn btn-danger" title="Delete" @onclick="@((x) => DeleteRow())">Delete Period @rowID</button>
+				<button class="btn btn-danger" title="Delete" @onclick="@((x) => showDeleteModal())">Delete Period @rowID</button>
 			</td>
 		</tr>
 	</table>
@@ -109,6 +114,7 @@ else
 	private ITable<Period> Table;
 	private Period[] periods;
 	private bool changedFlag = false;
+	private bool showModal = false;
 
 	private int newPeriodNo;
 	private DateTime newStartDate;
@@ -120,7 +126,27 @@ else
 
 	private string rowID;
 	private Period activePeriod;
-
+	private string modalDeleteBody = "Are You Sure You Want To Delete Period ";
+	private string _areYouSure = "";
+	public string areYouSure
+	{
+		get
+		{
+			return _areYouSure;
+		}
+		set
+		{
+			_areYouSure = value;
+			if (value != "")
+			{
+				if (value == "YES")
+				{
+					Task tmp = DeleteRow();
+				}
+				showModal = false;
+			}
+		}
+	}
 	protected override async Task OnInitializedAsync()
 	{
 		periods = await Http.GetJsonAsync<Period[]>("/api/Periods");
@@ -191,6 +217,13 @@ else
 			hideButtons = false;
 			this.StateHasChanged();
 		}
+	}
+
+	private void showDeleteModal()
+	{
+		modalDeleteBody = modalDeleteBody + activePeriod.PeriodKey + "?";
+		showModal = true;
+		StateHasChanged();
 	}
 
 	private async Task DeleteRow()
