@@ -5,6 +5,14 @@
 @using Microsoft.Extensions.Logging
 
 
+<label for="browser">Choose your browser from the list:</label>
+<input list="browsers" name="browser" id="browser">
+
+<datalist id="browsers">
+	<option value="1">1</option>
+	<option value="2">2</option>
+</datalist>
+
 @if (showNotes)
 {
 	<InvoiceNotes showModal="@showNotes" @bind-notes="@invoiceNotes" />
@@ -79,7 +87,7 @@ else
 				<Column TableItem="InvoiceView" Title="Total" Field="@(x => x.InvoiceNet)" Format="C" Width="10%" Aggregate="AggregateType.Sum" Align="Align.Right" />
 			</Table>
 		</DetailTemplate>
-		<Pager ShowPageNumber="true" ShowTotalCount="true" ShowPageSizes="true"/>
+		<Pager ShowPageNumber="true" ShowTotalCount="true" ShowPageSizes="true" />
 	</Table>
 }
 
@@ -123,6 +131,8 @@ else
 			<td>
 				<input type="date" class="form-control" @bind="invoiceObj.Date" />
 			</td>
+
+
 			<td style="width:200px">
 				@if (sites != null)
 				{
@@ -136,15 +146,15 @@ else
 				}
 			</td>
 			<td style="width:200px">
+				<input list="supplierList" @bind="supplierSelectedName">
 				@if (suppliers != null)
 				{
-					<select class="form-control" @bind="supplierSelected">
+					<datalist id="supplierList">
 						@foreach (var supplier in suppliers)
 						{
-							<option value="@supplier.Id">@supplier.Name</option>
+							<option value="@supplier.Name">x</option>
 						}
-
-					</select>
+					</datalist>
 				}
 			</td>
 			<td style="width: 100px">
@@ -153,9 +163,20 @@ else
 			<td>
 				<input type="text" class="form-control" @bind="invoiceObj.Description" />
 			</td>
-			<td>
-				<input type="text" class="form-control" @bind="invoiceHeadingSelectedName" style="width: 150px" />
+			<td style="width:200px">
+				<input list="HeadingList" @bind="invoiceHeadingSelectedName">
+				@if (invoiceHeadings != null)
+				{
+					<datalist id="HeadingList">
+						@foreach (var invoiceHeading in invoiceHeadings)
+						{
+							<option value="@invoiceHeading.Description"></option>
+						}
+
+					</datalist>
+				}
 			</td>
+			
 			<td style="width: 100px">
 				@if (paymentTypes != null)
 				{
@@ -183,35 +204,6 @@ else
 			</td>
 			<td>
 				<input type="text" class="form-control" @bind-value="NetAmount" @onblur="@(e => NetAmountKeyPress())" />
-			</td>
-		</tr>
-		<tr>
-			<td>
-			</td>
-			<td>
-			</td>
-			<td>
-			</td>
-			<td>
-			</td>
-			<td>
-			</td>
-			<td>
-				@if (invoiceHeadings != null)
-				{
-					<select class="form-control" @bind="invoiceHeadingSelected">
-						@foreach (var invoiceHeading in invoiceHeadings)
-						{
-							<option value="@invoiceHeading.Id">@invoiceHeading.Description</option>
-						}
-					</select>
-				}
-			</td>
-			<td>
-			</td>
-			<td>
-			</td>
-			<td>
 			</td>
 		</tr>
 		<tr>
@@ -247,7 +239,7 @@ else
 		<Column TableItem="InvoiceView" Title="Gross" Field="@(x => x.InvoiceGross)" Format="C" Sortable="true" Width="10%" DefaultSortColumn="true" Align="Align.Right" />
 		<Column TableItem="InvoiceView" Title="Vat" Field="@(x => x.InvoiceVAT)" Format="C" Sortable="true" Width="10%" DefaultSortColumn="true" Align="Align.Right" />
 		<Column TableItem="InvoiceView" Title="Total" Field="@(x => x.InvoiceNet)" Format="C" Sortable="true" Width="10%" Align="Align.Right" />
-		<Pager ShowPageNumber="true" ShowTotalCount="true" ShowPageSizes="true"/>
+		<Pager ShowPageNumber="true" ShowTotalCount="true" ShowPageSizes="true" />
 	</Table>
 
 
@@ -266,11 +258,12 @@ else
 	private string today = DateTime.Today.ToString("dd/MM/yyyy");
 
 	private string _invoiceNotes;
-	public string invoiceNotes {
+	public string invoiceNotes
+	{
 		get
 		{
 			return _invoiceNotes;
-				}
+		}
 		set
 		{
 			_invoiceNotes = value;
@@ -314,30 +307,7 @@ else
 		return groupInvoices;
 
 	}
-	private string _invoiceHeadingSelected;
-	private string invoiceHeadingSelected
-	{
-		get
-		{
-			return _invoiceHeadingSelected;
-		}
-
-		set
-		{
-			int intInvoiceHeadingSelected;
-			try
-			{
-				intInvoiceHeadingSelected = int.Parse(value);
-				InvoiceHeading tmpInvoiceHeading = Array.Find<InvoiceHeading>(invoiceHeadings, f => f.Id == intInvoiceHeadingSelected);
-				invoiceHeadingSelectedName = tmpInvoiceHeading.Description;
-				_invoiceHeadingSelected = value;
-			}
-			catch (Exception ex)
-			{
-				intInvoiceHeadingSelected = 0;
-			}
-		}
-	}
+	private int invoiceHeadingSelected;
 
 	private string _invoiceHeadingSelectedName;
 	private string invoiceHeadingSelectedName
@@ -350,7 +320,11 @@ else
 		set
 		{
 			InvoiceHeading tempInvoiceHeading = Array.Find<InvoiceHeading>(invoiceHeadings, f => f.Description == value);
-			if (tempInvoiceHeading == null)
+			if (tempInvoiceHeading != null)
+			{
+				invoiceHeadingSelected = tempInvoiceHeading.Id;
+			}
+			else
 			{
 				InvoiceHeading invoiceHeading = new InvoiceHeading();
 				invoiceHeading.Description = value;
@@ -369,7 +343,7 @@ else
 		this.StateHasChanged();
 	}
 
-	private string siteSelectedName;
+	private int siteSelected;
 	private string paymentTypeSelected;
 
 	private string _reconPaymentTypeSelected;
@@ -396,6 +370,8 @@ else
 
 	private string paymentTypeSelectedName;
 
+	private int supplierSelected;
+
 	private string _supplierSelectedName;
 	private string supplierSelectedName
 	{
@@ -407,13 +383,18 @@ else
 		set
 		{
 			Supplier tempSupplier = Array.Find<Supplier>(suppliers, f => f.Name == value);
-			if (tempSupplier == null)
+			if (tempSupplier != null)
+			{
+				supplierSelected = tempSupplier.Id;
+			}
+			else
 			{
 				Task tmp = addNewSupplier(value);
 			}
 			_supplierSelectedName = value;
 		}
 	}
+
 	private async Task addNewSupplier(String newSupplierName)
 	{
 		Supplier newSupplier = new Supplier();
@@ -424,66 +405,29 @@ else
 
 		// Get the new suppliers ID to store locally
 		newSupplier = Array.Find<Supplier>(suppliers, f => f.Name == newSupplierName);
-		_supplierSelected = newSupplier.Id.ToString();
+		supplierSelected = newSupplier.Id;
 
 		this.StateHasChanged();
 	}
 
-	public string _siteSelected;
+	public string _siteSelectedName;
 
-	public string siteSelected
+	public string siteSelectedName
 	{
 		get
 		{
-			return _siteSelected;
+			return _siteSelectedName;
 		}
 
 		set
 		{
-			int intSiteId;
-			_siteSelected = value;
-			try
-			{
-				intSiteId = int.Parse(_siteSelected);
-			}
-			catch (Exception ex)
-			{
-				intSiteId = 0;
-			}
-			Site site = Array.Find<Site>(sites, p => p.Id == intSiteId);
-			siteSelectedName = site.SiteName;
+			_siteSelectedName = value;
+
+			Site site = Array.Find<Site>(sites, p => p.SiteName == value);
+			siteSelected = site.Id;
 		}
 	}
-	public string _supplierSelected;
 
-	public string supplierSelected
-	{
-		get
-		{
-			return _supplierSelected;
-		}
-
-		set
-		{
-			int intSupplierId;
-
-			try
-			{
-				if (value != null)
-				{
-					_supplierSelected = value;
-					intSupplierId = int.Parse(_supplierSelected);
-					Supplier supplier = Array.Find<Supplier>(suppliers, p => p.Id == intSupplierId);
-					supplierSelectedName = supplier.Name;
-				}
-			}
-			catch (Exception ex)
-			{
-				intSupplierId = 0;
-			}
-
-		}
-	}
 	public decimal _VatAmount = 0;
 	public decimal VatAmount
 	{
@@ -589,19 +533,19 @@ else
 		defaultSiteId = sites[0].Id;
 		defaultSiteName = sites[0].SiteName;
 		defaultSupplierId = suppliers[0].Id;
-		defaultSupplierName = suppliers[0].Name;
+		//defaultSupplierName = suppliers[0].Name;
 
 		defaultPaymentTypeName = paymentTypes[0].Description;
 
 
 		invoiceObj.Date = DateTime.Today;
 
-		siteSelected = defaultSiteId.ToString();
+		siteSelected = defaultSiteId;
 		siteSelectedName = defaultSiteName;
-		supplierSelected = defaultSupplierId.ToString();
-		supplierSelectedName = defaultSupplierName;
+		//supplierSelected = defaultSupplierId;
+		//supplierSelectedName = defaultSupplierName;
 		paymentTypeSelected = defaultPaymentTypeId.ToString();
-		invoiceHeadingSelected = invoiceHeadings[0].Id.ToString();
+		invoiceHeadingSelected = invoiceHeadings[0].Id;
 		invoiceHeadingSelectedName = invoiceHeadings[0].Description;
 		Period tmp = getCurrentPeriod();
 	}
@@ -610,20 +554,11 @@ else
 	{
 		try
 		{
-			invoiceObj.SiteID = int.Parse(siteSelected);
+			invoiceObj.SiteID = siteSelected;
 		}
 		catch (Exception ex)
 		{
 			invoiceObj.SiteID = defaultSiteId;
-		}
-
-		try
-		{
-			invoiceObj.SupplierID = int.Parse(supplierSelected);
-		}
-		catch (Exception ex)
-		{
-			invoiceObj.SupplierID = defaultSupplierId;
 		}
 
 		try
@@ -635,12 +570,13 @@ else
 			invoiceObj.PaymentTypeID = defaultPaymentTypeId;
 		}
 
+		invoiceObj.SupplierID = supplierSelected;
 		invoiceObj.GrossAmount = GrossAmount;
 		invoiceObj.VATAmount = VatAmount;
 		invoiceObj.NetAmount = NetAmount;
 		invoiceObj.EditDate = DateTime.Now;
 		invoiceObj.Paid = true; // defaulting this to true#
-		invoiceObj.Heading = int.Parse(invoiceHeadingSelected);
+		invoiceObj.Heading = invoiceHeadingSelected;
 		invoiceObj.PeriodNo = getPeriod(invoiceObj.Date).PeriodKey;
 		invoiceObj.Notes = invoiceNotes;
 
