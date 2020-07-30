@@ -474,3 +474,5 @@ C:\Users\darre\source\repos\RetailGInvoices\RetailGInvoices\obj\Debug\netcoreapp
 C:\Users\darre\source\repos\RetailGInvoices\RetailGInvoices\obj\Debug\netcoreapp3.1\Razor\Pages\Reconciliation.razor.g.cs
 C:\Users\darre\source\repos\RetailGInvoices\RetailGInvoices\obj\Debug\netcoreapp3.1\RazorDeclaration\Components\AreYouSureGeneric.razor.g.cs
 C:\Users\darre\source\repos\RetailGInvoices\RetailGInvoices\obj\Debug\netcoreapp3.1\Razor\Components\AreYouSureGeneric.razor.g.cs
+C:\Users\darre\source\repos\RetailGInvoices\RetailGInvoices\obj\Debug\netcoreapp3.1\RazorDeclaration\Components\InformationModal.razor.g.cs
+C:\Users\darre\source\repos\RetailGInvoices\RetailGInvoices\obj\Debug\netcoreapp3.1\Razor\Components\InformationModal.razor.g.cs

@@ -4,15 +4,11 @@
 @inject HttpClient Http
 @using Microsoft.Extensions.Logging
 
+@if (showInformationModal)
+{
 
-<label for="browser">Choose your browser from the list:</label>
-<input list="browsers" name="browser" id="browser">
-
-<datalist id="browsers">
-	<option value="1">1</option>
-	<option value="2">2</option>
-</datalist>
-
+	<InformationModal showModal="showInformationModal" modalTextHeader="Error" modalTextBody="Cannot Add Invoice Missing Mandatory Fields" @bind-reply="informationModalReply"/>
+}
 @if (showNotes)
 {
 	<InvoiceNotes showModal="@showNotes" @bind-notes="@invoiceNotes" />
@@ -69,7 +65,7 @@ else
 }
 else
 {
-	<h1>Reconciliation Table</h1>
+	<h2>Summary Table</h2>
 	<Table TableItem="ViewInvoiceGroup" Items="viewInvoiceGroups" PageSize="10" ColumnReorder="true">
 		<Column TableItem="ViewInvoiceGroup" Title="Heading " Field="@(x => x.InvoiceHeading)" Sortable="true" Width="10%" />
 		<Column TableItem="ViewInvoiceGroup" Title="Gross" Field="@(x => x.InvoiceGross)" Sortable="true" Width="10%" Format="C" Align="Align.Right" />
@@ -97,34 +93,34 @@ else
 	<table class="table-borderless">
 		<tr>
 			<td>
-				<label for="Invoice Date" class="control-label">Invoice Date</label>
+				<label for="*Invoice Date" class="control-label">Invoice Date</label>
 			</td>
 			<td>
-				<label for="Site" class="control-label">Site</label>
+				<label for="*Site" class="control-label">Site</label>
 			</td>
 			<td>
-				<label for="Supplier" class="control-label">Supplier</label>
+				<label for="*Supplier" class="control-label">Supplier</label>
 			</td>
 			<td>
 				<label for="Reference" class="control-label">Reference</label>
 			</td>
 			<td>
-				<label for="Description" class="control-label">Description</label>
+				<label for="*Description" class="control-label">Description</label>
 			</td>
 			<td>
-				<label for="Heading" class="control-label">Heading</label>
+				<label for="*Heading" class="control-label">Heading</label>
 			</td>
 			<td>
-				<label for="PaymentType" class="control-label">Pay Type</label>
+				<label for="*PaymentType" class="control-label">Pay Type</label>
 			</td>
 			<td class="amount">
-				<label for="Gross Amount" class="control-label">Gross Amount</label>
+				<label for="*Gross Amount" class="control-label">Gross Amount</label>
 			</td>
 			<td class="amount">
 				<label for="Vat Amount" class="control-label">VAT Amount</label>
 			</td>
 			<td class="amount">
-				<label for="Net Amount" class="control-label">Net Amount</label>
+				<label for="*Net Amount" class="control-label">Net Amount</label>
 			</td>
 		</tr>
 		<tr>
@@ -211,7 +207,12 @@ else
 				<button class="btn btn-info" @onclick="@AddInvoiceNotes">Notes</button>
 			</td>
 			<td>
-				<button type="submit" class="btn btn-info" @onclick="@AddNewInvoice">Update</button>
+				<button type="button" class="btn-success" @onclick="@AddNewInvoice">Update</button>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<p>* - Manditory Field</p>
 			</td>
 		</tr>
 	</table>
@@ -246,6 +247,9 @@ else
 }
 
 @code {
+	[Parameter]
+	public int companyId { get; set; }
+
 	private bool showNotes = false;
 	private ITable<InvoiceView> Table;
 	private void ToggleEdit()
@@ -257,6 +261,7 @@ else
 	private string currentPeriodYear = DateTime.Today.ToString("yy");
 	private string today = DateTime.Today.ToString("dd/MM/yyyy");
 
+	private bool showInformationModal = false;
 	private string _invoiceNotes;
 	public string invoiceNotes
 	{
@@ -297,6 +302,19 @@ else
 	InvoiceView invoiceViewObj = new InvoiceView();
 	InvoiceHeading invoiceHeadingObj = new InvoiceHeading();
 	ViewPeriodYears viewPeriodYearsObj = new ViewPeriodYears();
+
+	public string informationModalReply {
+		get
+		{
+			return null;
+		}
+
+		set
+		{
+			showInformationModal = false;
+		}
+
+	}
 
 	private int viewPeriodYearsSelected;
 	private InvoiceView[] getHeading(int headingId, int paymentType)
@@ -552,36 +570,77 @@ else
 
 	void AddNewInvoice()
 	{
-		try
+		if (!validateNewInvoice())
 		{
-			invoiceObj.SiteID = siteSelected;
+			showInformationModal = true;
 		}
-		catch (Exception ex)
+		else
 		{
-			invoiceObj.SiteID = defaultSiteId;
+
+			try
+			{
+				invoiceObj.SiteID = siteSelected;
+			}
+			catch (Exception ex)
+			{
+				invoiceObj.SiteID = defaultSiteId;
+			}
+
+			try
+			{
+				invoiceObj.PaymentTypeID = int.Parse(paymentTypeSelected);
+			}
+			catch (Exception ex)
+			{
+				invoiceObj.PaymentTypeID = defaultPaymentTypeId;
+			}
+
+			invoiceObj.Paid = !GetPaymentType(invoiceObj.PaymentTypeID).ReconcileFlag;
+
+			invoiceObj.SupplierID = supplierSelected;
+			invoiceObj.GrossAmount = GrossAmount;
+			invoiceObj.VATAmount = VatAmount;
+			invoiceObj.NetAmount = NetAmount;
+			invoiceObj.EditDate = DateTime.Now;
+
+			invoiceObj.Heading = invoiceHeadingSelected;
+			invoiceObj.PeriodNo = getPeriod(invoiceObj.Date).PeriodKey;
+			invoiceObj.Notes = invoiceNotes;
+
+			Task d = PostInvoice();
 		}
 
-		try
+	}
+
+	private PaymentType GetPaymentType(int paymentType)
+	{
+		return Array.Find(paymentTypes, f => f.Id == paymentType);
+	}
+
+	private bool validateNewInvoice()
+	{
+		bool isValid = true;
+
+		if (supplierSelectedName == null)
 		{
-			invoiceObj.PaymentTypeID = int.Parse(paymentTypeSelected);
+			isValid = false;
 		}
-		catch (Exception ex)
+
+		if (GrossAmount == 0)
 		{
-			invoiceObj.PaymentTypeID = defaultPaymentTypeId;
+			isValid = false;
 		}
 
-		invoiceObj.SupplierID = supplierSelected;
-		invoiceObj.GrossAmount = GrossAmount;
-		invoiceObj.VATAmount = VatAmount;
-		invoiceObj.NetAmount = NetAmount;
-		invoiceObj.EditDate = DateTime.Now;
-		invoiceObj.Paid = true; // defaulting this to true#
-		invoiceObj.Heading = invoiceHeadingSelected;
-		invoiceObj.PeriodNo = getPeriod(invoiceObj.Date).PeriodKey;
-		invoiceObj.Notes = invoiceNotes;
+		if (NetAmount == 0)
+		{
+			isValid = false;
+		}
 
-		Task d = PostInvoice();
-
+		if (invoiceObj.Description == null)
+		{
+			isValid = false;
+		}
+		return isValid;
 	}
 
 	private Period getCurrentPeriod()
@@ -604,7 +663,15 @@ else
 		else
 		{
 			invoiceObj.CreatedDate = DateTime.Now;
-			await Http.SendJsonAsync(HttpMethod.Post, "/api/Invoices/", invoiceObj);
+			try
+			{
+				await Http.SendJsonAsync(HttpMethod.Post, "/api/Invoices/", invoiceObj);
+			}
+			catch (Exception ex)
+			{
+				System.Diagnostics.Debug.WriteLine("Error: " + ex.Message);
+
+			}
 		}
 		invoiceViews = await Http.GetJsonAsync<InvoiceView[]>("/api/InvoiceViews");
 		clearInputValues();
