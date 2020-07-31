@@ -30,6 +30,15 @@ namespace RetailGInvoices
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddDistributedMemoryCache();
+
+            services.AddSession(options =>
+            {
+                options.Cookie.Name = ".RT.Session";
+                options.IdleTimeout = TimeSpan.FromSeconds(10);
+                options.Cookie.IsEssential = true;
+            });
+            services.AddScoped<Services.AppData>();
             services.AddRazorPages();
             services.AddRazorPages().AddRazorRuntimeCompilation();
             services.AddServerSideBlazor();
@@ -74,7 +83,7 @@ namespace RetailGInvoices
             app.UseStaticFiles();
 
             app.UseRouting();
-
+            app.UseSession();
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();

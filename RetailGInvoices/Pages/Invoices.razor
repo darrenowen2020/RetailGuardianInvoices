@@ -1,8 +1,9 @@
 ﻿@page "/Invoices"
+@layout CompLayout
 @using RetailGInvoices.Data
 @using System.Net.Http
 @inject HttpClient Http
-@using Microsoft.Extensions.Logging
+@inject Services.AppData AppData
 
 @if (showInformationModal)
 {
@@ -66,7 +67,7 @@ else
 else
 {
 	<h2>Summary Table</h2>
-	<Table TableItem="ViewInvoiceGroup" Items="viewInvoiceGroups" PageSize="10" ColumnReorder="true">
+	<Table TableItem="ViewInvoiceGroup" Items="viewInvoiceGroups" PageSize="50" ColumnReorder="true">
 		<Column TableItem="ViewInvoiceGroup" Title="Heading " Field="@(x => x.InvoiceHeading)" Sortable="true" Width="10%" />
 		<Column TableItem="ViewInvoiceGroup" Title="Gross" Field="@(x => x.InvoiceGross)" Sortable="true" Width="10%" Format="C" Align="Align.Right" />
 		<Column TableItem="ViewInvoiceGroup" Title="VAT" Field="@(x => x.InvoiceVAT)" Sortable="true" Width="10%" Aggregate="AggregateType.Sum" Format="C" Align="Align.Right" />
@@ -93,34 +94,34 @@ else
 	<table class="table-borderless">
 		<tr>
 			<td>
-				<label for="*Invoice Date" class="control-label">Invoice Date</label>
+				<label for="Invoice Date" class="control-label">*Invoice Date</label>
 			</td>
 			<td>
-				<label for="*Site" class="control-label">Site</label>
+				<label for="Site" class="control-label">*Site</label>
 			</td>
 			<td>
-				<label for="*Supplier" class="control-label">Supplier</label>
+				<label for="Supplier" class="control-label">*Supplier</label>
 			</td>
 			<td>
 				<label for="Reference" class="control-label">Reference</label>
 			</td>
 			<td>
-				<label for="*Description" class="control-label">Description</label>
+				<label for="Description" class="control-label">*Description</label>
 			</td>
 			<td>
-				<label for="*Heading" class="control-label">Heading</label>
+				<label for="Heading" class="control-label">*Heading</label>
 			</td>
 			<td>
-				<label for="*PaymentType" class="control-label">Pay Type</label>
+				<label for="PaymentType" class="control-label">*Pay Type</label>
 			</td>
 			<td class="amount">
-				<label for="*Gross Amount" class="control-label">Gross Amount</label>
+				<label for="Gross Amount" class="control-label">*Gross Amount</label>
 			</td>
 			<td class="amount">
 				<label for="Vat Amount" class="control-label">VAT Amount</label>
 			</td>
 			<td class="amount">
-				<label for="*Net Amount" class="control-label">Net Amount</label>
+				<label for="Net Amount" class="control-label">*Net Amount</label>
 			</td>
 		</tr>
 		<tr>
@@ -209,6 +210,9 @@ else
 			<td>
 				<button type="button" class="btn-success" @onclick="@AddNewInvoice">Update</button>
 			</td>
+			<td>
+				<button type="button" class="btn-secondary" @onclick="@clearInputValues">Clear</button>
+			</td>
 		</tr>
 		<tr>
 			<td>
@@ -223,7 +227,7 @@ else
 }
 else
 {
-	<Table TableItem="InvoiceView" Items="invoiceViews" @ref="Table" PageSize="10" ColumnReorder="true" RowClickAction="EditInvoice" TableRowClass="x => x.RowClass">
+	<Table TableItem="InvoiceView" Items="invoiceViews" @ref="Table" PageSize="50" ColumnReorder="true" RowClickAction="EditInvoice" TableRowClass="x => x.RowClass">
 		<Column TableItem="InvoiceView" Title="ID" Field="@(x => x.InvoiceId)" Sortable="true" Width="10%" DefaultSortColumn="true" />
 		<Column TableItem="InvoiceView" Title="Invoice Date" Field="@(x => x.InvoiceDate)" Sortable="true" Width="10%" DefaultSortColumn="true">
 			<Template>
@@ -240,6 +244,11 @@ else
 		<Column TableItem="InvoiceView" Title="Gross" Field="@(x => x.InvoiceGross)" Format="C" Sortable="true" Width="10%" DefaultSortColumn="true" Align="Align.Right" />
 		<Column TableItem="InvoiceView" Title="Vat" Field="@(x => x.InvoiceVAT)" Format="C" Sortable="true" Width="10%" DefaultSortColumn="true" Align="Align.Right" />
 		<Column TableItem="InvoiceView" Title="Total" Field="@(x => x.InvoiceNet)" Format="C" Sortable="true" Width="10%" Align="Align.Right" />
+		<Column TableItem="InvoiceView" Title="Del">
+			<Template>
+				<button class="btn-sm" @onclick="c => DeleteInvoice(context) ">X</button>
+			</Template>
+		</Column>
 		<Pager ShowPageNumber="true" ShowTotalCount="true" ShowPageSizes="true" />
 	</Table>
 
@@ -520,6 +529,8 @@ else
 
 	private void clearInputValues()
 	{
+		invoiceObj = new Invoice(companyId);
+		invoiceObj.Date = DateTime.Today;
 		supplierSelectedName = suppliers[0].Name;
 		siteSelectedName = sites[0].SiteName;
 		paymentTypeSelected = paymentTypes[0].Description;
@@ -533,10 +544,12 @@ else
 
 	protected override async Task OnInitializedAsync()
 	{
+		companyId = AppData.CompanyId;
+
 		viewPeriodYears = await Http.GetJsonAsync<ViewPeriodYears[]>("api/ViewPeriodYears");
 		viewPeriodYearsSelected = int.Parse(currentPeriodYear);
 
-		invoiceViews = await Http.GetJsonAsync<InvoiceView[]>("/api/InvoiceViews/Year/" + viewPeriodYearsSelected);
+		invoiceViews = await Http.GetJsonAsync<InvoiceView[]>("/api/InvoiceViews/Year/" + viewPeriodYearsSelected + "/" + companyId);
 
 		companies = await Http.GetJsonAsync<Company[]>("/api/Companies/");
 		sites = await Http.GetJsonAsync<Site[]>("api/Sites");
@@ -551,8 +564,6 @@ else
 		defaultSiteId = sites[0].Id;
 		defaultSiteName = sites[0].SiteName;
 		defaultSupplierId = suppliers[0].Id;
-		//defaultSupplierName = suppliers[0].Name;
-
 		defaultPaymentTypeName = paymentTypes[0].Description;
 
 
@@ -560,8 +571,6 @@ else
 
 		siteSelected = defaultSiteId;
 		siteSelectedName = defaultSiteName;
-		//supplierSelected = defaultSupplierId;
-		//supplierSelectedName = defaultSupplierName;
 		paymentTypeSelected = defaultPaymentTypeId.ToString();
 		invoiceHeadingSelected = invoiceHeadings[0].Id;
 		invoiceHeadingSelectedName = invoiceHeadings[0].Description;
@@ -606,6 +615,7 @@ else
 			invoiceObj.Heading = invoiceHeadingSelected;
 			invoiceObj.PeriodNo = getPeriod(invoiceObj.Date).PeriodKey;
 			invoiceObj.Notes = invoiceNotes;
+			invoiceObj.CompanyID = companyId;
 
 			Task d = PostInvoice();
 		}
@@ -673,7 +683,7 @@ else
 
 			}
 		}
-		invoiceViews = await Http.GetJsonAsync<InvoiceView[]>("/api/InvoiceViews");
+		invoiceViews = await Http.GetJsonAsync<InvoiceView[]>("/api/InvoiceViews/Year/" + viewPeriodYearsSelected + "/" + companyId);
 		clearInputValues();
 		this.StateHasChanged();
 
@@ -681,13 +691,13 @@ else
 
 	private async Task GetViewGroup(int paymentType)
 	{
-		viewInvoiceGroups = await Http.GetJsonAsync<ViewInvoiceGroup[]>("/api/ViewInvoiceGroups/PayType/" + paymentType);
+		viewInvoiceGroups = await Http.GetJsonAsync<ViewInvoiceGroup[]>("/api/ViewInvoiceGroups/PayType/" + paymentType + "/" + companyId);
 		this.StateHasChanged();
 	}
 
 	private async Task GetAllViewGroups()
 	{
-		viewInvoiceGroups = await Http.GetJsonAsync<ViewInvoiceGroup[]>("/api/ViewInvoiceGroups");
+		viewInvoiceGroups = await Http.GetJsonAsync<ViewInvoiceGroup[]>("/api/ViewInvoiceGroups/Company/" + companyId);
 		this.StateHasChanged();
 	}
 
@@ -705,7 +715,7 @@ else
 	// Edit Method
 	private void EditInvoice(InvoiceView invoiceView)
 	{
-		invoiceObj = new Invoice();
+		invoiceObj = new Invoice(companyId);
 
 		invoiceObj.ID = invoiceView.InvoiceId;
 		invoiceObj.InvoiceReference = invoiceView.InvoiceReference;
@@ -735,12 +745,12 @@ else
 	}
 
 	// Delete Method
-	protected async Task DeleteInvoice(int InvoiceID)
+	protected async Task DeleteInvoice(InvoiceView invoiceView)
 	{
 
-		await Http.DeleteAsync("/api/Invoices/" + InvoiceID);
+		await Http.DeleteAsync("/api/Invoices/" + invoiceView.InvoiceId);
 
-		invoiceViews = await Http.GetJsonAsync<InvoiceView[]>("/api/InvoiceViews");
+		invoiceViews = await Http.GetJsonAsync<InvoiceView[]>("/api/InvoiceViews/Year/" + viewPeriodYearsSelected + "/" + companyId);
 	}
 
 }

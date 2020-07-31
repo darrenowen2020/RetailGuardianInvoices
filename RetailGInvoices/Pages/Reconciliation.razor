@@ -1,7 +1,9 @@
 ﻿@page "/Reconciliation"
+@layout CompLayout
 @using RetailGInvoices.Data
 @using System.Net.Http
 @inject HttpClient Http
+@inject Services.AppData AppData
 
 @if (currentPeriod != null)
 {
@@ -10,11 +12,11 @@
 			<td style="width:30%">
 				<h5>Current Period Year: @currentPeriod.YearNo Period No: @currentPeriod.PeriodNo</h5>
 			</td>
-			
+
 		</tr>
-		
+
 	</table>
-	
+
 	<table class="table-borderless">
 		<tr>
 			<td style="width:500px">
@@ -49,7 +51,7 @@
 			}
 		</tr>
 	</table>
-	
+
 }
 @if (invoiceViewsPaid == null)
 {
@@ -72,11 +74,11 @@ else
 		<Column TableItem="InvoiceView" Title="Description" Field="@(x => x.InvoiceDescription)" Sortable="true" Width="10%" />
 		<Column TableItem="InvoiceView" Title="Heading" Field="@(x => x.InvoiceHeading)" Sortable="true" Width="10%" />
 		<Column TableItem="InvoiceView" Title="Payment Type" Field="@(x => x.InvoicePaymentDescription)" Sortable="true" Width="10%" DefaultSortColumn="true" />
-		<Column TableItem="InvoiceView" Title="Total" Field="@(x => x.InvoiceNet)" Format="C" Sortable="true" Width="10%" Align="Align.Right" Aggregate="AggregateType.Sum"/>
+		<Column TableItem="InvoiceView" Title="Total" Field="@(x => x.InvoiceNet)" Format="C" Sortable="true" Width="10%" Align="Align.Right" Aggregate="AggregateType.Sum" />
 		<Column TableItem="InvoiceView" Title="Paid" Field="@(x => x.InvoiceNet)" Width="10%">
 			<Template>
-				<input type="checkbox" @onclick="c => unpaidClick(context)" disabled="@(reconPeriod.PeriodClosed)"/>
-			</Template>	
+				<input type="checkbox" @onclick="c => unpaidClick(context)" disabled="@(reconPeriod.PeriodClosed)" />
+			</Template>
 		</Column>
 		<Pager ShowPageNumber="true" ShowTotalCount="true" ShowPageSizes="true" />
 	</Table>
@@ -90,7 +92,7 @@ else
 {
 	<h2>Unpaid Invoices</h2>
 	<Table TableItem="InvoiceView" Items="invoiceViewsUnpaid" @ref="Table" PageSize="50" ColumnReorder="true" SelectionType="SelectionType.Single" ShowFooter="true">
-		<Column TableItem="InvoiceView" Title="ID" Field="@(x => x.InvoiceId)" Sortable="true" Width="10%" DefaultSortColumn="true" SetFooterValue="Total"/>
+		<Column TableItem="InvoiceView" Title="ID" Field="@(x => x.InvoiceId)" Sortable="true" Width="10%" DefaultSortColumn="true" SetFooterValue="Total" />
 		<Column TableItem="InvoiceView" Title="Invoice Date" Field="@(x => x.InvoiceDate)" Sortable="true" Width="10%" DefaultSortColumn="true">
 			<Template>
 				@(context.InvoiceDate.ToShortDateString())
@@ -105,14 +107,16 @@ else
 		<Column TableItem="InvoiceView" Title="Total" Field="@(x => x.InvoiceNet)" Format="C" Sortable="true" Width="10%" Aggregate="AggregateType.Sum" Align="Align.Right" />
 		<Column TableItem="InvoiceView" Title="Paid" Field="@(x => x.InvoicePaid)" Width="10%">
 			<Template>
-				<input type="checkbox" @onclick="c => paidClick(context)"  disabled="@(reconPeriod.PeriodClosed)"/>
-			</Template>	
+				<input type="checkbox" @onclick="c => paidClick(context)" disabled="@(reconPeriod.PeriodClosed)" />
+			</Template>
 		</Column>
-		<Pager ShowPageNumber="true" ShowTotalCount="true" ShowPageSizes="true"/>
+		<Pager ShowPageNumber="true" ShowTotalCount="true" ShowPageSizes="true" />
 	</Table>
 }
 
 @code {
+	private int companyId;
+
 	private ITable<InvoiceView> Table;
 
 	private string _reconPeriodYear;
@@ -147,6 +151,8 @@ else
 
 	protected override async Task OnInitializedAsync()
 	{
+		this.companyId = AppData.CompanyId;
+
 		periods = await Http.GetJsonAsync<Period[]>("api/Periods");
 		currentPeriod = getCurrentPeriod();
 		reconPeriod = currentPeriod;
@@ -163,12 +169,12 @@ else
 
 	private async Task getPaidInvoiceViews(Period inPeriod)
 	{
-		invoiceViewsPaid = await Http.GetJsonAsync<InvoiceView[]>("api/InvoiceViews/Paid/true/" + inPeriod.PeriodKey); ;
+		invoiceViewsPaid = await Http.GetJsonAsync<InvoiceView[]>("api/InvoiceViews/Paid/true/" + inPeriod.PeriodKey + "/" + companyId); ;
 	}
 
 	private async Task getUnPaidInvoiceViews(Period inPeriod)
 	{
-		invoiceViewsUnpaid = await Http.GetJsonAsync<InvoiceView[]>("api/InvoiceViews/Paid/false/" + inPeriod.PeriodKey); ;
+		invoiceViewsUnpaid = await Http.GetJsonAsync<InvoiceView[]>("api/InvoiceViews/Paid/false/" + inPeriod.PeriodKey + "/" + companyId); ;
 	}
 
 	private void paidClick(InvoiceView selectedInvoiceView)
@@ -182,7 +188,8 @@ else
 		Task tmp = updateInvoice(selectedInvoiceView);
 	}
 
-	private async Task updateInvoice(InvoiceView invoiceView) {
+	private async Task updateInvoice(InvoiceView invoiceView)
+	{
 		Invoice invoice = await Http.GetJsonAsync<Invoice>("api/Invoices/" + invoiceView.InvoiceId);
 		invoice.Paid = invoiceView.InvoicePaid;
 		await Http.SendJsonAsync(HttpMethod.Put, "api/Invoices/" + invoice.ID, invoice);

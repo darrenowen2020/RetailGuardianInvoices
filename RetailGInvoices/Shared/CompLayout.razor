@@ -1,0 +1,15 @@
+﻿@inherits LayoutComponentBase
+@layout MainLayout
+@inject Services.AppData AppData
+
+<header style="color:black; background-color: cadetblue">
+	@AppData.ComanyName
+</header>
+	<div class="">
+		<NavBarMenu />
+	</div>
+<div class="main">
+	<div class="content px-4">
+		@Body
+	</div>
+</div>

@@ -1,3 +1,57 @@
 ﻿@page "/"
+@using RetailGInvoices.Data
+@using System.Net.Http
+@inject HttpClient Http
+@inject Services.AppData AppData
+@inject NavigationManager NavManager
 
-<h1>Retail Guardian Invoices and Expenses</h1>
+@if (companies == null)
+{
+	<p>Loadng Companies...</p>
+}
+else
+{
+<table class="table-bordered">
+	@foreach (var company in companies)
+	{
+		<tr>
+			<td>@company.Name</td>
+			<td>
+				<button class="btn-info" @onclick="c => invoicePage(company)">Invoice</button>
+			</td>
+			<td>
+				<button class="btn-info" @onclick="c => expensePage(company)">Expense</button>
+			</td>
+		</tr>
+
+	}
+
+</table>
+}
+	
+
+@code
+{
+	Company[] companies;
+	Company companyObj;
+	bool showInvoices = false;
+	protected override async Task OnInitializedAsync()
+	{
+		companies = await Http.GetJsonAsync<Company[]>("api/Companies");
+	}
+
+	private void invoicePage(Company company)
+	{
+		AppData.CompanyId = company.Id;
+		AppData.ComanyName = company.Name;
+		NavManager.NavigateTo("/Invoices");
+
+	}
+	private void expensePage(Company company)
+	{
+		AppData.CompanyId = company.Id;
+		AppData.ComanyName = company.Name;
+		NavManager.NavigateTo("/Invoices");
+
+	}
+}

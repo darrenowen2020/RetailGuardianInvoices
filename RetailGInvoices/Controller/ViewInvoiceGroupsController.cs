@@ -26,7 +26,17 @@ namespace RetailGInvoices.Controller
         {
             return await _context.viewInvoiceGroup.OrderBy(x => x.InvoiceHeadingId).ToListAsync();
         }
-        
+        [HttpGet("Company/{companyId}")]
+        public async Task<ActionResult<IEnumerable<ViewInvoiceGroup>>> GetviewInvoiceGroupCompany(int companyId)
+        {
+            return await _context.viewInvoiceGroup.Where(f => f.InvoiceCompanyId == companyId).OrderBy(x => x.InvoiceHeadingId).ToListAsync();
+        }
+
+        [HttpGet("PayType/{paytype}/{companyId}")]
+        public async Task<ActionResult<IEnumerable<ViewInvoiceGroup>>> GetviewInvoiceGroup(int paytype, int companyId)
+        {
+            return await _context.viewInvoiceGroup.Where(f => (f.InvoicePaymentId == paytype) && (f.InvoiceCompanyId == companyId)).ToListAsync();
+        }
         [HttpGet("PayType/{paytype}")]
         public async Task<ActionResult<IEnumerable<ViewInvoiceGroup>>> GetviewInvoiceGroup(int paytype)
         {

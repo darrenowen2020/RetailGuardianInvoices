@@ -16,5 +16,6 @@ namespace RetailGInvoices.Data
         public int InvoicePaymentId { get; set; }
         [Key]
         public string ViewGroupID { get; set; }
+        public int InvoiceCompanyId { get; set; }
     }
 }

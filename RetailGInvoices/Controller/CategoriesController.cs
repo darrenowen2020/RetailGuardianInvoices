@@ -37,7 +37,7 @@ namespace RetailGInvoices.Controller
             {
                 return NotFound();
             }
-
+            
             return category;
         }
 

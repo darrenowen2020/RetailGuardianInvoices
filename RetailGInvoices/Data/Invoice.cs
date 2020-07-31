@@ -7,7 +7,15 @@ using System.Threading.Tasks;
 
 namespace RetailGInvoices.Data
 {
-    public class Invoice { 
+    public class Invoice {
+        public Invoice(int companyId)
+        {
+            this.CompanyID = companyId;
+        }
+        public Invoice()
+        {
+
+        }
         [Key]
         public int ID { get; set; }
         public string Reference { get; set; }
