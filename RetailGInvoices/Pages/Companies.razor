@@ -1,0 +1,201 @@
+﻿@page "/Companies"
+@using RetailGInvoices.Data
+@using System.Net.Http
+@inject HttpClient Http
+@layout CompMaintLayout
+
+@if (showModal)
+{
+	<AreYouSureGeneric showModal="@showModal" @bind-reply="@areYouSure" modalTextBody="@modalDeleteBody" modalTextHeader="Delete" />
+}
+
+@if (companies == null)
+{
+	<p>Loading the company data..</p>
+}
+else
+{
+	<EditForm Model="@companyObj">
+		<table class="table-borderless" style="width: 400px;">
+			<thead>
+				<tr>
+					<th style="width:300px">Company Name</th>
+					<th></th>
+				</tr>
+			</thead>
+
+			<tr>
+				<td style="width:60%">
+					<input  @bind="companyObj.Name" />
+					</td>
+				<td style="width:10%">
+					<button class="btn btn-info" title="Add" @onclick="@((x) => Addcompany())" disabled="@(!addTableActive)">Add</button>
+				</td>
+			</tr>
+		</table>
+	</EditForm>
+	<button class="btn btn-sm btn-danger" title="Toggle Edit Mode" @onclick="@((x) => ToggleEdit())">Toggle Edit Mode</button>
+
+
+	<Table TableItem="Company" Items="companies" @ref="Table" PageSize="20" ColumnReorder="true" SelectionType="SelectionType.Single" RowClickAction="RowClick">
+		<Column TableItem="Company" Title="Company Name" Field="@(x => x.Name)" Sortable="true" Width="10%" DefaultSortColumn="true" >
+			<EditTemplate>
+				<input  @bind-value="@context.Name" class="form-control form-control-sm" />
+			</EditTemplate>
+		</Column>
+		<EmptyDataTemplate>
+			<div class="text-center">
+				No rows found!
+			</div>
+		</EmptyDataTemplate>
+		<Pager ShowPageNumber="true" ShowTotalCount="true" />
+	</Table>
+	<table hidden="@hideButtons" class="table-borderless">
+		<tr>
+			<td>
+				<button class="btn btn-info" title="Submit Changes" @onclick="@((x) => submitChanges())">Submit Changes</button>
+			</td>
+			<td>
+				<button class="btn btn-danger" title="Delete" @onclick="@((x) => showDeleteModal())">Delete company @rowID</button>
+			</td>
+		</tr>
+	</table>
+
+}
+@code {
+	private ITable<Company> Table;
+	private Company[] companies;
+	private bool changedFlag = false;
+	private bool showModal = false;
+	private PeriodCount[] periodCounts;
+
+	private int newcompanyNo;
+
+	private Company companyObj = new Company();
+	private bool hideButtons = true;
+	private bool addTableActive = true;
+
+	private int rowID;
+	private Company activecompany;
+	private string modalDeleteBody = "Are You Sure You Want To Delete company ";
+	private string _areYouSure = "";
+	public string areYouSure
+	{
+		get
+		{
+			return _areYouSure;
+		}
+		set
+		{
+			_areYouSure = value;
+			if (value != "")
+			{
+				if (value == "YES")
+				{
+					Task tmp = DeleteRow();
+				}
+				showModal = false;
+			}
+		}
+	}
+	protected override async Task OnInitializedAsync()
+	{
+		companies = await Http.GetJsonAsync<Company[]>("/api/Companies");
+		periodCounts = await Http.GetJsonAsync<PeriodCount[]>("api/PeriodCounts");
+	}
+
+	private void ToggleEdit()
+	{
+		Table.ToggleEditMode();
+		if (Table.IsEditMode == false)
+		{
+			hideButtons = true;
+			activecompany = null;
+			addTableActive = true;
+		}
+		else
+		{
+			addTableActive = false;
+			hideButtons = false;
+		}
+	}
+
+	private void setChangedFlag()
+	{
+		changedFlag = true;
+	}
+
+	private void Addcompany()
+	{
+		Task tmp = Postcompany();
+	}
+
+	private async Task Postcompany()
+	{
+		await Http.PostJsonAsync<Company>("/api/Companies", companyObj);
+		await refreshTable();
+
+	}
+
+	private async Task UpdateCompany(Company updateCompany)
+	{
+		await Http.SendJsonAsync(HttpMethod.Put, "/api/companies/" + updateCompany.Id, updateCompany);
+	}
+
+	private void submitChanges()
+	{
+		foreach (var company in companies)
+		{
+			Task tmpTask = UpdateCompany(company);
+
+		}
+		StateHasChanged();
+		ToggleEdit();
+	}
+
+	private async Task refreshTable()
+	{
+		companies = await Http.GetJsonAsync<Company[]>("/api/Companies");
+		this.StateHasChanged();
+	}
+
+	private void RowClick(Company companySelected)
+	{
+		rowID = companySelected.Id;
+		activecompany = companySelected;
+
+		if (Table.IsEditMode)
+		{
+			hideButtons = false;
+			this.StateHasChanged();
+		}
+	}
+
+	private void showDeleteModal()
+	{
+		modalDeleteBody = modalDeleteBody + activecompany.Name + "?";
+		showModal = true;
+		StateHasChanged();
+	}
+
+	private async Task DeleteRow()
+	{
+		await Http.DeleteAsync("/api/companies/" + activecompany.Id);
+		companies = await Http.GetJsonAsync<Company[]>("/api/Companies");
+		hideButtons = true;
+		this.StateHasChanged();
+	}
+
+	private int companyPeriodCount(Company company)
+	{
+		int result = 0;
+
+		PeriodCount periodCount = Array.Find(periodCounts, f => f.CompanyId == company.Id);
+		if (periodCount != null)
+		{
+			result = periodCount.Count;
+		}
+
+		return result;
+	}
+}

@@ -16,6 +16,7 @@ namespace RetailGInvoices.Data
         }
 
         [Key]
+        public int PeriodId { get; set; }
         public string PeriodKey { get; set; }
         public int PeriodNo { get; set; }
         public int YearNo { get; set; }
@@ -23,5 +24,6 @@ namespace RetailGInvoices.Data
         public DateTime EndDate { get; set; }
         public Nullable<bool> PeriodClosed { get; set; }
         public Nullable<DateTime> DatePeriodClosed { get; set; }
+        public int CompanyId { get; set; }
     }
 }

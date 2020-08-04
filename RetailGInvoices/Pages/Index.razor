@@ -11,33 +11,51 @@
 }
 else
 {
-<table class="table-bordered">
-	@foreach (var company in companies)
-	{
-		<tr>
-			<td>@company.Name</td>
-			<td>
-				<button class="btn-info" @onclick="c => invoicePage(company)">Invoice</button>
-			</td>
-			<td>
-				<button class="btn-info" @onclick="c => expensePage(company)">Expense</button>
-			</td>
-		</tr>
 
+	<button class="btn-group-sm" @onclick="c => companyPage()" >Maint</button>
+	@if (companies.Length == 0)
+	{
+		<p>No Companies Have Been Comfigured</p>
+	}
+	else
+	{
+	<table class="table-bordered" style="width:600px">
+		@foreach (var company in companies)
+		{
+			<tr>
+				<td>@company.Name</td>
+				<td>
+					<button class="btn-info" @onclick="c => invoicePage(company)" disabled="@(companyPeriodCount(company) == 0)">Invoice</button>
+				</td>
+				<td>
+					<button class="btn-info" @onclick="c => expensePage(company)" disabled="@(companyPeriodCount(company) == 0)">Expense</button>
+				</td>
+				@if (companyPeriodCount(company) == 0)
+				{
+					<td>
+						<p class="alert-danger">No Periods Configured</p>
+					</td>
+				}
+			</tr>
+
+		}
+
+	</table>
+		}
 	}
 
-</table>
-}
-	
 
 @code
 {
 	Company[] companies;
 	Company companyObj;
 	bool showInvoices = false;
+	private PeriodCount[] periodCounts;
+
 	protected override async Task OnInitializedAsync()
 	{
 		companies = await Http.GetJsonAsync<Company[]>("api/Companies");
+		periodCounts = await Http.GetJsonAsync<PeriodCount[]>("api/PeriodCounts");
 	}
 
 	private void invoicePage(Company company)
@@ -54,4 +72,32 @@ else
 		NavManager.NavigateTo("/Invoices");
 
 	}
+
+	private void companyPage()
+	{
+		NavManager.NavigateTo("/Companies");
+	}
+
+	private async Task companyHasPeriods(Company company)
+	{
+		Period[] periods = await Http.GetJsonAsync<Period[]>("api/Periods/Company/" + company.Id);
+		if (periods == null)
+		{
+
+		}
+	}
+
+	private int companyPeriodCount(Company company)
+	{
+		int result = 0;
+
+		PeriodCount periodCount = Array.Find(periodCounts, f => f.CompanyId == company.Id);
+		if (periodCount != null)
+		{
+			result = periodCount.Count;
+		}
+
+		return result;
+	}
+
 }

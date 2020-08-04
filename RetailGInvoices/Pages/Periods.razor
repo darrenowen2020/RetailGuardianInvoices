@@ -3,6 +3,7 @@
 @using RetailGInvoices.Data
 @using System.Net.Http
 @inject HttpClient Http
+@inject Services.AppData AppData
 
 @if (showModal)
 {
@@ -112,6 +113,7 @@ else
 
 }
 @code {
+	public int companyId;
 	private ITable<Period> Table;
 	private Period[] periods;
 	private bool changedFlag = false;
@@ -150,8 +152,10 @@ else
 	}
 	protected override async Task OnInitializedAsync()
 	{
-		periods = await Http.GetJsonAsync<Period[]>("/api/Periods");
+		companyId = AppData.CompanyId;
+		await refreshTable();
 	}
+
 	private void ToggleEdit()
 	{
 		Table.ToggleEditMode();
@@ -176,6 +180,7 @@ else
 	private void AddPeriod()
 	{
 		periodObj.PeriodKey = periodObj.PeriodNo.ToString("D2") + periodObj.YearNo.ToString("D2");
+		periodObj.CompanyId = companyId;
 		Task tmp = PostPeriod();
 	}
 
@@ -188,7 +193,7 @@ else
 
 	private async Task UpdatePeriod(Period updatePeriod)
 	{
-		await Http.SendJsonAsync(HttpMethod.Put, "/api/Periods/" + updatePeriod.PeriodKey, updatePeriod);
+		await Http.SendJsonAsync(HttpMethod.Put, "/api/Periods/" + updatePeriod.PeriodId, updatePeriod);
 	}
 
 	private void submitChanges()
@@ -204,7 +209,7 @@ else
 
 	private async Task refreshTable()
 	{
-		periods = await Http.GetJsonAsync<Period[]>("/api/Periods");
+		periods = await Http.GetJsonAsync<Period[]>("/api/Periods/Company/" + companyId);
 		this.StateHasChanged();
 	}
 
@@ -229,7 +234,7 @@ else
 
 	private async Task DeleteRow()
 	{
-		await Http.DeleteAsync("/api/Periods/" + activePeriod.PeriodKey);
+		await Http.DeleteAsync("/api/Periods/" + activePeriod.PeriodId);
 		periods = await Http.GetJsonAsync<Period[]>("/api/Periods");
 		hideButtons = true;
 		this.StateHasChanged();
@@ -240,11 +245,11 @@ else
 
 		if (selectedPeriod.PeriodClosed == true)
 		{
-			Array.Find(periods, f => f.PeriodKey == selectedPeriod.PeriodKey).DatePeriodClosed = null;
+			Array.Find(periods, f => f.PeriodId == selectedPeriod.PeriodId).DatePeriodClosed = null;
 		}
 		else
 		{
-			Array.Find(periods, f => f.PeriodKey == selectedPeriod.PeriodKey).DatePeriodClosed = DateTime.Today;
+			Array.Find(periods, f => f.PeriodId == selectedPeriod.PeriodId).DatePeriodClosed = DateTime.Today;
 		}
 		StateHasChanged();
 	}

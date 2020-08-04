@@ -153,7 +153,7 @@ else
 	{
 		this.companyId = AppData.CompanyId;
 
-		periods = await Http.GetJsonAsync<Period[]>("api/Periods");
+		periods = await Http.GetJsonAsync<Period[]>("api/Periods/Company/" + companyId);
 		currentPeriod = getCurrentPeriod();
 		reconPeriod = currentPeriod;
 
@@ -169,12 +169,13 @@ else
 
 	private async Task getPaidInvoiceViews(Period inPeriod)
 	{
-		invoiceViewsPaid = await Http.GetJsonAsync<InvoiceView[]>("api/InvoiceViews/Paid/true/" + inPeriod.PeriodKey + "/" + companyId); ;
+		invoiceViewsPaid = await Http.GetJsonAsync<InvoiceView[]>("api/InvoiceViews/Paid/true/" + inPeriod.PeriodKey + "/" + companyId);
+
 	}
 
 	private async Task getUnPaidInvoiceViews(Period inPeriod)
 	{
-		invoiceViewsUnpaid = await Http.GetJsonAsync<InvoiceView[]>("api/InvoiceViews/Paid/false/" + inPeriod.PeriodKey + "/" + companyId); ;
+		invoiceViewsUnpaid = await Http.GetJsonAsync<InvoiceView[]>("api/InvoiceViews/Paid/false/" + inPeriod.PeriodKey + "/" + companyId);
 	}
 
 	private void paidClick(InvoiceView selectedInvoiceView)
@@ -205,6 +206,10 @@ else
 	private Period getPeriod(DateTime inDateTime)
 	{
 		Period period = Array.Find<Period>(periods, f => DateTime.Compare(inDateTime, f.StartDate) >= 0 && DateTime.Compare(inDateTime, f.EndDate) <= 0);
+		if (period == null)
+		{
+			period = periods.Last();
+		}
 		return period;
 	}
 

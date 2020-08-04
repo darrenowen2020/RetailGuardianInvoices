@@ -41,5 +41,6 @@ namespace RetailGInvoices.Data
         public string Notes { get; set; }
         public string PeriodNo { get; set; }
         public int Heading { get; set; }
+        public int PeriodId { get; set; }
     }
 }
