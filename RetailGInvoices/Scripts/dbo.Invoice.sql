@@ -1,0 +1,26 @@
+﻿CREATE TABLE [dbo].[Invoice] (
+    [Id]               INT           IDENTITY (1, 1) NOT NULL,
+    [Reference]        VARCHAR (50)  NULL,
+    [SupplierID]       INT           NULL,
+    [CompanyID]        INT           NULL,
+    [SiteID]           INT           NOT NULL,
+    [InvoiceReference] VARCHAR (50)  NULL,
+    [Description]      VARCHAR (50)  NOT NULL,
+    [CategoryID]       INT           NOT NULL,
+    [GrossAmount]      MONEY         NULL,
+    [NetAmount]        MONEY         NOT NULL,
+    [Paid]             BIT           NULL,
+    [Date]             DATE          NOT NULL,
+    [VATRate]          MONEY         NULL,
+    [VATAmount]        MONEY         NOT NULL,
+    [VATExempt]        INT           NULL,
+    [PaymentTypeID]    INT           NULL,
+    [CreatedDate]      DATETIME      NULL,
+    [EditDate]         DATETIME      NULL,
+    [PeriodNo]         VARCHAR (5)   NULL,
+    [Notes]            VARCHAR (MAX) NULL,
+    [Heading]          INT           NULL,
+    [PeriodId]         INT           NOT NULL,
+    PRIMARY KEY CLUSTERED ([Id] ASC)
+);
+

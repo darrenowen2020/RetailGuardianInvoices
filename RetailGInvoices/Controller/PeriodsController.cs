@@ -37,7 +37,7 @@ namespace RetailGInvoices.Controller
             return await _context.Period.Where(f => f.CompanyId == companyId).OrderBy(o => o.EndDate).ToListAsync();
         }
 
-        [HttpGet("Company/{company}/Year/{year}")]
+        [HttpGet("Company/{companyId}/Year/{year}")]
         public async Task<ActionResult<IEnumerable<Period>>> GetPeriodCompany(int companyId,int year)
         {
             return await _context.Period.Where(f => f.YearNo == year && f.CompanyId == companyId).OrderBy(o => o.EndDate).ToListAsync();

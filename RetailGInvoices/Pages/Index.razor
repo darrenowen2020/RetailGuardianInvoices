@@ -15,7 +15,7 @@ else
 	<button class="btn-group-sm" @onclick="c => companyPage()" >Maint</button>
 	@if (companies.Length == 0)
 	{
-		<p>No Companies Have Been Comfigured</p>
+		<p>No Companies Have Been Configured</p>
 	}
 	else
 	{
@@ -76,15 +76,6 @@ else
 	private void companyPage()
 	{
 		NavManager.NavigateTo("/Companies");
-	}
-
-	private async Task companyHasPeriods(Company company)
-	{
-		Period[] periods = await Http.GetJsonAsync<Period[]>("api/Periods/Company/" + company.Id);
-		if (periods == null)
-		{
-
-		}
 	}
 
 	private int companyPeriodCount(Company company)

@@ -27,6 +27,13 @@ namespace RetailGInvoices.Controller
             return await _context.Site.ToListAsync();
         }
 
+        // GET: api/Sites/Company
+        [HttpGet("Company/{companyId}")]
+        public async Task<ActionResult<IEnumerable<Site>>> GetSites(int companyId)
+        {
+            return await _context.Site.Where(f => f.FK_CompanyId == companyId).ToListAsync();
+        }
+
         // GET: api/Sites/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Site>> GetSite(int id)

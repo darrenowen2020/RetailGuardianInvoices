@@ -14,5 +14,6 @@
     <WebStackScaffolding_LayoutPageFile />
     <WebStackScaffolding_DbContextTypeFullName>RetailGInvoices.Data.SqlDbContext</WebStackScaffolding_DbContextTypeFullName>
     <WebStackScaffolding_IsAsyncSelected>False</WebStackScaffolding_IsAsyncSelected>
+    <NameOfLastUsedPublishProfile>RetailGInvoices20200804161909 - Web Deploy</NameOfLastUsedPublishProfile>
   </PropertyGroup>
 </Project>

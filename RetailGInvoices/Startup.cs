@@ -44,6 +44,7 @@ namespace RetailGInvoices
             services.AddServerSideBlazor();
             services.AddBlazoredModal();
             services.AddDbContext<SqlDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("RetailGuardianDbConnection")));
+            //services.AddDbContext<SqlDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("AzureRetailGuardianDbConnection")));
             services.AddResponseCompression(opts =>
             {
                 opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(

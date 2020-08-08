@@ -17,7 +17,7 @@
 else
 {
 	<EditForm Model="@periodObj">
-		<table class="table-borderless" contenteditable="@addTableActive">
+		<table class="table-borderless">
 			<thead>
 				<tr>
 					<th>Period No</th>
@@ -106,7 +106,7 @@ else
 				<button class="btn btn-info" title="Submit Changes" @onclick="@((x) => submitChanges())">Submit Changes</button>
 			</td>
 			<td>
-				<button class="btn btn-danger" title="Delete" @onclick="@((x) => showDeleteModal())">Delete Period @rowID</button>
+				<button class="btn btn-danger" title="Delete" @onclick="@((x) => showDeleteModal())" hidden="@hideDeleteButton">Delete Period @rowID</button>
 			</td>
 		</tr>
 	</table>
@@ -118,6 +118,7 @@ else
 	private Period[] periods;
 	private bool changedFlag = false;
 	private bool showModal = false;
+	private bool hideDeleteButton = true;
 
 	private int newPeriodNo;
 	private DateTime newStartDate;
@@ -169,6 +170,7 @@ else
 		{
 			addTableActive = false;
 			hideButtons = false;
+			hideDeleteButton = true;
 		}
 	}
 
@@ -218,9 +220,11 @@ else
 		rowID = periodSelected.PeriodNo.ToString();
 		activePeriod = periodSelected;
 
+
 		if (Table.IsEditMode)
 		{
 			hideButtons = false;
+			hideDeleteButton = false;
 			this.StateHasChanged();
 		}
 	}
@@ -235,9 +239,8 @@ else
 	private async Task DeleteRow()
 	{
 		await Http.DeleteAsync("/api/Periods/" + activePeriod.PeriodId);
-		periods = await Http.GetJsonAsync<Period[]>("/api/Periods");
 		hideButtons = true;
-		this.StateHasChanged();
+		await refreshTable();
 	}
 
 	private void togglePeriodClosed(Period selectedPeriod)

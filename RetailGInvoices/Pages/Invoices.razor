@@ -8,7 +8,7 @@
 @if (showInformationModal)
 {
 
-	<InformationModal showModal="showInformationModal" modalTextHeader="Error" modalTextBody="Cannot Add Invoice Missing Mandatory Fields" @bind-reply="informationModalReply"/>
+	<InformationModal showModal="showInformationModal" modalTextHeader="Error" modalTextBody="Cannot Add Invoice Missing Mandatory Fields" @bind-reply="informationModalReply" />
 }
 @if (showNotes)
 {
@@ -84,6 +84,11 @@ else
 				<Column TableItem="InvoiceView" Title="Total" Field="@(x => x.InvoiceNet)" Format="C" Width="10%" Aggregate="AggregateType.Sum" Align="Align.Right" />
 			</Table>
 		</DetailTemplate>
+		<EmptyDataTemplate>
+			<div class="text-center">
+				No Summary Information
+			</div>
+		</EmptyDataTemplate>
 		<Pager ShowPageNumber="true" ShowTotalCount="true" ShowPageSizes="true" />
 	</Table>
 }
@@ -173,7 +178,7 @@ else
 					</datalist>
 				}
 			</td>
-			
+
 			<td style="width: 100px">
 				@if (paymentTypes != null)
 				{
@@ -287,7 +292,6 @@ else
 
 	private int defaultSiteId;
 	private string defaultSiteName;
-	private int defaultSupplierId;
 	private string defaultSupplierName;
 	private int defaultPaymentTypeId;
 	private string defaultPaymentTypeName;
@@ -312,7 +316,8 @@ else
 	InvoiceHeading invoiceHeadingObj = new InvoiceHeading();
 	ViewPeriodYears viewPeriodYearsObj = new ViewPeriodYears();
 
-	public string informationModalReply {
+	public string informationModalReply
+	{
 		get
 		{
 			return null;
@@ -552,28 +557,68 @@ else
 		invoiceViews = await Http.GetJsonAsync<InvoiceView[]>("/api/InvoiceViews/Year/" + viewPeriodYearsSelected + "/" + companyId);
 
 		companies = await Http.GetJsonAsync<Company[]>("/api/Companies/");
-		sites = await Http.GetJsonAsync<Site[]>("api/Sites");
+		sites = await Http.GetJsonAsync<Site[]>("api/Sites/Company/" + companyId);
 		suppliers = await Http.GetJsonAsync<Supplier[]>("api/Suppliers");
 		invoiceHeadings = await Http.GetJsonAsync<InvoiceHeading[]>("api/InvoiceHeadings");
 		periods = await Http.GetJsonAsync<Period[]>("api/Periods/Company/" + companyId + "/Year/" + currentPeriodYear);
 
 		paymentTypes = await Http.GetJsonAsync<PaymentType[]>("api/PaymentTypes");
-		defaultPaymentTypeId = Array.Find(paymentTypes, f => f.Type == "DD").Id;
+		if (paymentTypes.Length == 0)
+		{
+			PaymentType paymentType = new PaymentType();
+			paymentType.Id = 0;
+			paymentType.Description = "No Payment Types";
+			paymentType.Type = "";
+
+			paymentTypes = new PaymentType[1];
+			paymentTypes[0] = paymentType;
+		}
+
+		try
+		{
+			defaultPaymentTypeId = Array.Find(paymentTypes, f => f.Type == "DD").Id;
+		}
+		catch (NullReferenceException ex)
+		{
+			defaultPaymentTypeId = 0;
+		}
+		catch (Exception ex)
+		{
+			defaultPaymentTypeId = 0;
+		}
 		await GetViewGroup(defaultPaymentTypeId);
 
+		if (sites.Length == 0)
+		{
+			Site site = new Site();
+			site.Id = 0;
+			site.SiteName = "No Sites";
+			sites = new Site[1];
+			sites[0] = site;
+		}
 		defaultSiteId = sites[0].Id;
 		defaultSiteName = sites[0].SiteName;
-		defaultSupplierId = suppliers[0].Id;
-		defaultPaymentTypeName = paymentTypes[0].Description;
 
+
+		defaultPaymentTypeName = paymentTypes[0].Description;
 
 		invoiceObj.Date = DateTime.Today;
 
 		siteSelected = defaultSiteId;
 		siteSelectedName = defaultSiteName;
 		paymentTypeSelected = defaultPaymentTypeId.ToString();
+
+		if (invoiceHeadings.Length == 0)
+		{
+			InvoiceHeading invoiceHeading = new InvoiceHeading();
+			invoiceHeading.Id = 0;
+			invoiceHeading.Description = "No Headings";
+			invoiceHeadings = new InvoiceHeading[1];
+			invoiceHeadings[0] = invoiceHeading;
+		}
 		invoiceHeadingSelected = invoiceHeadings[0].Id;
 		invoiceHeadingSelectedName = invoiceHeadings[0].Description;
+
 		Period tmp = getCurrentPeriod();
 	}
 

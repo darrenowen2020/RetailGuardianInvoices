@@ -3,6 +3,7 @@
 @using RetailGInvoices.Data
 @using System.Net.Http
 @inject HttpClient Http
+@inject RetailGInvoices.Services.AppData AppData 
 
 <EditForm Model="@siteObj">
 	<table class="table-borderless" contenteditable="@addTableActive">
@@ -55,6 +56,11 @@ else
 				<input type="text" @bind-value="@context.VATCode" class="form-control form-control-sm" />
 			</EditTemplate>
 		</Column>
+		<Column TableItem="Site" Title="">
+			<EditTemplate>
+				<button class="btn-group-sm" @onclick="c => DeleteSite(context)">X</button>
+			</EditTemplate>
+		</Column>
 	</Table>
 }
 <table hidden="@hideButtons" class="table-borderless">
@@ -62,9 +68,7 @@ else
 		<td>
 			<button class="btn btn-info" title="Submit Changes" @onclick="@((x) => SubmitChanges())">Submit Changes</button>
 		</td>
-		<td>
-			<button class="btn btn-danger" title="Delete" @onclick="@((x) => DeleteRow())">Delete Site @selectedSiteName</button>
-		</td>
+		
 	</tr>
 </table>
 
@@ -75,10 +79,12 @@ else
 	private bool addTableActive = true;
 	private bool hideButtons = true;
 	private string selectedSiteName = "";
+	private int companyId;
 
 	protected override async Task OnInitializedAsync()
 	{
-		sites = await Http.GetJsonAsync<Site[]>("/api/Sites");
+		companyId = AppData.CompanyId;
+		await GetSites();
 	}
 	private void ToggleEdit()
 	{
@@ -87,6 +93,7 @@ else
 		if (Table.IsEditMode == true)
 		{
 			addTableActive = false;
+			hideButtons = false;
 		}
 		else
 		{
@@ -106,6 +113,7 @@ else
 	}
 	private void AddSite()
 	{
+		siteObj.FK_CompanyId = companyId;
 		Task tmp = PostSite(siteObj);
 	}
 
@@ -120,17 +128,26 @@ else
 		ToggleEdit();
 	}
 
-	private async Task DeleteRow()
+	private void DeleteSite(Site site)
 	{
-		await Http.DeleteAsync("api/Sites/" + siteObj.Id);
-		sites = await Http.GetJsonAsync<Site[]>("api/Sites");
-		hideButtons = true;
+		Task tmp = DeleteRow(site);
+		ToggleEdit();
+	}
+
+	private async Task DeleteRow(Site site)
+	{
+		await Http.DeleteAsync("api/Sites/" + site.Id);
+		await GetSites();
+		StateHasChanged();
+
+
 	}
 
 	private async Task PostSite(Site newSite)
 	{
+
 		await Http.PostJsonAsync<Site>("/api/Sites", siteObj);
-		sites = await Http.GetJsonAsync<Site[]>("/api/Sites");
+		await GetSites();
 
 		siteObj = new Site();
 
@@ -139,6 +156,12 @@ else
 
 	private async Task UpdateSite(Site inSite)
 	{
+		inSite.FK_CompanyId = companyId;
 		await Http.SendJsonAsync(HttpMethod.Put, "/api/Sites/" + inSite.Id, inSite);
+	}
+
+	private async Task GetSites()
+	{
+		sites = await Http.GetJsonAsync<Site[]>("/api/Sites/Company/" + companyId);
 	}
 }
