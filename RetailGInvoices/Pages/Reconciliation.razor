@@ -74,7 +74,7 @@ else
 		<Column TableItem="InvoiceView" Title="Description" Field="@(x => x.InvoiceDescription)" Sortable="true" Width="10%" />
 		<Column TableItem="InvoiceView" Title="Heading" Field="@(x => x.InvoiceHeading)" Sortable="true" Width="10%" />
 		<Column TableItem="InvoiceView" Title="Payment Type" Field="@(x => x.InvoicePaymentDescription)" Sortable="true" Width="10%" DefaultSortColumn="true" />
-		<Column TableItem="InvoiceView" Title="Total" Field="@(x => x.InvoiceNet)" Format="C" Sortable="true" Width="10%" Align="Align.Right" Aggregate="AggregateType.Sum" />
+		<Column TableItem="InvoiceView" Title="Total" Field="@(x => x.InvoiceNet)" Format="£###.00" Sortable="true" Width="10%" Align="Align.Right" Aggregate="AggregateType.Sum" />
 		<Column TableItem="InvoiceView" Title="Paid" Field="@(x => x.InvoiceNet)" Width="10%">
 			<Template>
 				<input type="checkbox" @onclick="c => unpaidClick(context)" disabled="@(reconPeriod.PeriodClosed)" />
@@ -104,7 +104,7 @@ else
 		<Column TableItem="InvoiceView" Title="Description" Field="@(x => x.InvoiceDescription)" Sortable="true" Width="10%" />
 		<Column TableItem="InvoiceView" Title="Heading" Field="@(x => x.InvoiceHeading)" Sortable="true" Width="10%" />
 		<Column TableItem="InvoiceView" Title="Payment Type" Field="@(x => x.InvoicePaymentDescription)" Sortable="true" Width="10%" DefaultSortColumn="true" />
-		<Column TableItem="InvoiceView" Title="Total" Field="@(x => x.InvoiceNet)" Format="C" Sortable="true" Width="10%" Aggregate="AggregateType.Sum" Align="Align.Right" />
+		<Column TableItem="InvoiceView" Title="Total" Field="@(x => x.InvoiceNet)" Format="£###.00" Sortable="true" Width="10%" Aggregate="AggregateType.Sum" Align="Align.Right" />
 		<Column TableItem="InvoiceView" Title="Paid" Field="@(x => x.InvoicePaid)" Width="10%">
 			<Template>
 				<input type="checkbox" @onclick="c => paidClick(context)" disabled="@(reconPeriod.PeriodClosed)" />

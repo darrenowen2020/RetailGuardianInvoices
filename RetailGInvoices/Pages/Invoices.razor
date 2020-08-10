@@ -80,9 +80,9 @@ else
 				<Column TableItem="InvoiceView" Title="Reference" Field="@(x => x.InvoiceReference)" Width="10%" DefaultSortColumn="true" />
 				<Column TableItem="InvoiceView" Title="Description" Field="@(x => x.InvoiceDescription)" Width="10%" />
 				<Column TableItem="InvoiceView" Title="Payment Type" Field="@(x => x.InvoicePaymentDescription)" Width="10%" DefaultSortColumn="true" />
-				<Column TableItem="InvoiceView" Title="Gross" Field="@(x => x.InvoiceGross)" Format="C" Width="10%" DefaultSortColumn="true" Aggregate="AggregateType.Sum" Align="Align.Right" />
-				<Column TableItem="InvoiceView" Title="Vat" Field="@(x => x.InvoiceVAT)" Format="C" Width="10%" DefaultSortColumn="true" Aggregate="AggregateType.Sum" Align="Align.Right" />
-				<Column TableItem="InvoiceView" Title="Total" Field="@(x => x.InvoiceNet)" Format="C" Width="10%" Aggregate="AggregateType.Sum" Align="Align.Right" />
+				<Column TableItem="InvoiceView" Title="Gross" Field="@(x => x.InvoiceGross)" Format="£###.00" Width="10%" DefaultSortColumn="true" Aggregate="AggregateType.Sum" Align="Align.Right" />
+				<Column TableItem="InvoiceView" Title="Vat" Field="@(x => x.InvoiceVAT)" Format="£###.00" Width="10%" DefaultSortColumn="true" Aggregate="AggregateType.Sum" Align="Align.Right" />
+				<Column TableItem="InvoiceView" Title="Total" Field="@(x => x.InvoiceNet)" Format="£###.00" Width="10%" Aggregate="AggregateType.Sum" Align="Align.Right" />
 			</Table>
 		</DetailTemplate>
 		<EmptyDataTemplate>
@@ -200,13 +200,13 @@ else
 				}
 			</td>
 			<td>
-				<input id="grossAmount" type="text" class="form-control" @bind="GrossAmount" @onkeypress="@(e => grossKeyHandler(e.Key))"/>
+				<input id="grossAmount" type="text" class="form-control" style="text-align:right" @bind="GrossAmount" @onkeypress="@(e => grossKeyHandler(e.Key))"/>
 			</td>
 			<td>
-				<input id="vatAmount" type="text" class="form-control" @bind="VatAmount" @onkeypress="@(e => vatKeyHandler(e.Key))" />
+				<input id="vatAmount" type="text" class="form-control" style="text-align:right" @bind="VatAmount" @onkeypress="@(e => vatKeyHandler(e.Key))" />
 			</td>
 			<td>
-				<input id="netAmount" type="text" class="form-control" @bind-value="NetAmount" @onkeypress="@(e => netKeyHandler(e.Key))" @onblur="@(e => NetAmountKeyPress())" />
+				<input id="netAmount" type="text" class="form-control" style="text-align:right" @bind-value="NetAmount" @onkeypress="@(e => netKeyHandler(e.Key))" @onblur="@(e => NetAmountKeyPress())" />
 			</td>
 		</tr>
 		<tr>
@@ -232,7 +232,7 @@ else
 }
 else
 {
-	<Table TableItem="InvoiceView" Items="invoiceViews" @ref="Table" PageSize="50" ColumnReorder="true" RowClickAction="EditInvoice" TableRowClass="x => x.RowClass">
+	<Table TableItem="InvoiceView" Items="invoiceViews" @ref="Table" PageSize="50" ColumnReorder="true" RowClickAction="EditInvoice" TableRowClass="x => x.RowClass" >
 		<Column TableItem="InvoiceView" Title="ID" Field="@(x => x.InvoiceId)" Sortable="true" Width="10%" DefaultSortColumn="true" />
 		<Column TableItem="InvoiceView" Title="Invoice Date" Field="@(x => x.InvoiceDate)" Sortable="true" Width="10%" DefaultSortColumn="true">
 			<Template>
@@ -246,9 +246,9 @@ else
 		<Column TableItem="InvoiceView" Title="Description" Field="@(x => x.InvoiceDescription)" Sortable="true" Width="10%" />
 		<Column TableItem="InvoiceView" Title="Heading" Field="@(x => x.InvoiceHeading)" Sortable="true" Width="10%" />
 		<Column TableItem="InvoiceView" Title="Payment Type" Field="@(x => x.InvoicePaymentDescription)" Sortable="true" Width="10%" DefaultSortColumn="true" />
-		<Column TableItem="InvoiceView" Title="Gross" Field="@(x => x.InvoiceGross)" Format="C" Sortable="true" Width="10%" DefaultSortColumn="true" Align="Align.Right" />
-		<Column TableItem="InvoiceView" Title="Vat" Field="@(x => x.InvoiceVAT)" Format="C" Sortable="true" Width="10%" DefaultSortColumn="true" Align="Align.Right" />
-		<Column TableItem="InvoiceView" Title="Total" Field="@(x => x.InvoiceNet)" Format="C" Sortable="true" Width="10%" Align="Align.Right" />
+		<Column TableItem="InvoiceView" Title="Gross" Field="@(x => x.InvoiceGross)" Format="£###.00" Sortable="true" Width="10%" DefaultSortColumn="true" Align="Align.Right" />
+		<Column TableItem="InvoiceView" Title="Vat" Field="@(x => x.InvoiceVAT)" Format="£###.00" Sortable="true" Width="10%" DefaultSortColumn="true" Align="Align.Right" />
+		<Column TableItem="InvoiceView" Title="Total" Field="@(x => x.InvoiceNet)" Format="£###.00" Sortable="true" Width="10%" Align="Align.Right" />
 		<Column TableItem="InvoiceView" Title="Del">
 			<Template>
 				<button class="btn-sm" @onclick="c => DeleteInvoice(context) ">X</button>
