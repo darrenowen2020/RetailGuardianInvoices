@@ -4,6 +4,7 @@
 @using System.Net.Http
 @inject HttpClient Http
 @inject Services.AppData AppData
+@inject IJSRuntime JSRuntime
 
 @if (showInformationModal)
 {
@@ -12,7 +13,7 @@
 }
 @if (showNotes)
 {
-	<InvoiceNotes showModal="@showNotes" @bind-notes="@invoiceNotes" />
+	<InvoiceNotes showModal="@showNotes" @bind-notes="invoiceNotes" />
 }
 @if (viewPeriodYears == null)
 {
@@ -95,7 +96,7 @@ else
 
 <!-- Add a new Invoice -->
 
-<EditForm Model="@invoiceObj">
+
 	<table class="table-borderless">
 		<tr>
 			<td>
@@ -131,14 +132,14 @@ else
 		</tr>
 		<tr>
 			<td>
-				<input type="date" class="form-control" @bind="invoiceObj.Date" />
+				<input id="date" type="date" class="form-control" @bind="invoiceObj.Date" @onkeypress="@(e => dateKeyHandler(e.Key))"/>
 			</td>
 
 
 			<td style="width:200px">
 				@if (sites != null)
 				{
-					<select class="form-control" @bind="siteSelected">
+					<select id="site" class="form-control" @bind="siteSelected" @onkeypress="@(e => siteKeyHandler(e.Key))">
 						@foreach (var site in sites)
 						{
 							<option value="@site.Id">@site.SiteName</option>
@@ -148,25 +149,25 @@ else
 				}
 			</td>
 			<td style="width:200px">
-				<input list="supplierList" @bind="supplierSelectedName">
+				<input id="supplier" list="supplierList" @bind="supplierSelectedName"  @onkeypress="@(e => suppKeyHandler(e.Key))">
 				@if (suppliers != null)
 				{
 					<datalist id="supplierList">
 						@foreach (var supplier in suppliers)
 						{
-							<option value="@supplier.Name">x</option>
+							<option value="@supplier.Name"></option>
 						}
 					</datalist>
 				}
 			</td>
 			<td style="width: 100px">
-				<input type="text" class="form-control" @bind="invoiceObj.InvoiceReference" />
+				<input id="reference" type="text" class="form-control" @bind="invoiceObj.InvoiceReference" @onkeypress="@(e => refKeyHandler(e.Key))"/>
 			</td>
 			<td>
-				<input type="text" class="form-control" @bind="invoiceObj.Description" />
+				<input id="description" type="text" class="form-control" @bind="invoiceObj.Description" @onkeypress="@(e => descKeyHandler(e.Key))"/>
 			</td>
 			<td style="width:200px">
-				<input list="HeadingList" @bind="invoiceHeadingSelectedName">
+				<input id="heading" list="HeadingList" @bind="invoiceHeadingSelectedName" @onkeypress="@(e => headingKeyHandler(e.Key))">
 				@if (invoiceHeadings != null)
 				{
 					<datalist id="HeadingList">
@@ -182,7 +183,7 @@ else
 			<td style="width: 100px">
 				@if (paymentTypes != null)
 				{
-					<select class="form-control" @bind="paymentTypeSelected">
+					<select id="paymentType" class="form-control" @bind="paymentTypeSelected"  @onkeypress="@(e => payKeyHandler(e.Key))">
 						@foreach (var paymentType in paymentTypes)
 						{
 							@if (paymentType.Type == "DD")
@@ -199,13 +200,13 @@ else
 				}
 			</td>
 			<td>
-				<input type="text" class="form-control" @bind="GrossAmount" />
+				<input id="grossAmount" type="text" class="form-control" @bind="GrossAmount" @onkeypress="@(e => grossKeyHandler(e.Key))"/>
 			</td>
 			<td>
-				<input type="text" class="form-control" @bind="VatAmount" />
+				<input id="vatAmount" type="text" class="form-control" @bind="VatAmount" @onkeypress="@(e => vatKeyHandler(e.Key))" />
 			</td>
 			<td>
-				<input type="text" class="form-control" @bind-value="NetAmount" @onblur="@(e => NetAmountKeyPress())" />
+				<input id="netAmount" type="text" class="form-control" @bind-value="NetAmount" @onkeypress="@(e => netKeyHandler(e.Key))" @onblur="@(e => NetAmountKeyPress())" />
 			</td>
 		</tr>
 		<tr>
@@ -213,7 +214,7 @@ else
 				<button class="btn btn-info" @onclick="@AddInvoiceNotes">Notes</button>
 			</td>
 			<td>
-				<button type="button" class="btn-success" @onclick="@AddNewInvoice">Update</button>
+				<button id="btnAddInvoice" type="button" class="btn-success" @onclick="@AddNewInvoice">Update</button>
 			</td>
 			<td>
 				<button type="button" class="btn-secondary" @onclick="@clearInputValues">Clear</button>
@@ -225,7 +226,6 @@ else
 			</td>
 		</tr>
 	</table>
-</EditForm>
 @if (invoiceViews == null)
 {
 	<p><em>Loading....</em></p>
@@ -287,6 +287,7 @@ else
 		{
 			_invoiceNotes = value;
 			showNotes = false;
+			Task tmp = Focus("btnAddInvoice");
 		}
 	}
 
@@ -315,6 +316,83 @@ else
 	InvoiceView invoiceViewObj = new InvoiceView();
 	InvoiceHeading invoiceHeadingObj = new InvoiceHeading();
 	ViewPeriodYears viewPeriodYearsObj = new ViewPeriodYears();
+
+	public void refKeyHandler(string keyPressed)
+	{
+		if (keyPressed == "Enter")
+		{
+			Task tmp = Focus("description");
+		}
+	}
+	public void descKeyHandler(string keyPressed)
+	{
+		if (keyPressed == "Enter")
+		{
+			Task tmp = Focus("heading");
+		}
+	}
+	public void grossKeyHandler(string keyPressed)
+	{
+		if (keyPressed == "Enter")
+		{
+			Task tmp= Focus("vatAmount");
+		}
+	}
+	public void vatKeyHandler(string keyPressed)
+	{
+		if (keyPressed == "Enter")
+		{
+			Task tmp = Focus("netAmount");
+		}
+	}
+
+	public void netKeyHandler(string keyPressed)
+	{
+		if (keyPressed == "Enter")
+		{
+			Task tmp = Focus("btnAddInvoice");
+		}
+	}
+
+	public void suppKeyHandler(string keyPressed)
+	{
+		if (keyPressed == "Enter")
+		{
+			Task tmp = Focus("reference");
+		}
+	}
+	public void dateKeyHandler(string keyPressed)
+	{
+		if (keyPressed == "Enter")
+		{
+			Task tmp = Focus("site");
+		}
+	}
+	public void siteKeyHandler(string keyPressed)
+	{
+		if (keyPressed == "Enter")
+		{
+			Task tmp = Focus("supplier");
+		}
+	}
+	public void headingKeyHandler(string keyPressed)
+	{
+		if (keyPressed == "Enter")
+		{
+			Task tmp = Focus("paymentType");
+		}
+	}
+	public void payKeyHandler(string keyPressed)
+	{
+		if (keyPressed == "Enter")
+		{
+			Task tmp = Focus("grossAmount");
+		}
+	}
+	public async Task Focus(string elementId)
+	{
+		await JSRuntime.InvokeVoidAsync("functionLibrary.focusElement", elementId);
+	}
 
 	public string informationModalReply
 	{
@@ -620,6 +698,7 @@ else
 		invoiceHeadingSelectedName = invoiceHeadings[0].Description;
 
 		Period tmp = getCurrentPeriod();
+		await Focus("date");
 	}
 
 	void AddNewInvoice()
