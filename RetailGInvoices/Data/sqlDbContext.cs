@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using RetailGInvoices.Data;
+using RetailGExpenses.Data;
 
 namespace RetailGInvoices.Data
 {
@@ -27,5 +28,6 @@ namespace RetailGInvoices.Data
         public DbSet<RetailGInvoices.Data.ViewInvoiceGroup> viewInvoiceGroup { get; set; }
         public DbSet<RetailGInvoices.Data.ViewPeriodYears> ViewPeriodYears { get; set; }
         public DbSet<RetailGInvoices.Data.PeriodCount> PeriodCounts { get; set; }
+        public DbSet<RetailGExpenses.Data.Expense> Expense { get; set; }
     }
 }

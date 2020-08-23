@@ -1,0 +1,883 @@
+﻿@page "/Expenses"
+@layout CompLayout
+@using RetailGInvoices.Data
+@using System.Net.Http
+@inject HttpClient Http
+@inject Services.AppData AppData
+@inject IJSRuntime JSRuntime
+
+@if (showInformationModal)
+{
+
+	<InformationModal showModal="showInformationModal" modalTextHeader="Error" modalTextBody="Cannot Add Expense Missing Mandatory Fields" @bind-reply="informationModalReply" />
+}
+@if (showNotes)
+{
+	<ExpenseNotes showModal="@showNotes" @bind-notes="expenseNotes" />
+}
+@if (viewPeriodYears == null)
+{
+	<p>Loading ..</p>
+}
+else
+{
+	<table class="table-borderless" style="width: 500px;">
+		<tr>
+			<td style="width:50px;">
+				<p>Period Year</p>
+			</td>
+			<td style="width:100px;">
+				<select class="form-control" @bind="viewPeriodYearsSelected">
+					@foreach (var viewPeriodYear in viewPeriodYears)
+					{
+						<option value="@viewPeriodYear.YearNo">@viewPeriodYear.YearNo</option>
+					}
+
+				</select>
+			</td>
+			<td>
+			</td>
+			<td>
+				<p>Payment Type</p>
+			</td>
+			<td style="width:250px;">
+				<select class="form-control" @bind="reconPaymentTypeSelected">
+					<option value="ALL">All</option>
+					@foreach (var paymentType in paymentTypes)
+					{
+						@if (paymentType.Type == "DD")
+						{
+							<option selected="selected" value="@paymentType.Id">@paymentType.Description</option>
+						}
+						else
+						{
+							<option value="@paymentType.Id">@paymentType.Description</option>
+						}
+					}
+
+				</select>
+			</td>
+		</tr>
+	</table>
+
+}
+@if (expenseViews == null)
+{
+	<p>Loading Reconciliation Data..</p>
+}
+else
+{
+	<h2>Summary Table</h2>
+	<Table TableItem="ViewExpenseGroup" Items="viewExpenseGroups" PageSize="50" ColumnReorder="true">
+		<Column TableItem="ViewExpenseGroup" Title="Heading " Field="@(x => x.Heading)" Sortable="true" Width="10%" />
+		<Column TableItem="ViewExpenseGroup" Title="Gross" Field="@(x => x.ExpenseGross)" Sortable="true" Width="10%" Format="£###.00" Align="Align.Right" />
+		<Column TableItem="ViewExpenseGroup" Title="VAT" Field="@(x => x.ExpenseVAT)" Sortable="true" Width="10%" Aggregate="AggregateType.Sum" Format="£###.00" Align="Align.Right" />
+		<Column TableItem="ViewExpenseGroup" Title="Total" Field="@(x => x.ExpenseNet)" Sortable="true" Width="10%" Aggregate="AggregateType.Sum" Format="£###.00" Align="Align.Right" />
+		<DetailTemplate TableItem="ViewExpenseGroup">
+			<Table TableItem="ExpenseView" Items="@getHeading(context.HeadingId, context.ExpensePaymentId)" PageSize="10" ColumnReorder="true" ShowFooter="true">
+				<Column TableItem="ExpenseView" Title="Site" Field="@(x => x.SiteName)" Width="10%" DefaultSortColumn="true" SetFooterValue="Totals" />
+				<Column TableItem="ExpenseView" Title="Supplier" Field="@(x => x.SupplierName)" Width="10%" />
+				<Column TableItem="ExpenseView" Title="Reference" Field="@(x => x.ExpenseReference)" Width="10%" DefaultSortColumn="true" />
+				<Column TableItem="ExpenseView" Title="Description" Field="@(x => x.ExpenseDescription)" Width="10%" />
+				<Column TableItem="ExpenseView" Title="Payment Type" Field="@(x => x.ExpensePaymentDescription)" Width="10%" DefaultSortColumn="true" />
+				<Column TableItem="ExpenseView" Title="Gross" Field="@(x => x.ExpenseGross)" Format="£###.00" Width="10%" DefaultSortColumn="true" Aggregate="AggregateType.Sum" Align="Align.Right" />
+				<Column TableItem="ExpenseView" Title="Vat" Field="@(x => x.ExpenseVAT)" Format="£###.00" Width="10%" DefaultSortColumn="true" Aggregate="AggregateType.Sum" Align="Align.Right" />
+				<Column TableItem="ExpenseView" Title="Total" Field="@(x => x.ExpenseNet)" Format="£###.00" Width="10%" Aggregate="AggregateType.Sum" Align="Align.Right" />
+			</Table>
+		</DetailTemplate>
+		<EmptyDataTemplate>
+			<div class="text-center">
+				No Summary Information
+			</div>
+		</EmptyDataTemplate>
+		<Pager ShowPageNumber="true" ShowTotalCount="true" ShowPageSizes="true" />
+	</Table>
+}
+
+<!-- Add a new Expense -->
+
+
+<table class="table-borderless">
+	<tr>
+		<td>
+			<label for="Expense Date" class="control-label">*Expense Date</label>
+		</td>
+		<td>
+			<label for="Site" class="control-label">*Site</label>
+		</td>
+		<td>
+			<label for="Supplier" class="control-label">*Supplier</label>
+		</td>
+		<td>
+			<label for="Reference" class="control-label">Reference</label>
+		</td>
+		<td>
+			<label for="Description" class="control-label">*Description</label>
+		</td>
+		<td>
+			<label for="Heading" class="control-label">*Heading</label>
+		</td>
+		<td>
+			<label for="PaymentType" class="control-label">*Pay Type</label>
+		</td>
+		<td class="amount">
+			<label for="Gross Amount" class="control-label">*Gross Amount</label>
+		</td>
+		<td class="amount">
+			<label for="Vat Amount" class="control-label">VAT Amount</label>
+		</td>
+		<td class="amount">
+			<label for="Net Amount" class="control-label">*Net Amount</label>
+		</td>
+	</tr>
+	<tr>
+		<td>
+			<input id="date" type="date" class="form-control" @bind="expenseObj.Date" @onkeypress="@(e => dateKeyHandler(e.Key))" />
+		</td>
+
+
+		<td style="width:200px">
+			@if (sites != null)
+			{
+				<select id="site" class="form-control" @bind="siteSelected" @onkeypress="@(e => siteKeyHandler(e.Key))">
+					@foreach (var site in sites)
+					{
+						<option value="@site.Id">@site.SiteName</option>
+					}
+
+				</select>
+			}
+		</td>
+		<td style="width:200px">
+			<input id="supplier" list="supplierList" @bind="supplierSelectedName" @onkeypress="@(e => suppKeyHandler(e.Key))">
+			@if (suppliers != null)
+			{
+				<datalist id="supplierList">
+					@foreach (var supplier in suppliers)
+					{
+						<option value="@supplier.Name"></option>
+					}
+				</datalist>
+			}
+		</td>
+		<td style="width: 100px">
+			<input id="reference" type="text" class="form-control" @bind="expenseObj.ExpenseReference" @onkeypress="@(e => refKeyHandler(e.Key))" />
+		</td>
+		<td>
+			<input id="description" type="text" class="form-control" @bind="expenseObj.Description" @onkeypress="@(e => descKeyHandler(e.Key))" />
+		</td>
+		<td style="width:200px">
+			<input id="heading" list="HeadingList" @bind="expenseHeadingSelectedName" @onkeypress="@(e => headingKeyHandler(e.Key))">
+			@if (expenseHeadings != null)
+			{
+				<datalist id="HeadingList">
+					@foreach (var expenseHeading in expenseHeadings)
+					{
+						<option value="@expenseHeading.Description"></option>
+					}
+
+				</datalist>
+			}
+		</td>
+
+		<td style="width: 100px">
+			@if (paymentTypes != null)
+			{
+				<select id="paymentType" class="form-control" @bind="paymentTypeSelected" @onkeypress="@(e => payKeyHandler(e.Key))">
+					@foreach (var paymentType in paymentTypes)
+					{
+						@if (paymentType.Type == "DD")
+						{
+							<option selected="selected" value="@paymentType.Id">@paymentType.Type</option>
+						}
+						else
+						{
+							<option value="@paymentType.Id">@paymentType.Type</option>
+						}
+					}
+
+				</select>
+			}
+		</td>
+		<td>
+			<input id="grossAmount" type="text" class="form-control" style="text-align:right" @bind="GrossAmount" @onkeypress="@(e => grossKeyHandler(e.Key))" onfocus="this.select()" />
+		</td>
+		<td>
+			<input id="vatAmount" type="text" class="form-control" style="text-align:right" @bind="VatAmount" @onkeypress="@(e => vatKeyHandler(e.Key))" onfocus="this.select()" />
+		</td>
+		<td>
+			<input id="netAmount" type="text" class="form-control" style="text-align:right" @bind-value="NetAmount" @onkeypress="@(e => netKeyHandler(e.Key))" @onblur="@(e => NetAmountKeyPress())" onfocus="this.select()" />
+		</td>
+	</tr>
+	<tr>
+		<td>
+			<button class="btn btn-info" @onclick="@AddExpenseNotes">Notes</button>
+		</td>
+		<td>
+			<button id="btnAddExpense" type="button" class="btn-success" @onclick="@AddNewExpense">Update</button>
+		</td>
+		<td>
+			<button type="button" class="btn-secondary" @onclick="@clearInputValues">Clear</button>
+		</td>
+	</tr>
+	<tr>
+		<td>
+			<p>* - Manditory Field</p>
+		</td>
+	</tr>
+</table>
+@if (expenseViews == null)
+{
+	<p><em>Loading....</em></p>
+}
+else
+{
+	<Table TableItem="ExpenseView" Items="expenseViews" @ref="Table" PageSize="50" ColumnReorder="true" RowClickAction="EditExpense" TableRowClass="x => x.RowClass">
+		<Column TableItem="ExpenseView" Title="ID" Field="@(x => x.ExpenseId)" Sortable="true" Width="10%" DefaultSortColumn="true" />
+		<Column TableItem="ExpenseView" Title="Expense Date" Field="@(x => x.ExpenseDate)" Sortable="true" Width="10%" DefaultSortColumn="true">
+			<Template>
+				@(context.ExpenseDate.ToShortDateString())
+			</Template>
+		</Column>
+		<Column TableItem="ExpenseView" Title="Site" Field="@(x => x.SiteName)" Sortable="true" Width="10%" DefaultSortColumn="true">
+		</Column>
+		<Column TableItem="ExpenseView" Title="Supplier" Field="@(x => x.SupplierName)" Sortable="true" Width="10%" />
+		<Column TableItem="ExpenseView" Title="Reference" Field="@(x => x.ExpenseReference)" Sortable="true" Width="10%" DefaultSortColumn="true" />
+		<Column TableItem="ExpenseView" Title="Description" Field="@(x => x.ExpenseDescription)" Sortable="true" Width="10%" />
+		<Column TableItem="ExpenseView" Title="Heading" Field="@(x => x.Heading)" Sortable="true" Width="10%" />
+		<Column TableItem="ExpenseView" Title="Payment Type" Field="@(x => x.ExpensePaymentDescription)" Sortable="true" Width="10%" DefaultSortColumn="true" />
+		<Column TableItem="ExpenseView" Title="Gross" Field="@(x => x.ExpenseGross)" Format="£###.00" Sortable="true" Width="10%" DefaultSortColumn="true" Align="Align.Right" />
+		<Column TableItem="ExpenseView" Title="Vat" Field="@(x => x.ExpenseVAT)" Format="£###.00" Sortable="true" Width="10%" DefaultSortColumn="true" Align="Align.Right" />
+		<Column TableItem="ExpenseView" Title="Total" Field="@(x => x.ExpenseNet)" Format="£###.00" Sortable="true" Width="10%" Align="Align.Right" />
+		<Column TableItem="ExpenseView" Title="Del">
+			<Template>
+				<button class="btn-sm" @onclick="c => DeleteExpense(context) ">X</button>
+			</Template>
+		</Column>
+		<Pager ShowPageNumber="true" ShowTotalCount="true" ShowPageSizes="true" />
+	</Table>
+
+
+}
+
+@code {
+	[Parameter]
+	public int companyId { get; set; }
+
+	private bool showNotes = false;
+	private ITable<ExpenseView> Table;
+	private void ToggleEdit()
+	{
+		Table.ToggleEditMode();
+	}
+	private bool updateFlag = false;
+	private int currentPeriod = 1;
+	private string currentPeriodYear = DateTime.Today.ToString("yy");
+	private string today = DateTime.Today.ToString("dd/MM/yyyy");
+
+	private bool showInformationModal = false;
+	private string _expenseNotes;
+	public string expenseNotes
+	{
+		get
+		{
+			return _expenseNotes;
+		}
+		set
+		{
+			_expenseNotes = value;
+			showNotes = false;
+			Task tmp = Focus("btnAddExpense");
+		}
+	}
+
+	private int defaultSiteId;
+	private string defaultSiteName;
+	private string defaultSupplierName;
+	private int defaultPaymentTypeId;
+	private string defaultPaymentTypeName;
+
+	private Company[] companies;
+	private Site[] sites;
+	private Supplier[] suppliers;
+	private PaymentType[] paymentTypes;
+	private ExpenseView[] expenseViews;
+	private Heading[] expenseHeadings;
+	private ViewExpenseGroup[] viewExpenseGroups;
+	private Period[] periods;
+	private ViewPeriodYears[] viewPeriodYears;
+
+
+	Company companyObj = new Company();
+	Expense expenseObj = new Expense();
+	Site siteObj = new Site();
+	Supplier supplierObj = new Supplier();
+	PaymentType paymentTypeObj = new PaymentType();
+	ExpenseView expenseViewObj = new ExpenseView();
+	Heading expenseHeadingObj = new Heading();
+	ViewPeriodYears viewPeriodYearsObj = new ViewPeriodYears();
+
+	public void refKeyHandler(string keyPressed)
+	{
+		if (keyPressed == "Enter")
+		{
+			Task tmp = Focus("description");
+		}
+	}
+	public void descKeyHandler(string keyPressed)
+	{
+		if (keyPressed == "Enter")
+		{
+			Task tmp = Focus("heading");
+		}
+	}
+	public void grossKeyHandler(string keyPressed)
+	{
+		if (keyPressed == "Enter")
+		{
+			Task tmp = Focus("vatAmount");
+		}
+	}
+	public void vatKeyHandler(string keyPressed)
+	{
+		if (keyPressed == "Enter")
+		{
+			Task tmp = Focus("netAmount");
+		}
+	}
+
+	public void netKeyHandler(string keyPressed)
+	{
+		if (keyPressed == "Enter")
+		{
+			Task tmp = Focus("btnAddExpense");
+		}
+	}
+
+	public void suppKeyHandler(string keyPressed)
+	{
+		if (keyPressed == "Enter")
+		{
+			Task tmp = Focus("reference");
+		}
+	}
+	public void dateKeyHandler(string keyPressed)
+	{
+		if (keyPressed == "Enter")
+		{
+			Task tmp = Focus("site");
+		}
+	}
+	public void siteKeyHandler(string keyPressed)
+	{
+		if (keyPressed == "Enter")
+		{
+			Task tmp = Focus("supplier");
+		}
+	}
+	public void headingKeyHandler(string keyPressed)
+	{
+		if (keyPressed == "Enter")
+		{
+			Task tmp = Focus("paymentType");
+		}
+	}
+	public void payKeyHandler(string keyPressed)
+	{
+		if (keyPressed == "Enter")
+		{
+			Task tmp = Focus("grossAmount");
+		}
+	}
+	public async Task Focus(string elementId)
+	{
+		await JSRuntime.InvokeVoidAsync("functionLibrary.focusElement", elementId);
+	}
+
+	public string informationModalReply
+	{
+		get
+		{
+			return null;
+		}
+
+		set
+		{
+			showInformationModal = false;
+		}
+
+	}
+
+	private int viewPeriodYearsSelected;
+	private ExpenseView[] getHeading(int headingId, int paymentType)
+	{
+		ExpenseView[] groupExpenses;
+		groupExpenses = Array.FindAll(expenseViews, f => (f.HeadingId == headingId) && (f.ExpensePaymentId == paymentType));
+
+		return groupExpenses;
+
+	}
+	private int expenseHeadingSelected;
+
+	private string _expenseHeadingSelectedName;
+	private string expenseHeadingSelectedName
+	{
+		get
+		{
+			return _expenseHeadingSelectedName;
+		}
+
+		set
+		{
+			Heading tempHeading = Array.Find<Heading>(expenseHeadings, f => f.Description == value);
+			if (tempHeading != null)
+			{
+				expenseHeadingSelected = tempHeading.Id;
+			}
+			else
+			{
+				Heading expenseHeading = new Heading();
+				expenseHeading.Description = value;
+
+				Task temp = addNewHeading(expenseHeading);
+			}
+
+			_expenseHeadingSelectedName = value;
+		}
+	}
+
+	private async Task addNewHeading(Heading newHeading)
+	{
+		await Http.PostJsonAsync<Heading>("/api/Headings", newHeading);
+		expenseHeadings = await Http.GetJsonAsync<Heading[]>("/api/Headings");
+		this.StateHasChanged();
+	}
+
+	private int siteSelected;
+	private string paymentTypeSelected;
+
+	private string _reconPaymentTypeSelected;
+	private string reconPaymentTypeSelected
+	{
+		get
+		{
+			return _reconPaymentTypeSelected;
+		}
+
+		set
+		{
+			_reconPaymentTypeSelected = value;
+			if (value == "ALL")
+			{
+				Task tmp = GetAllViewGroups();
+			}
+			else
+			{
+				Task tmp = GetViewGroup(int.Parse(value));
+			}
+		}
+	}
+
+	private string paymentTypeSelectedName;
+
+	private int supplierSelected;
+
+	private string _supplierSelectedName;
+	private string supplierSelectedName
+	{
+		get
+		{
+			return _supplierSelectedName;
+		}
+
+		set
+		{
+			Supplier tempSupplier = Array.Find<Supplier>(suppliers, f => f.Name == value);
+			if (tempSupplier != null)
+			{
+				supplierSelected = tempSupplier.Id;
+			}
+			else
+			{
+				Task tmp = addNewSupplier(value);
+			}
+			_supplierSelectedName = value;
+		}
+	}
+
+	private async Task addNewSupplier(String newSupplierName)
+	{
+		Supplier newSupplier = new Supplier();
+		newSupplier.Name = newSupplierName;
+
+		await Http.SendJsonAsync(HttpMethod.Post, "/api/Suppliers/", newSupplier);
+		suppliers = await Http.GetJsonAsync<Supplier[]>("/api/Suppliers/");
+
+		// Get the new suppliers ID to store locally
+		newSupplier = Array.Find<Supplier>(suppliers, f => f.Name == newSupplierName);
+		supplierSelected = newSupplier.Id;
+
+		this.StateHasChanged();
+	}
+
+	public string _siteSelectedName;
+
+	public string siteSelectedName
+	{
+		get
+		{
+			return _siteSelectedName;
+		}
+
+		set
+		{
+			_siteSelectedName = value;
+
+			Site site = Array.Find<Site>(sites, p => p.SiteName == value);
+			siteSelected = site.Id;
+		}
+	}
+
+	public decimal _VatAmount = 0;
+	public decimal VatAmount
+	{
+		get
+		{
+			return _VatAmount;
+		}
+
+		set
+		{
+			_VatAmount = value;
+		}
+	}
+
+	public decimal _GrossAmount = 0;
+	public decimal GrossAmount
+	{
+		get
+		{
+			return _GrossAmount;
+		}
+
+		set
+		{
+			_GrossAmount = value;
+		}
+	}
+
+	public decimal _NetAmount = 0;
+	public decimal NetAmount
+	{
+		get
+		{
+			return _NetAmount;
+		}
+		set
+		{
+			if (_VatAmount == 0)
+			{
+				if (_GrossAmount != value)
+				{
+					VatAmount = value - _GrossAmount;
+				}
+			}
+			else
+			{
+				if (_GrossAmount == 0)
+				{
+					GrossAmount = value - _VatAmount;
+				}
+			}
+			_NetAmount = value;
+		}
+
+	}
+
+
+	private void NetAmountKeyPress()
+	{
+		if (GrossAmount == 0)
+		{
+			if (VatAmount != 0 && NetAmount != 0)
+			{
+				GrossAmount = NetAmount - VatAmount;
+			}
+		}
+		else
+		{
+			NetAmount = GrossAmount + VatAmount;
+		}
+	}
+
+	private void clearInputValues()
+	{
+		expenseObj = new Expense(companyId);
+		expenseObj.Date = DateTime.Today;
+		supplierSelectedName = suppliers[0].Name;
+		siteSelectedName = sites[0].SiteName;
+		paymentTypeSelected = paymentTypes[0].Description;
+		expenseHeadingSelectedName = expenseHeadings[0].Description;
+		GrossAmount = 0;
+		VatAmount = 0;
+		NetAmount = 0;
+		expenseObj.ExpenseReference = "";
+		expenseObj.Description = "";
+	}
+
+	protected override async Task OnInitializedAsync()
+	{
+		companyId = AppData.CompanyId;
+
+		viewPeriodYears = await Http.GetJsonAsync<ViewPeriodYears[]>("api/ViewPeriodYears");
+		viewPeriodYearsSelected = int.Parse(currentPeriodYear);
+
+		expenseViews = await Http.GetJsonAsync<ExpenseView[]>("/api/ExpenseViews/Year/" + viewPeriodYearsSelected + "/" + companyId);
+
+		companies = await Http.GetJsonAsync<Company[]>("/api/Companies/");
+		sites = await Http.GetJsonAsync<Site[]>("api/Sites/Company/" + companyId);
+		suppliers = await Http.GetJsonAsync<Supplier[]>("api/Suppliers");
+		expenseHeadings = await Http.GetJsonAsync<Heading[]>("api/Headings");
+		periods = await Http.GetJsonAsync<Period[]>("api/Periods/Company/" + companyId + "/Year/" + currentPeriodYear);
+
+		paymentTypes = await Http.GetJsonAsync<PaymentType[]>("api/PaymentTypes");
+		if (paymentTypes.Length == 0)
+		{
+			PaymentType paymentType = new PaymentType();
+			paymentType.Id = 0;
+			paymentType.Description = "No Payment Types";
+			paymentType.Type = "";
+
+			paymentTypes = new PaymentType[1];
+			paymentTypes[0] = paymentType;
+		}
+
+		try
+		{
+			defaultPaymentTypeId = Array.Find(paymentTypes, f => f.Type == "DD").Id;
+		}
+		catch (NullReferenceException ex)
+		{
+			defaultPaymentTypeId = 0;
+		}
+		catch (Exception ex)
+		{
+			defaultPaymentTypeId = 0;
+		}
+		await GetViewGroup(defaultPaymentTypeId);
+
+		if (sites.Length == 0)
+		{
+			Site site = new Site();
+			site.Id = 0;
+			site.SiteName = "No Sites";
+			sites = new Site[1];
+			sites[0] = site;
+		}
+		defaultSiteId = sites[0].Id;
+		defaultSiteName = sites[0].SiteName;
+
+
+		defaultPaymentTypeName = paymentTypes[0].Description;
+
+		expenseObj.Date = DateTime.Today;
+
+		siteSelected = defaultSiteId;
+		siteSelectedName = defaultSiteName;
+		paymentTypeSelected = defaultPaymentTypeId.ToString();
+
+		if (expenseHeadings.Length == 0)
+		{
+			Heading expenseHeading = new Heading();
+			expenseHeading.Id = 0;
+			expenseHeading.Description = "No Headings";
+			expenseHeadings = new Heading[1];
+			expenseHeadings[0] = expenseHeading;
+		}
+		expenseHeadingSelected = expenseHeadings[0].Id;
+		expenseHeadingSelectedName = expenseHeadings[0].Description;
+
+		Period tmp = getCurrentPeriod();
+		await Focus("date");
+	}
+
+	void AddNewExpense()
+	{
+		if (!validateNewExpense())
+		{
+			showInformationModal = true;
+		}
+		else
+		{
+
+			try
+			{
+				expenseObj.SiteID = siteSelected;
+			}
+			catch (Exception ex)
+			{
+				expenseObj.SiteID = defaultSiteId;
+			}
+
+			try
+			{
+				expenseObj.PaymentTypeID = int.Parse(paymentTypeSelected);
+			}
+			catch (Exception ex)
+			{
+				expenseObj.PaymentTypeID = defaultPaymentTypeId;
+			}
+
+			expenseObj.Paid = !GetPaymentType(expenseObj.PaymentTypeID).ReconcileFlag;
+
+			expenseObj.SupplierID = supplierSelected;
+			expenseObj.GrossAmount = GrossAmount;
+			expenseObj.VATAmount = VatAmount;
+			expenseObj.NetAmount = NetAmount;
+			expenseObj.EditDate = DateTime.Now;
+
+			expenseObj.Heading = expenseHeadingSelected;
+
+			Period expensePeriod = getPeriod(expenseObj.Date);
+			expenseObj.PeriodNo = expensePeriod.PeriodKey;
+			expenseObj.PeriodId = expensePeriod.PeriodId;
+			expenseObj.Notes = expenseNotes;
+			expenseObj.CompanyID = companyId;
+
+			Task d = PostExpense();
+		}
+
+	}
+
+	private PaymentType GetPaymentType(int paymentType)
+	{
+		return Array.Find(paymentTypes, f => f.Id == paymentType);
+	}
+
+	private bool validateNewExpense()
+	{
+		bool isValid = true;
+
+		if (supplierSelectedName == null)
+		{
+			isValid = false;
+		}
+
+		if (GrossAmount == 0)
+		{
+			isValid = false;
+		}
+
+		if (NetAmount == 0)
+		{
+			isValid = false;
+		}
+
+		if (expenseObj.Description == null)
+		{
+			isValid = false;
+		}
+		return isValid;
+	}
+
+	private Period getCurrentPeriod()
+	{
+		return getPeriod(DateTime.Now);
+	}
+
+	private Period getPeriod(DateTime inDateTime)
+	{
+		Period period = Array.Find<Period>(periods, f => DateTime.Compare(inDateTime, f.StartDate) >= 0 && DateTime.Compare(inDateTime, f.EndDate) <= 0);
+		return period;
+	}
+
+	protected async Task PostExpense()
+	{
+		if (updateFlag)
+		{
+			await Http.SendJsonAsync(HttpMethod.Put, "/api/Expenses/" + expenseObj.ID, expenseObj);
+		}
+		else
+		{
+			expenseObj.CreatedDate = DateTime.Now;
+			try
+			{
+				await Http.SendJsonAsync(HttpMethod.Post, "/api/Expenses/", expenseObj);
+			}
+			catch (Exception ex)
+			{
+				System.Diagnostics.Debug.WriteLine("Error: " + ex.Message);
+
+			}
+		}
+		expenseViews = await Http.GetJsonAsync<ExpenseView[]>("/api/ExpenseViews/Year/" + viewPeriodYearsSelected + "/" + companyId);
+		clearInputValues();
+		this.StateHasChanged();
+
+	}
+
+	private async Task GetViewGroup(int paymentType)
+	{
+		viewExpenseGroups = await Http.GetJsonAsync<ViewExpenseGroup[]>("/api/ViewExpenseGroups/PayType/" + paymentType + "/" + companyId);
+		this.StateHasChanged();
+	}
+
+	private async Task GetAllViewGroups()
+	{
+		viewExpenseGroups = await Http.GetJsonAsync<ViewExpenseGroup[]>("/api/ViewExpenseGroups/Company/" + companyId);
+		this.StateHasChanged();
+	}
+
+	private void AddExpenseNotes()
+	{
+		expenseNotes = expenseObj.Notes;
+		showNotes = true;
+		StateHasChanged();
+	}
+	public void updateExpenseNotes(string newNotes)
+	{
+		expenseNotes = newNotes;
+	}
+
+	// Edit Method
+	private void EditExpense(ExpenseView expenseView)
+	{
+		expenseObj = new Expense(companyId);
+
+		expenseObj.ID = expenseView.ExpenseId;
+		expenseObj.ExpenseReference = expenseView.ExpenseReference;
+		expenseObj.Description = expenseView.ExpenseDescription;
+		expenseObj.GrossAmount = Math.Round(expenseView.ExpenseGross, 2);
+		expenseObj.VATAmount = Math.Round(expenseView.ExpenseVAT, 2);
+		expenseObj.NetAmount = Math.Round(expenseView.ExpenseNet, 2);
+		expenseObj.PaymentTypeID = expenseView.ExpensePaymentId;
+		expenseObj.SupplierID = expenseView.ExpenseSupplierId;
+		expenseObj.SiteID = expenseView.ExpenseSiteId;
+		expenseObj.Notes = expenseView.ExpenseNotes;
+		expenseObj.Date = expenseView.ExpenseDate;
+		expenseObj.CreatedDate = expenseView.ExpenseCreatedDate;
+
+		updateFlag = true;
+		Supplier supplier = Array.Find<Supplier>(suppliers, p => p.Id == expenseObj.SupplierID);
+		Site site = Array.Find<Site>(sites, p => p.Id == expenseObj.SiteID);
+
+		siteSelectedName = site.SiteName;
+		supplierSelectedName = supplier.Name;
+		GrossAmount = expenseObj.GrossAmount;
+		VatAmount = expenseObj.VATAmount;
+		NetAmount = expenseObj.NetAmount;
+
+		expenseNotes = "init";
+		this.StateHasChanged();
+	}
+
+	// Delete Method
+	protected async Task DeleteExpense(ExpenseView expenseView)
+	{
+
+		await Http.DeleteAsync("/api/Expenses/" + expenseView.ExpenseId);
+
+		expenseViews = await Http.GetJsonAsync<ExpenseView[]>("/api/ExpenseViews/Year/" + viewPeriodYearsSelected + "/" + companyId);
+	}
+
+}
