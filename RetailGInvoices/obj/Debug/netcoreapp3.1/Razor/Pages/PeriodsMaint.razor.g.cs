@@ -107,6 +107,13 @@ using BlazorTable;
 #line default
 #line hidden
 #nullable disable
+#nullable restore
+#line 15 "C:\Users\darre\source\repos\RetailGInvoices\RetailGInvoices\_Imports.razor"
+using Newtonsoft.Json;
+
+#line default
+#line hidden
+#nullable disable
     [Microsoft.AspNetCore.Components.LayoutAttribute(typeof(CompMaintLayout))]
     [Microsoft.AspNetCore.Components.RouteAttribute("/PeriodsMaint")]
     public partial class PeriodsMaint : Microsoft.AspNetCore.Components.ComponentBase

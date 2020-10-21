@@ -302,7 +302,7 @@ else
 	private Supplier[] suppliers;
 	private PaymentType[] paymentTypes;
 	private ExpenseView[] expenseViews;
-	private Heading[] expenseHeadings;
+	private InvoiceHeading[] expenseHeadings;
 	private ViewExpenseGroup[] viewExpenseGroups;
 	private Period[] periods;
 	private ViewPeriodYears[] viewPeriodYears;
@@ -314,7 +314,7 @@ else
 	Supplier supplierObj = new Supplier();
 	PaymentType paymentTypeObj = new PaymentType();
 	ExpenseView expenseViewObj = new ExpenseView();
-	Heading expenseHeadingObj = new Heading();
+	InvoiceHeading expenseHeadingObj = new InvoiceHeading();
 	ViewPeriodYears viewPeriodYearsObj = new ViewPeriodYears();
 
 	public void refKeyHandler(string keyPressed)
@@ -429,14 +429,14 @@ else
 
 		set
 		{
-			Heading tempHeading = Array.Find<Heading>(expenseHeadings, f => f.Description == value);
+			InvoiceHeading tempHeading = Array.Find<InvoiceHeading>(expenseHeadings, f => f.Description == value);
 			if (tempHeading != null)
 			{
 				expenseHeadingSelected = tempHeading.Id;
 			}
 			else
 			{
-				Heading expenseHeading = new Heading();
+				InvoiceHeading expenseHeading = new InvoiceHeading();
 				expenseHeading.Description = value;
 
 				Task temp = addNewHeading(expenseHeading);
@@ -446,10 +446,10 @@ else
 		}
 	}
 
-	private async Task addNewHeading(Heading newHeading)
+	private async Task addNewHeading(InvoiceHeading newHeading)
 	{
-		await Http.PostJsonAsync<Heading>("/api/Headings", newHeading);
-		expenseHeadings = await Http.GetJsonAsync<Heading[]>("/api/Headings");
+		await Http.PostJsonAsync<InvoiceHeading>("/api/InvoiceHeadings", newHeading);
+		expenseHeadings = await Http.GetJsonAsync<InvoiceHeading[]>("/api/InvoiceHeadings");
 		this.StateHasChanged();
 	}
 
@@ -637,7 +637,7 @@ else
 		companies = await Http.GetJsonAsync<Company[]>("/api/Companies/");
 		sites = await Http.GetJsonAsync<Site[]>("api/Sites/Company/" + companyId);
 		suppliers = await Http.GetJsonAsync<Supplier[]>("api/Suppliers");
-		expenseHeadings = await Http.GetJsonAsync<Heading[]>("api/Headings");
+		expenseHeadings = await Http.GetJsonAsync<InvoiceHeading[]>("api/InvoiceHeadings");
 		periods = await Http.GetJsonAsync<Period[]>("api/Periods/Company/" + companyId + "/Year/" + currentPeriodYear);
 
 		paymentTypes = await Http.GetJsonAsync<PaymentType[]>("api/PaymentTypes");
@@ -688,10 +688,10 @@ else
 
 		if (expenseHeadings.Length == 0)
 		{
-			Heading expenseHeading = new Heading();
+			InvoiceHeading expenseHeading = new InvoiceHeading();
 			expenseHeading.Id = 0;
 			expenseHeading.Description = "No Headings";
-			expenseHeadings = new Heading[1];
+			expenseHeadings = new InvoiceHeading[1];
 			expenseHeadings[0] = expenseHeading;
 		}
 		expenseHeadingSelected = expenseHeadings[0].Id;

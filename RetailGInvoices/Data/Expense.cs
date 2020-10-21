@@ -5,7 +5,7 @@ using System.Linq;
 using System.Reflection.Metadata.Ecma335;
 using System.Threading.Tasks;
 
-namespace RetailGExpenses.Data
+namespace RetailGInvoices.Data
 {
     public class Expense {
         public Expense(int companyId)

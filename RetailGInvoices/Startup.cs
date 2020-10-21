@@ -14,6 +14,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using RetailGInvoices.Data;
 using Blazored.Modal;
+using RetailGInvoices.Services;
 
 namespace RetailGInvoices
 {
@@ -64,6 +65,7 @@ namespace RetailGInvoices
                     };
                 });
             }
+           
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

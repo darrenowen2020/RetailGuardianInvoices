@@ -111,6 +111,13 @@ using BlazorTable;
 #line default
 #line hidden
 #nullable disable
+#nullable restore
+#line 15 "C:\Users\darre\source\repos\RetailGInvoices\RetailGInvoices\_Imports.razor"
+using Newtonsoft.Json;
+
+#line default
+#line hidden
+#nullable disable
     public partial class InformationModal : Microsoft.AspNetCore.Components.ComponentBase
     {
         #pragma warning disable 1998
