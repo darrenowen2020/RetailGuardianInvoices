@@ -501,3 +501,5 @@ C:\Users\darre\source\repos\RetailGInvoices\RetailGInvoices\obj\Debug\netcoreapp
 C:\Users\darre\source\repos\RetailGInvoices\RetailGInvoices\obj\Debug\netcoreapp3.1\Razor\Shared\MainLayout.razor.g.cs
 C:\Users\darre\source\repos\RetailGInvoices\RetailGInvoices\obj\Debug\netcoreapp3.1\Razor\Shared\NavBarMenu.razor.g.cs
 C:\Users\darre\source\repos\RetailGInvoices\RetailGInvoices\obj\Debug\netcoreapp3.1\Razor\_Imports.razor.g.cs
+C:\Users\darre\source\repos\RetailGInvoices\RetailGInvoices\obj\Debug\netcoreapp3.1\RazorDeclaration\Pages\VatRateMaint.razor.g.cs
+C:\Users\darre\source\repos\RetailGInvoices\RetailGInvoices\obj\Debug\netcoreapp3.1\Razor\Pages\VatRateMaint.razor.g.cs

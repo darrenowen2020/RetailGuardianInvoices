@@ -1,0 +1,248 @@
+﻿@page "/VatRateMaint"
+@layout CompLayout
+@using RetailGInvoices.Data
+@using Newtonsoft.Json
+@inject IJSRuntime JSRuntime
+@inject HttpClient Http
+
+<button class="btn btn-info" @onclick="@(x => ToggleEdit())" disabled="@disableEditButton">@editButtonText</button>
+<Table @ref="TableVatRate" TableItem="VatRate" Items="vatRates">
+	<Column TableItem="VatRate" Title="Description" Field="@(x => x.Description)">
+		<EditTemplate>
+			<input type="text" @bind="context.Description" @onblur="@(x => AddChangeToQueue(context))" />
+		</EditTemplate>
+	</Column>
+	<Column TableItem="VatRate" Title="VAT Rate" Field="@(x => x.Rate)" Format="£###.00">
+		<EditTemplate>
+			<input type="number" @bind="context.Rate" @onblur="@(x => AddChangeToQueue(context))" Format="£###.00"/>
+		</EditTemplate>
+	</Column>
+	<Column TableItem="VatRate" Title="">
+		<Template>
+			<button class="btn btn-danger" disabled="disabled">-</button>
+		</Template>
+		<EditTemplate>
+			<button class="btn btn-danger" @onclick="@(x => DeleteVatRate(context))">-</button>
+		</EditTemplate>
+	</Column>
+	<EmptyDataTemplate>
+		<p>No VAT Rates</p>
+	</EmptyDataTemplate>
+	<LoadingDataTemplate>
+		<p>Loading VAT Rates</p>
+	</LoadingDataTemplate>
+</Table>
+<button class="btn btn-info" @onclick="@(x => ToggleAddFields())" disabled="@disableAddButton">Add</button>
+<div hidden="@hideAddFields">
+	<table class="table-borderless">
+		<thead>
+			<tr>
+				<td width="50%">Description</td>
+				<td width="20%">Vat Rate</td>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<td>
+					<input id="vatdescription" type="text" @bind="@newVatRate.Description" style="width:100%" @onkeypress="@(x => descriptionKeyHandler(x.Key))" required/>
+				</td>
+				<td>
+					<input id="vatrate" type="number" @bind="@newVatRate.Rate" style="width:100%" @onkeypress="@(x => vatrateKeyHandler(x.Key))" onfocus="this.select()" step="0.01" required/>
+				</td>
+				<td>
+					<button id="submit" class="btn btn-info" @onclick="@(x => AddNewVatRate(newVatRate))">Submit</button>
+				</td>
+			</tr>
+		</tbody>
+	</table>
+</div>
+@code {
+	private ITable<VatRate> TableVatRate;
+
+	private VatRate[] vatRates;
+	private VatRate newVatRate;
+
+	private string editButtonText = "Edit";
+
+	private bool hideAddFields = true;
+	private bool disableAddButton = true;
+
+	private List<VatRate> descriptionChangeQueue;
+
+	private bool _disableEditButton;
+	private bool disableEditButton
+	{
+		get
+		{
+			bool returnValue = true;
+			if (vatRates != null)
+			{
+				if (vatRates.Length != 0)
+				{
+					returnValue = _disableEditButton;
+				}
+			}
+			return returnValue;
+		}
+
+		set
+		{
+			_disableEditButton = value;
+		}
+
+	}
+
+	protected override async Task OnInitializedAsync()
+	{
+		newVatRate = new VatRate();
+		descriptionChangeQueue = new List<VatRate>();
+
+		await GetVatRates();
+		disableAddButton = false;
+	}
+
+	public async Task Focus(string elementId)
+	{
+		await JSRuntime.InvokeVoidAsync("functionLibrary.focusElement", elementId);
+	}
+
+	public void addKeyHandler(string keyPressed)
+	{
+		if (keyPressed == "Enter")
+		{
+			Task tmp = Focus("vatdescription");
+		}
+	}
+
+	public void descriptionKeyHandler(string keyPressed)
+	{
+		if (keyPressed == "Enter")
+		{
+			Task tmp = Focus("vatrate");
+		}
+	}
+
+	public void vatrateKeyHandler(string keyPressed)
+	{
+		if (keyPressed == "Enter")
+		{
+			Task tmp = Focus("submit");
+		}
+	}
+
+	private async Task AddNewVatRate(VatRate vatRate)
+	{
+		await PostNewVatRate(vatRate);
+		await GetVatRates();
+		hideAddFields = true;
+	}
+
+	private async Task PostNewVatRate(VatRate vatRate)
+	{
+		try
+		{
+			await Http.PostJsonAsync($"api/VatRates", vatRate);
+		}
+		catch (Exception ex)
+		{
+			System.Diagnostics.Debug.WriteLine(ex.Message);
+		}
+	}
+
+	private async Task ToggleAddFields()
+	{
+		hideAddFields = !hideAddFields;
+
+		if (!hideAddFields)
+		{
+			newVatRate = new VatRate();
+			await Focus("vatdescription");
+		}
+	}
+
+	private async Task ToggleEdit()
+	{
+		TableVatRate.ToggleEditMode();
+
+		if (TableVatRate.IsEditMode == true)
+		{
+			descriptionChangeQueue = new List<VatRate>();
+			disableAddButton = true;
+			editButtonText = "Save Changes";
+		}
+		else
+		{
+			disableAddButton = false;
+			editButtonText = "Edit";
+			await SaveChanges();
+		}
+	}
+
+	private void AddChangeToQueue(VatRate vatRate)
+	{
+		descriptionChangeQueue.Add(vatRate);
+	}
+
+	private async Task SaveChanges()
+	{
+		try
+		{
+			foreach (VatRate vatRate in descriptionChangeQueue)
+			{
+				string payload = JsonConvert.SerializeObject(vatRate);
+
+				StringContent content = new StringContent(payload, System.Text.Encoding.UTF8, "application/json");
+				await Http.PutAsync($"api/VatRates/{vatRate.Id}", content);
+			}
+		}
+		catch (Exception ex)
+		{
+			System.Diagnostics.Debug.WriteLine(ex.Message);
+		}
+	}
+
+	private async Task DeleteVatRate(VatRate vatRate)
+	{
+		try
+		{
+			HttpResponseMessage response = await Http.DeleteAsync($"api/VatRates/{vatRate.Id}");
+			if (response.IsSuccessStatusCode)
+			{
+				await GetVatRates();
+				StateHasChanged();
+			}
+		}
+		catch (Exception ex)
+		{
+			System.Diagnostics.Debug.WriteLine(ex.Message);
+		}
+	}
+	private async Task GetVatRates()
+	{
+		try
+		{
+			vatRates = await Http.GetJsonAsync<VatRate[]>("api/VatRates");
+		}
+		catch (Exception ex)
+		{
+			DebugReport.ReportError(ex.Message);
+		}
+
+	}
+
+	private VatRate GetVatRate(int vatRateId)
+	{
+		VatRate vatRate = new VatRate();
+		if (vatRates != null)
+		{
+			vatRate = vatRates.Where(f => f.Id == vatRateId).FirstOrDefault();
+		}
+
+		return vatRate;
+	}
+
+	private string GetVatRateDesc(int vatRateId)
+	{
+		return vatRates.Where(f => f.Id == vatRateId).FirstOrDefault().Description;
+	}
+}

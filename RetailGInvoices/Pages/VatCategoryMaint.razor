@@ -2,7 +2,7 @@
 @layout CompLayout
 @using RetailGInvoices.Data
 @using Newtonsoft.Json
-
+@inject IJSRuntime JSRuntime
 @inject HttpClient Http
 
 <button class="btn btn-info" @onclick="@(x => ToggleEdit())" disabled="@disableEditButton">@editButtonText</button>
@@ -66,16 +66,16 @@
 		<tbody>
 			<tr>
 				<td>
-					<input type="text" @bind="@newVatCategory.Category" style="width:100%" />
+					<input id="vatcategory" type="text" @bind="@newVatCategory.Category" style="width:100%" @onkeypress="@(x => categoryKeyHandler(x.Key))"/>
 				</td>
 				<td>
 					@if (vatRates == null)
 					{
-						<p></p>
+						<p id="vatrate"></p>
 					}
 					else
 					{
-						<select @bind="@newVatCategory.VatRate" style="width:100%">
+						<select id="vatrate" @bind="@newVatCategory.VatRate" style="width:100%" @onkeypress="@(x => vatrateKeyHandler(x.Key))">
 							@foreach (VatRate vatRate in vatRates)
 							{
 								<option value="@vatRate.Id">@vatRate.Description</option>
@@ -84,7 +84,7 @@
 					}
 				</td>
 				<td>
-					<button class="btn btn-info" @onclick="@(x => AddNewCategory(newVatCategory))">Submit</button>
+					<button id="submit" class="btn btn-info" @onclick="@(x => AddNewCategory(newVatCategory))">Submit</button>
 				</td>
 			</tr>
 		</tbody>
@@ -137,10 +137,40 @@
 		disableAddButton = false;
 	}
 
+	public async Task Focus(string elementId)
+	{
+		await JSRuntime.InvokeVoidAsync("functionLibrary.focusElement", elementId);
+	}
+
+	public void addKeyHandler(string keyPressed)
+	{
+		if (keyPressed == "Enter")
+		{
+			Task tmp = Focus("vatcategory");
+		}
+	}
+
+	public void categoryKeyHandler(string keyPressed)
+	{
+		if (keyPressed == "Enter")
+		{
+			Task tmp = Focus("vatrate");
+		}
+	}
+
+	public void vatrateKeyHandler(string keyPressed)
+	{
+		if (keyPressed == "Enter")
+		{
+			Task tmp = Focus("submit");
+		}
+	}
+
 	private async Task AddNewCategory(VatCategory vatCategory)
 	{
 		await PostNewCategory(vatCategory);
 		await GetVatCategories();
+		hideAddFields = true;
 	}
 
 	private async Task PostNewCategory(VatCategory vatCategory)
@@ -155,9 +185,15 @@
 		}
 	}
 
-	private void ToggleAddFields()
+	private async Task ToggleAddFields()
 	{
 		hideAddFields = !hideAddFields;
+
+		if (!hideAddFields)
+		{
+			newVatCategory = new VatCategory();
+			await Focus("vatcategory");
+		}
 	}
 
 	private async Task ToggleEdit()

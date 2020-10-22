@@ -33,6 +33,7 @@ namespace RetailGInvoices.Data
         public string ExpenseNotes { get; set; }
         public bool ExpensePaymentReconcile { get; set; }
         public int ExpenseCompanyId { get; set; }
+        public int ExpenseVatCategory { get; set; }
         public string RowClass => (ExpenseNotes == null) ? null: "table-info";
     }
 }

@@ -80,6 +80,11 @@ else
 				<Column TableItem="ExpenseView" Title="Reference" Field="@(x => x.ExpenseReference)" Width="10%" DefaultSortColumn="true" />
 				<Column TableItem="ExpenseView" Title="Description" Field="@(x => x.ExpenseDescription)" Width="10%" />
 				<Column TableItem="ExpenseView" Title="Payment Type" Field="@(x => x.ExpensePaymentDescription)" Width="10%" DefaultSortColumn="true" />
+				<Column TableItem="ExpenseView" Title="Vat Category" Width="15%">
+					<Template Context="expContext">
+						<p>@GetVatCatDesc(expContext.ExpenseVatCategory)</p>
+					</Template>
+				</Column>
 				<Column TableItem="ExpenseView" Title="Gross" Field="@(x => x.ExpenseGross)" Format="£###.00" Width="10%" DefaultSortColumn="true" Aggregate="AggregateType.Sum" Align="Align.Right" />
 				<Column TableItem="ExpenseView" Title="Vat" Field="@(x => x.ExpenseVAT)" Format="£###.00" Width="10%" DefaultSortColumn="true" Aggregate="AggregateType.Sum" Align="Align.Right" />
 				<Column TableItem="ExpenseView" Title="Total" Field="@(x => x.ExpenseNet)" Format="£###.00" Width="10%" Aggregate="AggregateType.Sum" Align="Align.Right" />
@@ -98,117 +103,122 @@ else
 
 
 <table class="table-borderless">
-	<tr>
-		<td>
-			<label for="Expense Date" class="control-label">*Expense Date</label>
-		</td>
-		<td>
-			<label for="Site" class="control-label">*Site</label>
-		</td>
-		<td>
-			<label for="Supplier" class="control-label">*Supplier</label>
-		</td>
-		<td>
-			<label for="Reference" class="control-label">Reference</label>
-		</td>
-		<td>
-			<label for="Description" class="control-label">*Description</label>
-		</td>
-		<td>
-			<label for="Heading" class="control-label">*Heading</label>
-		</td>
-		<td>
-			<label for="PaymentType" class="control-label">*Pay Type</label>
-		</td>
-		<td class="amount">
-			<label for="Gross Amount" class="control-label">*Gross Amount</label>
-		</td>
-		<td class="amount">
-			<label for="Vat Amount" class="control-label">VAT Amount</label>
-		</td>
-		<td class="amount">
-			<label for="Net Amount" class="control-label">*Net Amount</label>
-		</td>
-	</tr>
-	<tr>
-		<td>
-			<input id="date" type="date" class="form-control" @bind="expenseObj.Date" @onkeypress="@(e => dateKeyHandler(e.Key))" />
-		</td>
+	<thead>
+		<tr>
+			<td width="5%">*Expense Date</td>
+			<td width="10%">*Site</td>
+			<td width="15%">*Supplier</td>
+			<td width="10%">Reference</td>
+			<td width="15%">*Description</td>
+			<td width="15%">*Heading</td>
+			<td width="5%">*Pay Type</td>
+			<td width="10%">Vat Category</td>
+			<td width="5%" class="amount">*Gross Amount</td>
+			<td width="5%" class="amount">VAT Amount</td>
+			<td width="5%" class="amount">*Net Amount</td>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td>
+				<input id="date" type="date" class="form-control" @bind="expenseObj.Date" @onkeypress="@(e => dateKeyHandler(e.Key))" style="width:100%" />
+			</td>
 
-
-		<td style="width:200px">
-			@if (sites != null)
-			{
-				<select id="site" class="form-control" @bind="siteSelected" @onkeypress="@(e => siteKeyHandler(e.Key))">
-					@foreach (var site in sites)
-					{
-						<option value="@site.Id">@site.SiteName</option>
-					}
-
-				</select>
-			}
-		</td>
-		<td style="width:200px">
-			<input id="supplier" list="supplierList" @bind="supplierSelectedName" @onkeypress="@(e => suppKeyHandler(e.Key))">
-			@if (suppliers != null)
-			{
-				<datalist id="supplierList">
-					@foreach (var supplier in suppliers)
-					{
-						<option value="@supplier.Name"></option>
-					}
-				</datalist>
-			}
-		</td>
-		<td style="width: 100px">
-			<input id="reference" type="text" class="form-control" @bind="expenseObj.ExpenseReference" @onkeypress="@(e => refKeyHandler(e.Key))" />
-		</td>
-		<td>
-			<input id="description" type="text" class="form-control" @bind="expenseObj.Description" @onkeypress="@(e => descKeyHandler(e.Key))" />
-		</td>
-		<td style="width:200px">
-			<input id="heading" list="HeadingList" @bind="expenseHeadingSelectedName" @onkeypress="@(e => headingKeyHandler(e.Key))">
-			@if (expenseHeadings != null)
-			{
-				<datalist id="HeadingList">
-					@foreach (var expenseHeading in expenseHeadings)
-					{
-						<option value="@expenseHeading.Description"></option>
-					}
-
-				</datalist>
-			}
-		</td>
-
-		<td style="width: 100px">
-			@if (paymentTypes != null)
-			{
-				<select id="paymentType" class="form-control" @bind="paymentTypeSelected" @onkeypress="@(e => payKeyHandler(e.Key))">
-					@foreach (var paymentType in paymentTypes)
-					{
-						@if (paymentType.Type == "DD")
+			<td>
+				@if (sites != null)
+				{
+					<select id="site" class="form-control" @bind="siteSelected" @onkeypress="@(e => siteKeyHandler(e.Key))" style="width:100%">
+						@foreach (var site in sites)
 						{
-							<option selected="selected" value="@paymentType.Id">@paymentType.Type</option>
+							<option value="@site.Id">@site.SiteName</option>
 						}
-						else
-						{
-							<option value="@paymentType.Id">@paymentType.Type</option>
-						}
-					}
 
-				</select>
+					</select>
+				}
+			</td>
+			<td>
+				<input id="supplier" list="supplierList" @bind="supplierSelectedName" @onkeypress="@(e => suppKeyHandler(e.Key))" style="width:100%">
+				@if (suppliers != null)
+				{
+					<datalist id="supplierList">
+						@foreach (var supplier in suppliers)
+						{
+							<option value="@supplier.Name"></option>
+						}
+					</datalist>
+				}
+			</td>
+			<td>
+				<input id="reference" type="text" class="form-control" @bind="expenseObj.ExpenseReference" @onkeypress="@(e => refKeyHandler(e.Key))" style="width:100%" />
+			</td>
+			<td>
+				<input id="description" type="text" class="form-control" @bind="expenseObj.Description" @onkeypress="@(e => descKeyHandler(e.Key))" style="width:100%" />
+			</td>
+			<td>
+				<input id="heading" list="HeadingList" @bind="expenseHeadingSelectedName" @onkeypress="@(e => headingKeyHandler(e.Key))" style="width:100%">
+				@if (expenseHeadings != null)
+				{
+					<datalist id="HeadingList">
+						@foreach (var expenseHeading in expenseHeadings)
+						{
+							<option value="@expenseHeading.Description"></option>
+						}
+
+					</datalist>
+				}
+			</td>
+
+			<td>
+				@if (paymentTypes != null)
+				{
+					<select id="paymentType" class="form-control" @bind="paymentTypeSelected" @onkeypress="@(e => payKeyHandler(e.Key))" style="width:100%">
+						@foreach (var paymentType in paymentTypes)
+						{
+							@if (paymentType.Type == "DD")
+							{
+								<option selected="selected" value="@paymentType.Id">@paymentType.Type</option>
+							}
+							else
+							{
+								<option value="@paymentType.Id">@paymentType.Type</option>
+							}
+						}
+
+					</select>
+				}
+			</td>
+			<td>
+				@if (vatCategories != null)
+				{
+					<select id="vatcat" @bind="expenseObj.CategoryID" @onkeypress="@(e => vatCatKeyHandler(e.Key))" style="width:100%">
+						@foreach (VatCategory vatCategory in vatCategories)
+						{
+							<option value="@vatCategory.Id">@vatCategory.Category</option>
+						}
+					</select>
+				}
+			</td>
+			@if (vatCategories == null)
+			{
+				<td>0</td>
+				<td>0</td>
+				<td>0</td>
 			}
-		</td>
-		<td>
-			<input id="grossAmount" type="text" class="form-control" style="text-align:right" @bind="GrossAmount" @onkeypress="@(e => grossKeyHandler(e.Key))" onfocus="this.select()" />
-		</td>
-		<td>
-			<input id="vatAmount" type="text" class="form-control" style="text-align:right" @bind="VatAmount" @onkeypress="@(e => vatKeyHandler(e.Key))" onfocus="this.select()" />
-		</td>
-		<td>
-			<input id="netAmount" type="text" class="form-control" style="text-align:right" @bind-value="NetAmount" @onkeypress="@(e => netKeyHandler(e.Key))" @onblur="@(e => NetAmountKeyPress())" onfocus="this.select()" />
-		</td>
-	</tr>
+			else
+			{
+				<td>
+					<input id="grossAmount" type="text" class="form-control" style="text-align:right; width:100%" @bind="GrossAmount" @onkeypress="@(e => grossKeyHandler(e.Key))" onfocus="this.select()" />
+				</td>
+				<td align="right" style="vertical-align:bottom">
+					<p id="vatAmount" style="text-align:right; width:100%" @onkeypress="@(e => vatKeyHandler(e.Key))">@CalcVat(GrossAmount, expenseObj.CategoryID)</p>
+				</td>
+				<td align="right" style="vertical-align: bottom">
+					<p id="netAmount" style="text-align:right; width:100%">@CalcNet(GrossAmount, expenseObj.CategoryID)</p>
+				</td>
+			}
+		</tr>
+	</tbody>
+
 	<tr>
 		<td>
 			<button class="btn btn-info" @onclick="@AddExpenseNotes">Notes</button>
@@ -246,6 +256,11 @@ else
 		<Column TableItem="ExpenseView" Title="Description" Field="@(x => x.ExpenseDescription)" Sortable="true" Width="10%" />
 		<Column TableItem="ExpenseView" Title="Heading" Field="@(x => x.Heading)" Sortable="true" Width="10%" />
 		<Column TableItem="ExpenseView" Title="Payment Type" Field="@(x => x.ExpensePaymentDescription)" Sortable="true" Width="10%" DefaultSortColumn="true" />
+		<Column TableItem="ExpenseView" Title="Vat Category">
+			<Template>
+				<p>@GetVatCatDesc(context.ExpenseVatCategory)</p>
+			</Template>
+		</Column>
 		<Column TableItem="ExpenseView" Title="Gross" Field="@(x => x.ExpenseGross)" Format="£###.00" Sortable="true" Width="10%" DefaultSortColumn="true" Align="Align.Right" />
 		<Column TableItem="ExpenseView" Title="Vat" Field="@(x => x.ExpenseVAT)" Format="£###.00" Sortable="true" Width="10%" DefaultSortColumn="true" Align="Align.Right" />
 		<Column TableItem="ExpenseView" Title="Total" Field="@(x => x.ExpenseNet)" Format="£###.00" Sortable="true" Width="10%" Align="Align.Right" />
@@ -261,8 +276,8 @@ else
 }
 
 @code {
-	[Parameter]
-	public int companyId { get; set; }
+		[Parameter]
+		public int companyId { get; set; }
 
 	private bool showNotes = false;
 	private ITable<ExpenseView> Table;
@@ -306,6 +321,8 @@ else
 	private ViewExpenseGroup[] viewExpenseGroups;
 	private Period[] periods;
 	private ViewPeriodYears[] viewPeriodYears;
+	private VatCategory[] vatCategories;
+	private VatRate[] vatRates;
 
 
 	Company companyObj = new Company();
@@ -317,11 +334,75 @@ else
 	InvoiceHeading expenseHeadingObj = new InvoiceHeading();
 	ViewPeriodYears viewPeriodYearsObj = new ViewPeriodYears();
 
+	private int GetCatVatRate(int vatCategoryId)
+	{
+		try
+		{
+			if (vatCategories == null)
+			{
+				return 0;
+			}
+			else
+			{
+				return vatCategories.Where(f => f.Id == vatCategoryId).FirstOrDefault().VatRate;
+			}
+		}
+		catch (Exception ex)
+		{
+			return 0;
+		}
+	}
+
+	private Decimal CalcVat(Decimal grossAmount, int catId)
+	{
+		Decimal vatAmount = 0;
+		Decimal vatRate = GetVatRate(GetCatVatRate(catId));
+
+		if (vatRate == 0)
+		{
+			vatAmount = 0;
+		}
+		else
+		{
+			vatAmount = Math.Round(grossAmount * vatRate,2);
+
+		}
+
+		return vatAmount;
+	}
+
+	private Decimal CalcNet(Decimal grossAmount, int catId)
+	{
+		Decimal netAmount = 0;
+		Decimal vatRate = GetVatRate(GetCatVatRate(catId));
+
+		if (vatRate == 0)
+		{
+			netAmount = grossAmount;
+		}
+		else
+		{
+			netAmount = Math.Round(grossAmount - (grossAmount * vatRate), 2);
+
+		}
+
+		return netAmount;
+	}
+
+
 	public void refKeyHandler(string keyPressed)
 	{
 		if (keyPressed == "Enter")
 		{
 			Task tmp = Focus("description");
+		}
+	}
+
+	public void vatCatKeyHandler(string keyPressed)
+	{
+		if (keyPressed == "Enter")
+		{
+			Task tmp = Focus("grossAmount");
 		}
 	}
 	public void descKeyHandler(string keyPressed)
@@ -335,7 +416,7 @@ else
 	{
 		if (keyPressed == "Enter")
 		{
-			Task tmp = Focus("vatAmount");
+			Task tmp = Focus("btnAddExpense");
 		}
 	}
 	public void vatKeyHandler(string keyPressed)
@@ -386,7 +467,7 @@ else
 	{
 		if (keyPressed == "Enter")
 		{
-			Task tmp = Focus("grossAmount");
+			Task tmp = Focus("vatcat");
 		}
 	}
 	public async Task Focus(string elementId)
@@ -444,6 +525,11 @@ else
 
 			_expenseHeadingSelectedName = value;
 		}
+	}
+
+	private string GetVatCatDesc(int VatCatId)
+	{
+		return vatCategories.Where(f => f.Id == VatCatId).FirstOrDefault().Category;
 	}
 
 	private async Task addNewHeading(InvoiceHeading newHeading)
@@ -639,6 +725,8 @@ else
 		suppliers = await Http.GetJsonAsync<Supplier[]>("api/Suppliers");
 		expenseHeadings = await Http.GetJsonAsync<InvoiceHeading[]>("api/InvoiceHeadings");
 		periods = await Http.GetJsonAsync<Period[]>("api/Periods/Company/" + companyId + "/Year/" + currentPeriodYear);
+		vatCategories = await GetVatCategories();
+		vatRates = await GetVatRates();
 
 		paymentTypes = await Http.GetJsonAsync<PaymentType[]>("api/PaymentTypes");
 		if (paymentTypes.Length == 0)
@@ -701,6 +789,51 @@ else
 		await Focus("date");
 	}
 
+	private async Task<VatCategory[]> GetVatCategories()
+	{
+		VatCategory[] vatCategories;
+		try
+		{
+			vatCategories = await Http.GetJsonAsync<VatCategory[]>("api/VatCategories");
+
+			return vatCategories;
+		}
+		catch (Exception ex)
+		{
+			return new VatCategory[0];
+		}
+	}
+
+	private async Task<VatRate[]> GetVatRates()
+	{
+		VatRate[] vatRates;
+
+		try
+		{
+			vatRates = await Http.GetJsonAsync<VatRate[]>("api/VatRates");
+			return vatRates;
+		}
+		catch (Exception ex)
+		{
+			return new VatRate[0];
+		}
+	}
+
+	private Decimal GetVatRate(int vatRateId)
+	{
+		Decimal vatRate = 0;
+		try
+		{
+			vatRate = vatRates.Where(f => f.Id == vatRateId).FirstOrDefault().Rate;
+		}
+		catch (Exception ex)
+		{
+			System.Diagnostics.Debug.WriteLine(ex.Message);
+		}
+
+		return vatRate;
+	}
+
 	void AddNewExpense()
 	{
 		if (!validateNewExpense())
@@ -732,8 +865,8 @@ else
 
 			expenseObj.SupplierID = supplierSelected;
 			expenseObj.GrossAmount = GrossAmount;
-			expenseObj.VATAmount = VatAmount;
-			expenseObj.NetAmount = NetAmount;
+			expenseObj.VATAmount = CalcVat(GrossAmount,expenseObj.CategoryID);
+			expenseObj.NetAmount = CalcNet(GrossAmount, expenseObj.CategoryID);
 			expenseObj.EditDate = DateTime.Now;
 
 			expenseObj.Heading = expenseHeadingSelected;
@@ -745,6 +878,7 @@ else
 			expenseObj.CompanyID = companyId;
 
 			Task d = PostExpense();
+			StateHasChanged();
 		}
 
 	}
@@ -764,11 +898,6 @@ else
 		}
 
 		if (GrossAmount == 0)
-		{
-			isValid = false;
-		}
-
-		if (NetAmount == 0)
 		{
 			isValid = false;
 		}
