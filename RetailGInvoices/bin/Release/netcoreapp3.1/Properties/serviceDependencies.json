@@ -4,13 +4,13 @@
       "type": "mssql",
       "connectionId": "RetailGuardianDbConnection"
     },
-    "signalr1": {
-      "type": "signalr",
-      "connectionId": "Azure__SignalR__ConnectionString"
-    },
     "mssql2": {
       "type": "mssql",
       "connectionId": "AzureRetailGuardianDbConnection"
+    },
+    "signalr1": {
+      "type": "signalr",
+      "connectionId": "Azure__SignalR__ConnectionString"
     }
   }
 }

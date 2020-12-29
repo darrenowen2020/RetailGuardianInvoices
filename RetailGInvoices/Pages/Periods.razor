@@ -4,6 +4,7 @@
 @using System.Net.Http
 @inject HttpClient Http
 @inject Services.AppData AppData
+@inject IJSRuntime JSRuntime
 
 @if (showModal)
 {
@@ -16,7 +17,7 @@
 }
 else
 {
-	<EditForm Model="@periodObj">
+	<p style="color:red; font-size:18px" hidden="@hideErrorMessage">@errorMessage</p>
 		<table class="table-borderless">
 			<thead>
 				<tr>
@@ -30,24 +31,24 @@ else
 
 			<tr>
 				<td>
-					<input type="number" @bind="periodObj.PeriodNo" />
+					<input id="periodno" type="number" @bind="periodObj.PeriodNo" onfocus="this.select();" @onkeypress="@(e => PeriodNoHandler(e.Key))" />
 				</td>
 				<td>
-					<input type="number" @bind="periodObj.YearNo" />
+					<input id="yearno" type="number" @bind="periodObj.YearNo" @onkeypress="@(e => YearNoHandler(e.Key))"/>
 				</td>
 				<td>
-					<input type="date" @bind="periodObj.StartDate" />
+					<input id="startdate" type="date" @bind="periodObj.StartDate"  @onkeypress="@(e => StartDateHandler(e.Key))"/>
 				</td>
 				<td>
-					<input type="date" @bind="periodObj.EndDate" />
+					<input id="enddate" type="date" @bind="periodObj.EndDate"  @onkeypress="@(e => EndDateHandler(e.Key))"/>
 				</td>
 				<td>
-					<button class="btn btn-info" title="Add" @onclick="@((x) => AddPeriod())" disabled="@(!addTableActive)">Add</button>
+					<button id="addbutton" class="btn btn-info" title="Add" @onclick="@((x) => AddPeriod())" disabled="@(!addTableActive)">Add</button>
 				</td>
 			</tr>
 		</table>
-	</EditForm>
-	<button class="btn btn-sm btn-danger" title="Toggle Edit Mode" @onclick="@((x) => ToggleEdit())">Toggle Edit Mode</button>
+	<button class="btn btn-sm btn-danger" @onclick="@((x) => ToggleEdit())">Edit Mode</button>
+
 
 
 	<Table TableItem="Period" Items="periods" @ref="Table" PageSize="20" ColumnReorder="true" SelectionType="SelectionType.Single" RowClickAction="RowClick">
@@ -126,7 +127,10 @@ else
 
 	private Period periodObj = new Period();
 	private bool hideButtons = true;
+	private bool hideErrorMessage = true;
 	private bool addTableActive = true;
+
+	private string errorMessage = string.Empty;
 
 	private string rowID;
 	private Period activePeriod;
@@ -157,6 +161,42 @@ else
 		await refreshTable();
 	}
 
+	public async Task Focus(string elementId)
+	{
+		await JSRuntime.InvokeVoidAsync("functionLibrary.focusElement", elementId);
+	}
+
+	private void PeriodNoHandler(string keyPressed)
+	{
+		if (keyPressed == "Enter")
+		{
+			Task tmp = Focus("yearno");	
+		}
+	}
+
+	private void YearNoHandler(string keyPressed)
+	{
+		if (keyPressed == "Enter")
+		{
+			Task tmp = Focus("startdate");
+		}
+	}
+
+	private void StartDateHandler(string keyPressed)
+	{
+		if (keyPressed == "Enter")
+		{
+			Task tmp = Focus("enddate");
+		}
+	}
+	private void EndDateHandler(string keyPressed)
+	{
+		if (keyPressed == "Enter")
+		{
+			Task tmp = Focus("addbutton");
+		}
+	}
+
 	private void ToggleEdit()
 	{
 		Table.ToggleEditMode();
@@ -181,9 +221,30 @@ else
 
 	private void AddPeriod()
 	{
-		periodObj.PeriodKey = periodObj.PeriodNo.ToString("D2") + periodObj.YearNo.ToString("D2");
-		periodObj.CompanyId = companyId;
-		Task tmp = PostPeriod();
+		hideErrorMessage = true;
+		if (ArePeriodsOverlapping(periodObj))
+		{
+			errorMessage = "Error Period Dates Overlap With Existing Periods";
+			hideErrorMessage = false;
+			Task tmp = Focus("startdate");
+		}
+		else
+		{
+			if (DoesPeriodNoExist(periodObj))
+			{
+				errorMessage = "Error Period No Already Exists";
+				hideErrorMessage = false;
+				Task tmp2 = Focus("periodno");
+			}
+			else
+			{
+				periodObj.PeriodKey = periodObj.PeriodNo.ToString("D2") + periodObj.YearNo.ToString("D2");
+				periodObj.CompanyId = companyId;
+				Task tmp = PostPeriod();
+				hideErrorMessage = true;
+				errorMessage = string.Empty;
+			}
+		}
 	}
 
 	private async Task PostPeriod()
@@ -255,5 +316,40 @@ else
 			Array.Find(periods, f => f.PeriodId == selectedPeriod.PeriodId).DatePeriodClosed = DateTime.Today;
 		}
 		StateHasChanged();
+	}
+
+	private bool ArePeriodsOverlapping(Period testPeriod)
+	{
+		bool reply = false;
+
+		foreach (Period period in periods)
+		{
+			if (period.StartDate >= testPeriod.StartDate && period.EndDate <= testPeriod.StartDate)
+			{
+				reply = true;
+			}
+			else
+			{
+				if (testPeriod.EndDate >= period.StartDate && testPeriod.EndDate <= period.EndDate)
+				{
+					reply = true;
+				}
+			}
+		}
+
+		return reply;
+	}
+
+	private bool DoesPeriodNoExist(Period testPeriod)
+	{
+		bool reply = false;
+
+		Period period = periods.Where(f => f.PeriodNo == testPeriod.PeriodNo).FirstOrDefault();
+		if (period != null)
+		{
+			reply = true;
+		}
+
+		return reply;
 	}
 }

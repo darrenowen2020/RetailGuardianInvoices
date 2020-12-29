@@ -1,0 +1,155 @@
+﻿@page "/SupplierMaint"
+@using System.Net.Http
+@inject HttpClient Http
+
+	<table class="table-borderless">
+		<tr>
+			<td width="25%">
+				<button class="btn btn-info" disabled="@disableEditButton" @onclick="@(x => ToggleEdit())">@editText</button>
+			</td>
+			<td width="25%">
+				<label for="showdeleted">Show Deleted</label>
+				<input type="checkbox" @bind="showDeleted"/>
+			</td>
+		</tr>
+		
+	</table>
+	<Table @ref="TableSupplier" TableItem="Supplier" Items="filteredSuppliers">
+		<Column TableItem="Supplier" Field="@(x => x.Id)" Title="ID" DefaultSortColumn="true" />
+		<Column TableItem="Supplier" Field="@(x => x.Name)" Title="Name">
+			<EditTemplate>
+				<input type="text" @bind="context.Name" />
+			</EditTemplate>
+		</Column>
+		<Column TableItem="Supplier" Field="@(x => x.Address1)" Title="Address Line 1">
+			<EditTemplate>
+				<input type="text" @bind="context.Address1" />
+			</EditTemplate>
+		</Column>
+		<Column TableItem="Supplier" Field="@(x => x.Address2)" Title="Address Line 2">
+			<EditTemplate>
+				<input type="text" @bind="context.Address2" />
+			</EditTemplate>
+		</Column>
+		<Column TableItem="Supplier" Field="@(x => x.Address3)" Title="Address Line 3">
+			<EditTemplate>
+				<input type="text" @bind="context.Address3" />
+			</EditTemplate>
+		</Column>
+		<Column TableItem="Supplier" Field="@(x => x.Address4)" Title="Address Line 4">
+			<EditTemplate>
+				<input type="text" @bind="context.Address4" />
+			</EditTemplate>
+		</Column>
+		<Column TableItem="Supplier" Field="@(x => x.Postcode)" Title="Post Code">
+			<EditTemplate>
+				<input type="text" @bind="context.Postcode" />
+			</EditTemplate>
+		</Column>
+		<Column TableItem="Supplier" Title="">
+			<Template>
+				@if (context.Deleted == true)
+				{
+					<p style="color:red">Deleted</p>
+				}
+			</Template>
+			<EditTemplate>
+				<input type="checkbox" @bind="context.Deleted" />
+			</EditTemplate>
+		</Column>
+	</Table>
+
+	@code {
+		private ITable<Supplier> TableSupplier;
+
+		private List<Supplier> filteredSuppliers;
+		private List<Supplier> allSuppliers;
+
+		private string editText = "Edit";
+
+		private bool disableEditButton = false;
+
+		private bool _showDeleted;
+		private bool showDeleted
+		{
+			get
+			{
+				return _showDeleted;
+			}
+
+			set
+			{
+				_showDeleted = value;
+				filteredSuppliers = GetSuppliers(value);
+			}
+		}
+
+		protected override async Task OnInitializedAsync()
+		{
+			allSuppliers = await GetSuppliers();
+			filteredSuppliers = GetSuppliers(false);
+		}
+
+		private async Task<List<Supplier>> GetSuppliers()
+		{
+			try
+			{
+				return await Http.GetJsonAsync<List<Supplier>>("api/Suppliers");
+			}
+			catch (Exception ex)
+			{
+				throw new Exception(ex.Message);
+			}
+		}
+
+		private List<Supplier> GetSuppliers(bool showDeletedSuppliers)
+		{
+			if (allSuppliers == null)
+			{
+				return new List<Supplier>();
+			}
+			else
+			{
+				if (showDeletedSuppliers)
+				{
+					return allSuppliers;
+				}
+				else
+				{
+					return allSuppliers.Where(f => f.Deleted == false).ToList();
+				}
+				
+			}
+		}
+
+		private async Task<bool> DeleteSupplier(Supplier supplier)
+		{
+			bool reply = false;
+
+			try
+			{
+
+
+			}
+			catch (Exception ex)
+			{
+				System.Diagnostics.Debug.WriteLine(ex.Message);
+			}
+
+			return reply;
+		}
+
+		private void ToggleEdit()
+		{
+			TableSupplier.ToggleEditMode();
+
+			if (TableSupplier.IsEditMode)
+			{
+				editText = "Save Changes";
+			}
+			else
+			{
+				editText = "Edit";
+			}
+		}
+	}

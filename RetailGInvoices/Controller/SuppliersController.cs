@@ -24,7 +24,7 @@ namespace RetailGInvoices.Controller
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Supplier>>> GetSupplier()
         {
-            return await _context.Supplier.ToListAsync();
+            return await _context.Supplier.OrderBy(f => f.Name).ToListAsync();
         }
 
         // GET: api/Suppliers/5

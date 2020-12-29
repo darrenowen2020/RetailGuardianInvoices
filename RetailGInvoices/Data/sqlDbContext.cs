@@ -31,5 +31,10 @@ namespace RetailGInvoices.Data
         public DbSet<ExpenseView> ExpenseView { get; set; }
         public DbSet<ViewExpenseGroup> ViewExpenseGroup { get; set; }
         public DbSet<VatCategory> VatCategory { get; set; }
+        public DbSet<RetailGInvoices.Data.ExpenseSupplier> ExpenseSupplier { get; set; }
+        public DbSet<RetailGInvoices.Data.ExpenseHead> ExpenseHead { get; set; }
+        public DbSet<RetailGInvoices.Data.ExpenseLine> ExpenseLine { get; set; }
+        public DbSet<RetailGInvoices.Data.InvoiceHead> InvoiceHead { get; set; }
+        public DbSet<RetailGInvoices.Data.InvoiceLine> InvoiceLine { get; set; }
     }
 }

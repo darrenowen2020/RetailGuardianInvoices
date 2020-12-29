@@ -493,3 +493,18 @@ C:\Users\darre\source\repos\RetailGInvoices\RetailGInvoices\obj\Release\netcorea
 C:\Users\darre\source\repos\RetailGInvoices\RetailGInvoices\bin\Release\netcoreapp3.1\Properties\ServiceDependencies\RetailGInvoices20200804161909 - Web Deploy\mssql2.arm.json
 C:\Users\darre\source\repos\RetailGInvoices\RetailGInvoices\bin\Release\netcoreapp3.1\Properties\ServiceDependencies\RetailGInvoices20200804161909 - Web Deploy\profile.arm.json
 C:\Users\darre\source\repos\RetailGInvoices\RetailGInvoices\bin\Release\netcoreapp3.1\Microsoft.Azure.ConfigurationManager.dll
+C:\Users\darre\source\repos\RetailGInvoices\RetailGInvoices\bin\Release\netcoreapp3.1\Microsoft.IdentityModel.Protocols.dll
+C:\Users\darre\source\repos\RetailGInvoices\RetailGInvoices\bin\Release\netcoreapp3.1\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
+C:\Users\darre\source\repos\RetailGInvoices\RetailGInvoices\obj\Release\netcoreapp3.1\RazorDeclaration\Components\ExpenseNotes.razor.g.cs
+C:\Users\darre\source\repos\RetailGInvoices\RetailGInvoices\obj\Release\netcoreapp3.1\RazorDeclaration\Pages\Expenses.razor.g.cs
+C:\Users\darre\source\repos\RetailGInvoices\RetailGInvoices\obj\Release\netcoreapp3.1\RazorDeclaration\Pages\VatCategoryMaint.razor.g.cs
+C:\Users\darre\source\repos\RetailGInvoices\RetailGInvoices\obj\Release\netcoreapp3.1\RazorDeclaration\Pages\VatRateMaint.razor.g.cs
+C:\Users\darre\source\repos\RetailGInvoices\RetailGInvoices\obj\Release\netcoreapp3.1\Razor\Components\ExpenseNotes.razor.g.cs
+C:\Users\darre\source\repos\RetailGInvoices\RetailGInvoices\obj\Release\netcoreapp3.1\Razor\Pages\Expenses.razor.g.cs
+C:\Users\darre\source\repos\RetailGInvoices\RetailGInvoices\obj\Release\netcoreapp3.1\Razor\Pages\VatCategoryMaint.razor.g.cs
+C:\Users\darre\source\repos\RetailGInvoices\RetailGInvoices\obj\Release\netcoreapp3.1\Razor\Pages\VatRateMaint.razor.g.cs
+C:\Users\darre\source\repos\RetailGInvoices\RetailGInvoices\obj\Release\netcoreapp3.1\RazorDeclaration\Pages\SupplierMaint.razor.g.cs
+C:\Users\darre\source\repos\RetailGInvoices\RetailGInvoices\obj\Release\netcoreapp3.1\Razor\Pages\SupplierMaint.razor.g.cs
+C:\Users\darre\source\repos\RetailGInvoices\RetailGInvoices\obj\Release\netcoreapp3.1\RazorDeclaration\Pages\Expenses - Old.razor.g.cs
+C:\Users\darre\source\repos\RetailGInvoices\RetailGInvoices\obj\Release\netcoreapp3.1\Razor\Pages\Expenses - Old.razor.g.cs
+C:\Users\darre\source\repos\RetailGInvoices\RetailGInvoices\bin\Release\netcoreapp3.1\Properties\ServiceDependencies\RetailGInvoices20200804161909 - Web Deploy\signalr1.arm.json

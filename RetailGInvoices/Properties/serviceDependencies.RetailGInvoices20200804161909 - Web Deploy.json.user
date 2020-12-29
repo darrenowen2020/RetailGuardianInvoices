@@ -2,7 +2,7 @@
   "dependencies": {
     "signalr1": {
       "restored": true,
-      "restoreTime": "2020-08-05T16:36:29.3120425Z"
+      "restoreTime": "2020-12-21T11:35:36.0136092Z"
     },
     "mssql2": {
       "restored": true,
@@ -22,9 +22,17 @@
       "Type": "subscription",
       "Value": "2e9fc119-9ffc-420a-88ef-2b4a21c60c07"
     },
+    "signalr1.resourceGroupName": {
+      "Type": "resourceGroup",
+      "Value": "ChargedHub"
+    },
     "mssql2.resourceGroupName": {
       "Type": "resourceGroup",
       "Value": "RGWebsite"
+    },
+    "signalr1.subscriptionId": {
+      "Type": "subscription",
+      "Value": "2e9fc119-9ffc-420a-88ef-2b4a21c60c07"
     },
     "subscriptionId": {
       "Type": "subscription",

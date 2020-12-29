@@ -24,7 +24,7 @@ namespace RetailGInvoices.Controller
         [HttpGet]
         public async Task<ActionResult<IEnumerable<InvoiceHeading>>> GetInvoiceHeading()
         {
-            return await _context.InvoiceHeading.ToListAsync();
+            return await _context.InvoiceHeading.OrderBy(f => f.Description).ToListAsync();
         }
 
         // GET: api/InvoiceHeadings/5

@@ -4,6 +4,7 @@
 @inject HttpClient Http
 @inject Services.AppData AppData
 @inject NavigationManager NavManager
+@layout CompMaintLayout
 
 @if (companies == null)
 {
@@ -11,15 +12,13 @@
 }
 else
 {
-
-	<button class="btn-group-sm" @onclick="c => companyPage()" >Maint</button>
 	@if (companies.Length == 0)
 	{
 		<p>No Companies Have Been Configured</p>
 	}
 	else
 	{
-	<table class="table-bordered" style="width:600px">
+	<table class="table-borderless" style="width:600px">
 		@foreach (var company in companies)
 		{
 			<tr>

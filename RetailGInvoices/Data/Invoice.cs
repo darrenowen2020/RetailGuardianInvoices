@@ -18,6 +18,7 @@ namespace RetailGInvoices.Data
         }
         [Key]
         public int ID { get; set; }
+        public int LineNo { get; set; }
         public string Reference { get; set; }
         [Required]
         public int SupplierID { get; set; }

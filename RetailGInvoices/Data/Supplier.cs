@@ -16,6 +16,7 @@ namespace RetailGInvoices.Data
         public string Address3 { get; set; }
         public string Address4 { get; set; }
         public string Postcode { get; set; }
+        public bool Deleted { get; set; }
 
     }
 }

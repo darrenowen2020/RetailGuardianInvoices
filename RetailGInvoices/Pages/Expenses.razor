@@ -11,10 +11,7 @@
 
 	<InformationModal showModal="showInformationModal" modalTextHeader="Error" modalTextBody="Cannot Add Expense Missing Mandatory Fields" @bind-reply="informationModalReply" />
 }
-@if (showNotes)
-{
-	<ExpenseNotes showModal="@showNotes" @bind-notes="expenseNotes" />
-}
+
 @if (viewPeriodYears == null)
 {
 	<p>Loading ..</p>
@@ -100,913 +97,1222 @@ else
 }
 
 <!-- Add a new Expense -->
+<button class="btn btn-info" @onclick="@(x => ToggleNewExpenseTable())" disabled="@disableCreateButton">Create New Expense</button>
+<p hidden="@hideNewExpenseTable">
+	@if (newExpenseModel != null)
+	{
+		<table>
+			<thead>
+				<tr style="background-color:darkseagreen">
+					<td width="5%">*Expense Date</td>
+					<td width="10%">*Site</td>
+					<td width="15%">*Supplier</td>
+					<td width="10%">Reference</td>
+					<td width="5%">*Pay Type</td>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td>
+						<input id="expensedate" type="date" class="form-control" @bind="newExpenseModel.expenseHead.ExpenseDate" @onkeypress="@(e => dateKeyHandler(e.Key))" style="width:100%" />
+					</td>
 
-
-<table class="table-borderless">
-	<thead>
-		<tr>
-			<td width="5%">*Expense Date</td>
-			<td width="10%">*Site</td>
-			<td width="15%">*Supplier</td>
-			<td width="10%">Reference</td>
-			<td width="15%">*Description</td>
-			<td width="15%">*Heading</td>
-			<td width="5%">*Pay Type</td>
-			<td width="10%">Vat Category</td>
-			<td width="5%" class="amount">*Gross Amount</td>
-			<td width="5%" class="amount">VAT Amount</td>
-			<td width="5%" class="amount">*Net Amount</td>
-		</tr>
-	</thead>
-	<tbody>
-		<tr>
-			<td>
-				<input id="date" type="date" class="form-control" @bind="expenseObj.Date" @onkeypress="@(e => dateKeyHandler(e.Key))" style="width:100%" />
-			</td>
-
-			<td>
-				@if (sites != null)
-				{
-					<select id="site" class="form-control" @bind="siteSelected" @onkeypress="@(e => siteKeyHandler(e.Key))" style="width:100%">
-						@foreach (var site in sites)
+					<td>
+						@if (sites != null)
 						{
-							<option value="@site.Id">@site.SiteName</option>
-						}
-
-					</select>
-				}
-			</td>
-			<td>
-				<input id="supplier" list="supplierList" @bind="supplierSelectedName" @onkeypress="@(e => suppKeyHandler(e.Key))" style="width:100%">
-				@if (suppliers != null)
-				{
-					<datalist id="supplierList">
-						@foreach (var supplier in suppliers)
-						{
-							<option value="@supplier.Name"></option>
-						}
-					</datalist>
-				}
-			</td>
-			<td>
-				<input id="reference" type="text" class="form-control" @bind="expenseObj.ExpenseReference" @onkeypress="@(e => refKeyHandler(e.Key))" style="width:100%" />
-			</td>
-			<td>
-				<input id="description" type="text" class="form-control" @bind="expenseObj.Description" @onkeypress="@(e => descKeyHandler(e.Key))" style="width:100%" />
-			</td>
-			<td>
-				<input id="heading" list="HeadingList" @bind="expenseHeadingSelectedName" @onkeypress="@(e => headingKeyHandler(e.Key))" style="width:100%">
-				@if (expenseHeadings != null)
-				{
-					<datalist id="HeadingList">
-						@foreach (var expenseHeading in expenseHeadings)
-						{
-							<option value="@expenseHeading.Description"></option>
-						}
-
-					</datalist>
-				}
-			</td>
-
-			<td>
-				@if (paymentTypes != null)
-				{
-					<select id="paymentType" class="form-control" @bind="paymentTypeSelected" @onkeypress="@(e => payKeyHandler(e.Key))" style="width:100%">
-						@foreach (var paymentType in paymentTypes)
-						{
-							@if (paymentType.Type == "DD")
+							@if (sites.Length == 1)
 							{
-								<option selected="selected" value="@paymentType.Id">@paymentType.Type</option>
+								<input id="site" value="@(GetSiteName(defaultSiteId))" disabled="disabled" style="width:100%" />
 							}
 							else
 							{
-								<option value="@paymentType.Id">@paymentType.Type</option>
+								<select id="site" class="form-control" @bind="siteSelected" @onkeypress="@(e => siteKeyHandler(e.Key))" style="width:100%">
+									@foreach (var site in sites)
+									{
+										<option value="@site.Id">@site.SiteName</option>
+									}
+
+								</select>
 							}
 						}
-
-					</select>
-				}
-			</td>
-			<td>
-				@if (vatCategories != null)
-				{
-					<select id="vatcat" @bind="expenseObj.CategoryID" @onkeypress="@(e => vatCatKeyHandler(e.Key))" style="width:100%">
-						@foreach (VatCategory vatCategory in vatCategories)
+					</td>
+					<td>
+						<input id="supplier" list="supplierList" @bind="supplierSelectedName" @onkeypress="@(e => suppKeyHandler(e.Key))" style="width:100%">
+						@if (suppliers != null)
 						{
-							<option value="@vatCategory.Id">@vatCategory.Category</option>
+					<datalist id="supplierList">
+						@foreach (var supplier in suppliers)
+						{
+							if (supplier.Id == supplierSelected)
+							{
+						<option value="@supplier.Name" selected="selected">@supplier.Name</option>
+							}
+							else
+							{
+								<option value="@supplier.Name"></option>
+							}
 						}
-					</select>
-				}
-			</td>
-			@if (vatCategories == null)
-			{
-				<td>0</td>
-				<td>0</td>
-				<td>0</td>
-			}
-			else
-			{
-				<td>
-					<input id="grossAmount" type="text" class="form-control" style="text-align:right; width:100%" @bind="GrossAmount" @onkeypress="@(e => grossKeyHandler(e.Key))" onfocus="this.select()" />
-				</td>
-				<td align="right" style="vertical-align:bottom">
-					<p id="vatAmount" style="text-align:right; width:100%" @onkeypress="@(e => vatKeyHandler(e.Key))">@CalcVat(GrossAmount, expenseObj.CategoryID)</p>
-				</td>
-				<td align="right" style="vertical-align: bottom">
-					<p id="netAmount" style="text-align:right; width:100%">@CalcNet(GrossAmount, expenseObj.CategoryID)</p>
-				</td>
-			}
-		</tr>
-	</tbody>
+						</datalist>
+						}
+					</td>
+					<td>
+						<input id="reference" type="text" class="form-control" @bind="newExpenseModel.expenseHead.ExpenseReference" @onkeypress="@(e => refKeyHandler(e.Key))" style="width:100%" />
+					</td>
+					<td>
+						@if (paymentTypes != null)
+						{
+							<select id="paymenttype" class="form-control" @bind="newExpenseModel.expenseHead.PaymentTypeID" @onkeypress="@(e => payKeyHandler(e.Key))" style="width:100%">
+								@foreach (var paymentType in paymentTypes)
+								{
+									@if (paymentType.Type == "DD")
+									{
+										<option selected="selected" value="@paymentType.Id">@paymentType.Type</option>
+									}
+									else
+									{
+										<option value="@paymentType.Id">@paymentType.Type</option>
+									}
+								}
 
-	<tr>
-		<td>
-			<button class="btn btn-info" @onclick="@AddExpenseNotes">Notes</button>
-		</td>
-		<td>
-			<button id="btnAddExpense" type="button" class="btn-success" @onclick="@AddNewExpense">Update</button>
-		</td>
-		<td>
-			<button type="button" class="btn-secondary" @onclick="@clearInputValues">Clear</button>
-		</td>
-	</tr>
-	<tr>
-		<td>
-			<p>* - Manditory Field</p>
-		</td>
-	</tr>
-</table>
-@if (expenseViews == null)
-{
-	<p><em>Loading....</em></p>
+							</select>
+						}
+					</td>
+				</tr>
+			</tbody>
+		</table>
+
+		<Table TableItem="ExpenseLine" Items="newExpenseModel.ExpenseLines">
+			<Column TableItem="ExpenseLine" Title="Line" Field="@(x => x.Line)" Width="5%" />
+			<Column TableItem="ExpenseLine" Title="Description" Field="@(x => x.Description)" Width="30%">
+				<Template>
+					<input id="desc@(context.Line)" type="text" @bind="context.Description" style="width:100%" @onkeypress="@(e => descKeyHandler(e.Key, context.Line))" />
+				</Template>
+			</Column>
+			<Column TableItem="ExpenseLine" Title="VAT Category" Field="@(x => x.VATCategory)" Width="30%">
+				<Template>
+					@if (vatCategories != null)
+					{
+						<select id="vatcat@(context.Line)" @bind="context.VATCategory" @onkeypress="@(e => vatCatKeyHandler(e.Key, context.Line))" style="width:100%">
+							@foreach (VatCategory vatCategory in vatCategories)
+							{
+								<option value="@vatCategory.Id">@vatCategory.Category</option>
+							}
+						</select>
+					}
+				</Template>
+			</Column>
+			<Column TableItem="ExpenseLine" Title="Total Amount" Format="£###.00" Width="10%">
+				<Template>
+					<input id="totalamount@(context.Line)" type="text" style="text-align:right; width:100%" @bind="@(context.NetAmount)" @onkeypress="@(e => netKeyHandler(e.Key, context.Line))" onfocus="this.select()" />
+				</Template>
+			</Column>
+			<Column TableItem="ExpenseLine" Title="VAT Amount" Width="10%">
+				<Template>
+					<p id="vatamount@(context.Line)" style="text-align:right; width:100%">@CalcVat(context.NetAmount, context.VATCategory)</p>
+				</Template>
+			</Column>
+			<Column TableItem="ExpenseLine" Title="Gross Amount" Width="10%">
+				<Template>
+					<p id="grossamount@(context.Line)" style="text-align:right; width:100%">@CalcGross(context.NetAmount, context.VATCategory)</p>
+				</Template>
+			</Column>
+			<Column TableItem="ExpenseLine" Title="" Width="5%">
+				<Template>
+					<button class="btn" style="color:red" @onclick="@(x => DeleteLine(newExpenseModel, context))">X</button>
+				</Template>
+			</Column>
+		</Table>
+		<table class="table-borderless">
+			<tr style="width:100px">
+				<td width="10%">
+					<button id="addbutton" class="btn btn-info" @onclick="@(x => AddNewLine(newExpenseModel))">Add Line</button>
+				</td>
+				<td width="10%">
+					<button id="submitbutton" class="btn btn-info" @onclick="@(x => SubmitExpenseModel(newExpenseModel))">Submit Expense</button>
+				</td>
+				<td width="10%">
+					<button id="exitbutton" class="btn btn-info" @onclick="@(x => ExitExpenseModel(newExpenseModel))">Exit No Save</button>
+				</td>
+			</tr>
+		</table>
 }
-else
-{
-	<Table TableItem="ExpenseView" Items="expenseViews" @ref="Table" PageSize="50" ColumnReorder="true" RowClickAction="EditExpense" TableRowClass="x => x.RowClass">
-		<Column TableItem="ExpenseView" Title="ID" Field="@(x => x.ExpenseId)" Sortable="true" Width="10%" DefaultSortColumn="true" />
-		<Column TableItem="ExpenseView" Title="Expense Date" Field="@(x => x.ExpenseDate)" Sortable="true" Width="10%" DefaultSortColumn="true">
-			<Template>
-				@(context.ExpenseDate.ToShortDateString())
-			</Template>
-		</Column>
-		<Column TableItem="ExpenseView" Title="Site" Field="@(x => x.SiteName)" Sortable="true" Width="10%" DefaultSortColumn="true">
-		</Column>
-		<Column TableItem="ExpenseView" Title="Supplier" Field="@(x => x.SupplierName)" Sortable="true" Width="10%" />
-		<Column TableItem="ExpenseView" Title="Reference" Field="@(x => x.ExpenseReference)" Sortable="true" Width="10%" DefaultSortColumn="true" />
-		<Column TableItem="ExpenseView" Title="Description" Field="@(x => x.ExpenseDescription)" Sortable="true" Width="10%" />
-		<Column TableItem="ExpenseView" Title="Heading" Field="@(x => x.Heading)" Sortable="true" Width="10%" />
-		<Column TableItem="ExpenseView" Title="Payment Type" Field="@(x => x.ExpensePaymentDescription)" Sortable="true" Width="10%" DefaultSortColumn="true" />
-		<Column TableItem="ExpenseView" Title="Vat Category">
-			<Template>
-				<p>@GetVatCatDesc(context.ExpenseVatCategory)</p>
-			</Template>
-		</Column>
-		<Column TableItem="ExpenseView" Title="Gross" Field="@(x => x.ExpenseGross)" Format="£###.00" Sortable="true" Width="10%" DefaultSortColumn="true" Align="Align.Right" />
-		<Column TableItem="ExpenseView" Title="Vat" Field="@(x => x.ExpenseVAT)" Format="£###.00" Sortable="true" Width="10%" DefaultSortColumn="true" Align="Align.Right" />
-		<Column TableItem="ExpenseView" Title="Total" Field="@(x => x.ExpenseNet)" Format="£###.00" Sortable="true" Width="10%" Align="Align.Right" />
-		<Column TableItem="ExpenseView" Title="Del">
-			<Template>
-				<button class="btn-sm" @onclick="c => DeleteExpense(context) ">X</button>
-			</Template>
-		</Column>
-		<Pager ShowPageNumber="true" ShowTotalCount="true" ShowPageSizes="true" />
-	</Table>
+	</p>
 
 
-}
+	@if (expenseModels == null)
+	{
+		<p><em>Loading....</em></p>
+	}
+	else
+	{
+<Table TableItem="ExpenseModel" Items="expenseModels" @ref="Table" PageSize="50" ColumnReorder="true">
+	<Column Title="Expense Date" TableItem="ExpenseModel" Field="@(x => x.expenseHead.ExpenseDate)">
+		<Template>
+			@(context.expenseHead.ExpenseDate.ToString("dd/MM/yyyy"))
+		</Template>
+	</Column>
+	<Column Title="Site" TableItem="ExpenseModel" Field="@(x => x.expenseHead.SiteID)">
+		<Template>
+			<p>@(GetSite(context.expenseHead.SiteID).SiteName)</p>
+		</Template>
+	</Column>
+	<Column Title="Supplier" TableItem="ExpenseModel" Field="@(x => x.expenseHead.SupplierID)">
+		<Template>
+			<p>@(GetSupplier(context.expenseHead.SupplierID).Name)</p>
+		</Template>
+	</Column>
+	<Column Title="Reference" TableItem="ExpenseModel" Field="@(x => x.expenseHead.ExpenseReference)" />
+	<Column Title="Pay Type" TableItem="ExpenseModel" Field="@(x => x.expenseHead.PaymentTypeID)">
+		<Template>
+			<p>@(GetPaymentType(context.expenseHead.PaymentTypeID).Description)</p>
+		</Template>
+	</Column>
+	<Column Title="Total" TableItem="ExpenseModel" Field="@(x => x.TotalExpense)" Format="£###.00" />
+	<Column Title="" TableItem="ExpenseModel">
+		<Template>
+			<table class="table-borderless">
+				<tr>
+					<td>
+						<img src="images/edit-24.png" @onclick="@(x => EditExpense(context))" style="cursor: pointer;" />
+					</td>
+					<td>
+						<img src="images/trash-16.png" @onclick="@(x => DeleteExpense(context))" style="cursor: pointer;" />
+					</td>
+				</tr>
+			</table>
+			
+		</Template>
+	</Column>
+	<DetailTemplate TableItem="ExpenseModel">
+		<Table TableItem="ExpenseLine" Items="context.ExpenseLines">
+			<Column TableItem="ExpenseLine" Title="Line" Field="@(x => x.Line)" />
+			<Column TableItem="ExpenseLine" Title="Description" Field="@(x => x.Description)" />
+			<Column TableItem="ExpenseLine" Title="Vat Category" Field="@(x => x.VATCategory)">
+				<Template Context="vatcatcontext">
+					<p>@(GetVatCatDesc(vatcatcontext.VATCategory))</p>
+				</Template>
+			</Column>
+			<Column TableItem="ExpenseLine" Title="Total" Field="@(x => x.NetAmount)" Format="£###.00" />
+			<Column TableItem="ExpenseLine" Title="Vat Amount" Format="£###.00">
+				<Template Context="expLineContext">
+					<p id="vatamountdetail@(expLineContext.Line)" style="text-align:right; width:100%" >@CalcVat(expLineContext.NetAmount, expLineContext.VATCategory)</p>
+				</Template>
+			</Column>
+			<Column TableItem="ExpenseLine" Title="Gross Amount" Format="£###.00">
+				<Template Context="expLineContext">
+					<p id="grossamountdetail@(expLineContext.Line)" style="text-align:right; width:100%">@CalcGross(expLineContext.NetAmount, expLineContext.VATCategory)</p>
+				</Template>
+			</Column>
+		</Table>
+	</DetailTemplate>
+	<Pager ShowPageNumber="true" ShowTotalCount="true" ShowPageSizes="true" />
+</Table>
 
-@code {
+
+	}
+
+	@code {
 		[Parameter]
 		public int companyId { get; set; }
 
-	private bool showNotes = false;
-	private ITable<ExpenseView> Table;
-	private void ToggleEdit()
-	{
-		Table.ToggleEditMode();
-	}
-	private bool updateFlag = false;
-	private int currentPeriod = 1;
-	private string currentPeriodYear = DateTime.Today.ToString("yy");
-	private string today = DateTime.Today.ToString("dd/MM/yyyy");
-
-	private bool showInformationModal = false;
-	private string _expenseNotes;
-	public string expenseNotes
-	{
-		get
+		private bool showNotes = false;
+		private ITable<ExpenseModel> Table;
+		private void ToggleEdit()
 		{
-			return _expenseNotes;
+			Table.ToggleEditMode();
 		}
-		set
+		private bool updateFlag = false;
+		private int currentPeriod = 1;
+		private string currentPeriodYear = DateTime.Today.ToString("yy");
+		private string today = DateTime.Today.ToString("dd/MM/yyyy");
+
+		private bool showInformationModal = false;
+		private bool hideNewExpenseTable = true;
+		private bool disableCreateButton = true;
+
+		private string _expenseNotes;
+		public string expenseNotes
 		{
-			_expenseNotes = value;
-			showNotes = false;
-			Task tmp = Focus("btnAddExpense");
+			get
+			{
+				return _expenseNotes;
+			}
+			set
+			{
+				_expenseNotes = value;
+				showNotes = false;
+				Task tmp = Focus("btnAddExpense");
+			}
 		}
-	}
 
-	private int defaultSiteId;
-	private string defaultSiteName;
-	private string defaultSupplierName;
-	private int defaultPaymentTypeId;
-	private string defaultPaymentTypeName;
+		private int newLineAdded = 0;
 
-	private Company[] companies;
-	private Site[] sites;
-	private Supplier[] suppliers;
-	private PaymentType[] paymentTypes;
-	private ExpenseView[] expenseViews;
-	private InvoiceHeading[] expenseHeadings;
-	private ViewExpenseGroup[] viewExpenseGroups;
-	private Period[] periods;
-	private ViewPeriodYears[] viewPeriodYears;
-	private VatCategory[] vatCategories;
-	private VatRate[] vatRates;
+		private int defaultSiteId;
+		private int defaultSupplierId;
+		private string defaultSiteName;
+		private string defaultSupplierName;
+		private int defaultPaymentTypeId;
+		private string defaultPaymentTypeName;
 
+		private Company[] companies;
+		private Site[] sites;
+		private ExpenseSupplier[] suppliers;
+		private PaymentType[] paymentTypes;
+		private ExpenseView[] expenseViews;
+		private InvoiceHeading[] expenseHeadings;
+		private ViewExpenseGroup[] viewExpenseGroups;
+		private Period[] periods;
+		private ViewPeriodYears[] viewPeriodYears;
+		private VatCategory[] vatCategories;
+		private VatRate[] vatRates;
+		private List<ExpenseModel> expenseModels;
 
-	Company companyObj = new Company();
-	Expense expenseObj = new Expense();
-	Site siteObj = new Site();
-	Supplier supplierObj = new Supplier();
-	PaymentType paymentTypeObj = new PaymentType();
-	ExpenseView expenseViewObj = new ExpenseView();
-	InvoiceHeading expenseHeadingObj = new InvoiceHeading();
-	ViewPeriodYears viewPeriodYearsObj = new ViewPeriodYears();
+		Company companyObj = new Company();
+		ExpenseModel newExpenseModel;
+		ExpenseModel tmpExpenseModel;
 
-	private int GetCatVatRate(int vatCategoryId)
-	{
-		try
+		Site siteObj = new Site();
+		ExpenseSupplier supplierObj = new ExpenseSupplier();
+		PaymentType paymentTypeObj = new PaymentType();
+		ExpenseView expenseViewObj = new ExpenseView();
+		InvoiceHeading expenseHeadingObj = new InvoiceHeading();
+		ViewPeriodYears viewPeriodYearsObj = new ViewPeriodYears();
+
+		protected override async Task OnInitializedAsync()
 		{
-			if (vatCategories == null)
+			companyId = AppData.CompanyId;
+			tmpExpenseModel = new ExpenseModel();
+
+			viewPeriodYears = await Http.GetJsonAsync<ViewPeriodYears[]>("api/ViewPeriodYears");
+			viewPeriodYearsSelected = int.Parse(currentPeriodYear);
+
+			expenseViews = await Http.GetJsonAsync<ExpenseView[]>("/api/ExpenseViews/Year/" + viewPeriodYearsSelected + "/" + companyId);
+
+			companies = await Http.GetJsonAsync<Company[]>("/api/Companies/");
+
+			sites = await Http.GetJsonAsync<Site[]>("api/Sites/Company/" + companyId);
+			if (sites.Length == 1)
+			{
+				siteSelected = 0;
+				siteSelectedName = sites[0].SiteName;
+			}
+
+			suppliers = await Http.GetJsonAsync<ExpenseSupplier[]>("api/ExpenseSuppliers");
+			periods = await Http.GetJsonAsync<Period[]>("api/Periods/Company/" + companyId + "/Year/" + currentPeriodYear);
+			vatCategories = await GetVatCategories();
+			vatRates = await GetVatRates();
+
+			paymentTypes = await Http.GetJsonAsync<PaymentType[]>("api/PaymentTypes");
+			if (paymentTypes.Length == 0)
+			{
+				PaymentType paymentType = new PaymentType();
+				paymentType.Id = 0;
+				paymentType.Description = "No Payment Types";
+				paymentType.Type = "";
+
+				paymentTypes = new PaymentType[1];
+				paymentTypes[0] = paymentType;
+			}
+
+			try
+			{
+				defaultPaymentTypeId = Array.Find(paymentTypes, f => f.Type == "DD").Id;
+			}
+			catch (NullReferenceException ex)
+			{
+				defaultPaymentTypeId = 0;
+			}
+			catch (Exception ex)
+			{
+				defaultPaymentTypeId = 0;
+			}
+			await GetViewGroup(defaultPaymentTypeId);
+
+			if (sites.Length == 0)
+			{
+				Site site = new Site();
+				site.Id = 0;
+				site.SiteName = "No Sites";
+				sites = new Site[1];
+				sites[0] = site;
+			}
+
+			defaultSiteId = sites[0].Id;
+
+			if (suppliers.Length == 0)
+			{
+				ExpenseSupplier supplier = new ExpenseSupplier();
+				supplier.Id = 0;
+				supplier.Name = "No Suppliers";
+				suppliers = new ExpenseSupplier[1];
+				suppliers[0] = supplier;
+			}
+			defaultSupplierId = suppliers[0].Id;
+
+			defaultPaymentTypeName = paymentTypes[0].Description;
+
+			ResetNewExpenseModel();
+
+			expenseModels = await GetExpenseModels();
+
+			siteSelected = defaultSiteId;
+			paymentTypeSelected = defaultPaymentTypeId.ToString();
+
+			Period tmp = getCurrentPeriod();
+			disableCreateButton = false;
+		}
+
+		protected override Task OnAfterRenderAsync(bool firstRender)
+		{
+			if (!firstRender)
+			{
+				if (newLineAdded != 0)
+				{
+					Task tmp = Focus($"desc{newLineAdded}");
+					newLineAdded = 0;
+				}
+			}
+
+			return base.OnAfterRenderAsync(firstRender);
+		}
+
+		private Site GetSite(int siteId)
+		{
+			Site site = sites.Where(f => f.Id == siteId).FirstOrDefault();
+			if (site == null)
+			{
+				site = new Site();
+			}
+
+			return site;
+		}
+
+		private ExpenseSupplier GetSupplier(int supplierId)
+		{
+			ExpenseSupplier supplier = suppliers.Where(f => f.Id == supplierId).FirstOrDefault();
+			if (supplier == null)
+			{
+				supplier = new ExpenseSupplier();
+			}
+
+			return supplier;
+		}
+
+		private PaymentType GetPaymentType(int paymentTypeId)
+		{
+			PaymentType paymentType = paymentTypes.Where(f => f.Id == paymentTypeId).FirstOrDefault();
+
+			if (paymentType == null)
+			{
+				paymentType = new PaymentType();
+			}
+
+			return paymentType;
+		}
+
+		private async Task<List<ExpenseModel>> GetExpenseModels()
+		{
+			List<ExpenseModel> expenseModels = new List<ExpenseModel>();
+
+			try
+			{
+				List<ExpenseHead> expenseHeads = await Http.GetJsonAsync<List<ExpenseHead>>("api/ExpenseHeads");
+				foreach (ExpenseHead expenseHead in expenseHeads)
+				{
+					ExpenseModel expenseModel = new ExpenseModel(expenseHead);
+					expenseModel.ExpenseLines = await GetExpenseLines(expenseHead);
+
+					expenseModels.Add(expenseModel);
+					expenseModel.TotalExpense = GetExpenseTotal(expenseModel.ExpenseLines);
+				}
+				return expenseModels;
+			}
+			catch (Exception ex)
+			{
+				return new List<ExpenseModel>();
+			}
+		}
+
+		private async Task<List<ExpenseLine>> GetExpenseLines(ExpenseHead expenseHead)
+		{
+			try
+			{
+				return await Http.GetJsonAsync<List<ExpenseLine>>($"api/ExpenseLines/ExpenseHead/{expenseHead.Id}");
+			}
+			catch (Exception ex)
+			{
+				System.Diagnostics.Debug.WriteLine(ex.Message);
+				return new List<ExpenseLine>();
+			}
+		}
+
+		private decimal GetExpenseTotal(List<ExpenseLine> expenseLines )
+		{
+			decimal total = 0;
+
+			foreach (ExpenseLine expenseLine in expenseLines)
+			{
+				total += expenseLine.NetAmount;
+			}
+
+			return total;
+		}
+
+		private int GetLastLineNo(ExpenseModel expenseModel)
+		{
+			int reply = 0;
+			foreach (ExpenseLine expenseLine in expenseModel.ExpenseLines)
+			{
+				if (expenseLine.Line > reply)
+				{
+					reply = expenseLine.Line;
+				}
+			}
+
+			return reply;
+		}
+
+		private void AddNewLine(ExpenseModel expenseModel)
+		{
+			tmpExpenseModel = expenseModel.Clone();
+
+
+			int newLineNo = GetLastLineNo(expenseModel) + 1;
+			ExpenseLine expenseLine = new ExpenseLine(expenseModel.expenseHead.Id, newLineNo);
+
+			expenseModel.ExpenseLines.Add(expenseLine);
+			StateHasChanged();
+			newLineAdded = newLineNo;
+		}
+
+		private void DeleteLine(ExpenseModel expenseModel, ExpenseLine expenseLine)
+		{
+			if (expenseLine != null)
+			{
+				expenseModel.ExpenseLines.Remove(expenseLine);
+			}
+		}
+
+		private void ToggleNewExpenseTable()
+		{
+			hideNewExpenseTable = !hideNewExpenseTable;
+			Task tmp = Focus("expensedate");
+			disableCreateButton = true;
+		}
+
+		private void ExitExpenseModel(ExpenseModel expenseModel)
+		{
+			expenseModel = tmpExpenseModel.Clone();
+			disableCreateButton = false;
+			ResetNewExpenseModel();
+			ToggleNewExpenseTable();
+		}
+
+		private async Task SubmitExpenseModel(ExpenseModel expenseModel)
+		{
+			ExpenseHead expenseHead;
+			bool isEdit = false;
+
+			Period expensePeriod = GetPeriod(expenseModel.expenseHead.ExpenseDate);
+			expenseModel.expenseHead.PeriodId = expensePeriod.PeriodId;
+			expenseModel.expenseHead.PeriodNo = expensePeriod.PeriodKey;
+			expenseModel.expenseHead.SiteID = siteSelected;
+			expenseModel.expenseHead.SupplierID = supplierSelected;
+
+			if (expenseModel.expenseHead.Id == 0)
+			{
+				expenseHead = await PostExpenseHead(expenseModel.expenseHead);
+			}
+			else
+			{
+				isEdit = true;
+				UpdateExpenseHead(expenseModel.expenseHead);
+				expenseModel.TotalExpense = GetExpenseTotal(expenseModel.ExpenseLines);
+			}
+
+			foreach (ExpenseLine expenseLine in expenseModel.ExpenseLines)
+			{
+				if (expenseLine.Id == 0)
+				{
+					expenseLine.ExpenseId = expenseModel.expenseHead.Id;
+					expenseLine.VATAmount = CalcVat(expenseLine.NetAmount, expenseLine.VATCategory);
+					expenseLine.GrossAmount = CalcGross(expenseLine.NetAmount, expenseLine.VATCategory);
+					expenseLine.VATRate = GetCatVatRate(expenseLine.VATCategory);
+					await PostExpenseLine(expenseLine);
+				}
+				else
+				{
+					UpdateExpenseLine(expenseLine);
+				}
+			}
+
+			ResetNewExpenseModel();
+			ToggleNewExpenseTable();
+			disableCreateButton = false;
+
+			if (isEdit)
+			{
+				this.StateHasChanged();
+			}
+			else
+			{
+				await GetExpenseModels();
+			}
+		}
+
+		private void ResetNewExpenseModel()
+		{
+			newExpenseModel = new ExpenseModel(companyId);
+			newExpenseModel.expenseHead.SiteID = defaultSiteId;
+			siteSelected = 0;
+			supplierSelected = 0;
+		}
+
+		private async Task<ExpenseHead> PostExpenseHead(ExpenseHead expenseHead)
+		{
+			try
+			{
+				return await Http.PostJsonAsync<ExpenseHead>("api/ExpenseHeads", expenseHead);
+			}
+			catch (Exception ex)
+			{
+				System.Diagnostics.Debug.WriteLine(ex.Message);
+				return new ExpenseHead();
+			}
+		}
+		private void UpdateExpenseHead(ExpenseHead expenseHead)
+		{
+			try
+			{
+				string payload = JsonConvert.SerializeObject(expenseHead);
+
+				StringContent content = new StringContent(payload, System.Text.Encoding.UTF8, "application/json");
+				HttpResponseMessage response =  Http.PutAsync($"api/ExpenseHeads/{expenseHead.Id}", content).Result;
+
+				if (!response.IsSuccessStatusCode)
+				{
+					throw new Exception($"{response.StatusCode} Error updating expense Head: id: {expenseHead.Id}");
+				}
+			}
+			catch (Exception ex)
+			{
+				throw new System.Exception(ex.Message);
+			}
+		}
+
+		private async Task<ExpenseLine> PostExpenseLine(ExpenseLine expenseLine)
+		{
+			try
+			{
+				return await Http.PostJsonAsync<ExpenseLine>($"api/ExpenseLines", expenseLine);
+			}
+			catch (Exception ex)
+			{
+				throw new Exception(ex.Message);
+			}
+		}
+
+		private void UpdateExpenseLine(ExpenseLine expenseLine)
+		{
+			try
+			{
+				string payload = JsonConvert.SerializeObject(expenseLine);
+
+				StringContent content = new StringContent(payload, System.Text.Encoding.UTF8, "application/json");
+				HttpResponseMessage response = Http.PutAsync($"api/ExpenseLines/{expenseLine.Id}", content).Result;
+
+				if (!response.IsSuccessStatusCode)
+				{
+					throw new Exception($"{response.StatusCode} Error updating expense Line: id: {expenseLine.Id}");
+				}
+			}
+			catch (Exception ex)
+			{
+				throw new Exception(ex.Message);
+			}
+		}
+
+		private string GetSiteName(int siteId)
+		{
+			string reply;
+
+			if (sites == null)
+			{
+				reply = string.Empty;
+			}
+			else
+			{
+				string siteName = sites.Where(f => f.Id == siteId).Select(g => g.SiteName).FirstOrDefault();
+				if (siteName == null)
+				{
+					reply = string.Empty;
+				}
+				else
+				{
+					reply = siteName;
+				}
+			}
+
+			return reply;
+		}
+
+		private string GetSupplierName(int supplierId)
+		{
+			string reply;
+
+			if (suppliers == null)
+			{
+				reply = string.Empty;
+			}
+			else
+			{
+				reply = suppliers.Where(f => f.Id == supplierId).Select(g => g.Name).FirstOrDefault();
+			}
+
+			return reply;
+		}
+
+		private int GetCatVatRate(int vatCategoryId)
+		{
+			try
+			{
+				if (vatCategories == null)
+				{
+					return 0;
+				}
+				else
+				{
+					return vatCategories.Where(f => f.Id == vatCategoryId).Select(g => g.VatRate).FirstOrDefault();
+				}
+			}
+			catch (Exception ex)
 			{
 				return 0;
 			}
-			else
+		}
+
+		private Decimal CalcGross(Decimal netAmount, int catId)
+		{
+			Decimal grossAmount = 0;
+			Decimal vatRate = GetVatRate(GetCatVatRate(catId));
+
+			if (vatRate == 0)
 			{
-				return vatCategories.Where(f => f.Id == vatCategoryId).FirstOrDefault().VatRate;
-			}
-		}
-		catch (Exception ex)
-		{
-			return 0;
-		}
-	}
-
-	private Decimal CalcVat(Decimal grossAmount, int catId)
-	{
-		Decimal vatAmount = 0;
-		Decimal vatRate = GetVatRate(GetCatVatRate(catId));
-
-		if (vatRate == 0)
-		{
-			vatAmount = 0;
-		}
-		else
-		{
-			vatAmount = Math.Round(grossAmount * vatRate,2);
-
-		}
-
-		return vatAmount;
-	}
-
-	private Decimal CalcNet(Decimal grossAmount, int catId)
-	{
-		Decimal netAmount = 0;
-		Decimal vatRate = GetVatRate(GetCatVatRate(catId));
-
-		if (vatRate == 0)
-		{
-			netAmount = grossAmount;
-		}
-		else
-		{
-			netAmount = Math.Round(grossAmount - (grossAmount * vatRate), 2);
-
-		}
-
-		return netAmount;
-	}
-
-
-	public void refKeyHandler(string keyPressed)
-	{
-		if (keyPressed == "Enter")
-		{
-			Task tmp = Focus("description");
-		}
-	}
-
-	public void vatCatKeyHandler(string keyPressed)
-	{
-		if (keyPressed == "Enter")
-		{
-			Task tmp = Focus("grossAmount");
-		}
-	}
-	public void descKeyHandler(string keyPressed)
-	{
-		if (keyPressed == "Enter")
-		{
-			Task tmp = Focus("heading");
-		}
-	}
-	public void grossKeyHandler(string keyPressed)
-	{
-		if (keyPressed == "Enter")
-		{
-			Task tmp = Focus("btnAddExpense");
-		}
-	}
-	public void vatKeyHandler(string keyPressed)
-	{
-		if (keyPressed == "Enter")
-		{
-			Task tmp = Focus("netAmount");
-		}
-	}
-
-	public void netKeyHandler(string keyPressed)
-	{
-		if (keyPressed == "Enter")
-		{
-			Task tmp = Focus("btnAddExpense");
-		}
-	}
-
-	public void suppKeyHandler(string keyPressed)
-	{
-		if (keyPressed == "Enter")
-		{
-			Task tmp = Focus("reference");
-		}
-	}
-	public void dateKeyHandler(string keyPressed)
-	{
-		if (keyPressed == "Enter")
-		{
-			Task tmp = Focus("site");
-		}
-	}
-	public void siteKeyHandler(string keyPressed)
-	{
-		if (keyPressed == "Enter")
-		{
-			Task tmp = Focus("supplier");
-		}
-	}
-	public void headingKeyHandler(string keyPressed)
-	{
-		if (keyPressed == "Enter")
-		{
-			Task tmp = Focus("paymentType");
-		}
-	}
-	public void payKeyHandler(string keyPressed)
-	{
-		if (keyPressed == "Enter")
-		{
-			Task tmp = Focus("vatcat");
-		}
-	}
-	public async Task Focus(string elementId)
-	{
-		await JSRuntime.InvokeVoidAsync("functionLibrary.focusElement", elementId);
-	}
-
-	public string informationModalReply
-	{
-		get
-		{
-			return null;
-		}
-
-		set
-		{
-			showInformationModal = false;
-		}
-
-	}
-
-	private int viewPeriodYearsSelected;
-	private ExpenseView[] getHeading(int headingId, int paymentType)
-	{
-		ExpenseView[] groupExpenses;
-		groupExpenses = Array.FindAll(expenseViews, f => (f.HeadingId == headingId) && (f.ExpensePaymentId == paymentType));
-
-		return groupExpenses;
-
-	}
-	private int expenseHeadingSelected;
-
-	private string _expenseHeadingSelectedName;
-	private string expenseHeadingSelectedName
-	{
-		get
-		{
-			return _expenseHeadingSelectedName;
-		}
-
-		set
-		{
-			InvoiceHeading tempHeading = Array.Find<InvoiceHeading>(expenseHeadings, f => f.Description == value);
-			if (tempHeading != null)
-			{
-				expenseHeadingSelected = tempHeading.Id;
+				grossAmount = 0;
 			}
 			else
 			{
-				InvoiceHeading expenseHeading = new InvoiceHeading();
-				expenseHeading.Description = value;
+				grossAmount = Math.Round(netAmount / (1 + vatRate), 2);
 
-				Task temp = addNewHeading(expenseHeading);
 			}
 
-			_expenseHeadingSelectedName = value;
-		}
-	}
-
-	private string GetVatCatDesc(int VatCatId)
-	{
-		return vatCategories.Where(f => f.Id == VatCatId).FirstOrDefault().Category;
-	}
-
-	private async Task addNewHeading(InvoiceHeading newHeading)
-	{
-		await Http.PostJsonAsync<InvoiceHeading>("/api/InvoiceHeadings", newHeading);
-		expenseHeadings = await Http.GetJsonAsync<InvoiceHeading[]>("/api/InvoiceHeadings");
-		this.StateHasChanged();
-	}
-
-	private int siteSelected;
-	private string paymentTypeSelected;
-
-	private string _reconPaymentTypeSelected;
-	private string reconPaymentTypeSelected
-	{
-		get
-		{
-			return _reconPaymentTypeSelected;
+			return grossAmount;
 		}
 
-		set
+		private Decimal GetNetValue(Decimal netAmount)
 		{
-			_reconPaymentTypeSelected = value;
-			if (value == "ALL")
+			return Math.Round(NetAmount, 2);
+		}
+
+		private Decimal CalcVat(Decimal netAmount, int catId)
+		{
+			Decimal vatAmount = 0;
+			Decimal vatRate = GetVatRate(GetCatVatRate(catId));
+
+			if (vatRate == 0)
 			{
-				Task tmp = GetAllViewGroups();
+				vatAmount = 0;
 			}
 			else
 			{
-				Task tmp = GetViewGroup(int.Parse(value));
+				vatAmount = netAmount - Math.Round(CalcGross(netAmount,catId),2);
+
 			}
-		}
-	}
 
-	private string paymentTypeSelectedName;
-
-	private int supplierSelected;
-
-	private string _supplierSelectedName;
-	private string supplierSelectedName
-	{
-		get
-		{
-			return _supplierSelectedName;
+			return vatAmount;
 		}
 
-		set
+		private Decimal CalcNet(Decimal grossAmount, int catId)
 		{
-			Supplier tempSupplier = Array.Find<Supplier>(suppliers, f => f.Name == value);
-			if (tempSupplier != null)
+			Decimal netAmount = 0;
+			Decimal vatRate = GetVatRate(GetCatVatRate(catId));
+
+			if (vatRate == 0)
 			{
-				supplierSelected = tempSupplier.Id;
+				netAmount = grossAmount;
 			}
 			else
 			{
-				Task tmp = addNewSupplier(value);
+				netAmount = Math.Round(grossAmount - (grossAmount * vatRate), 2);
+
 			}
-			_supplierSelectedName = value;
-		}
-	}
 
-	private async Task addNewSupplier(String newSupplierName)
-	{
-		Supplier newSupplier = new Supplier();
-		newSupplier.Name = newSupplierName;
-
-		await Http.SendJsonAsync(HttpMethod.Post, "/api/Suppliers/", newSupplier);
-		suppliers = await Http.GetJsonAsync<Supplier[]>("/api/Suppliers/");
-
-		// Get the new suppliers ID to store locally
-		newSupplier = Array.Find<Supplier>(suppliers, f => f.Name == newSupplierName);
-		supplierSelected = newSupplier.Id;
-
-		this.StateHasChanged();
-	}
-
-	public string _siteSelectedName;
-
-	public string siteSelectedName
-	{
-		get
-		{
-			return _siteSelectedName;
+			return netAmount;
 		}
 
-		set
-		{
-			_siteSelectedName = value;
 
-			Site site = Array.Find<Site>(sites, p => p.SiteName == value);
-			siteSelected = site.Id;
-		}
-	}
-
-	public decimal _VatAmount = 0;
-	public decimal VatAmount
-	{
-		get
+		public void refKeyHandler(string keyPressed)
 		{
-			return _VatAmount;
-		}
-
-		set
-		{
-			_VatAmount = value;
-		}
-	}
-
-	public decimal _GrossAmount = 0;
-	public decimal GrossAmount
-	{
-		get
-		{
-			return _GrossAmount;
-		}
-
-		set
-		{
-			_GrossAmount = value;
-		}
-	}
-
-	public decimal _NetAmount = 0;
-	public decimal NetAmount
-	{
-		get
-		{
-			return _NetAmount;
-		}
-		set
-		{
-			if (_VatAmount == 0)
+			if (keyPressed == "Enter")
 			{
-				if (_GrossAmount != value)
+				Task tmp = Focus("paymenttype");
+			}
+		}
+
+		public void vatCatKeyHandler(string keyPressed, int lineNo)
+		{
+			if (keyPressed == "Enter")
+			{
+				Task tmp = Focus($"totalamount{lineNo}");
+			}
+		}
+		public void descKeyHandler(string keyPressed, int lineNo)
+		{
+			if (keyPressed == "Enter")
+			{
+				Task tmp = Focus($"vatcat{lineNo}");
+			}
+		}
+		public void grossKeyHandler(string keyPressed)
+		{
+			if (keyPressed == "Enter")
+			{
+				Task tmp = Focus("btnAddExpense");
+			}
+		}
+		public void vatKeyHandler(string keyPressed)
+		{
+			if (keyPressed == "Enter")
+			{
+				Task tmp = Focus("netAmount");
+			}
+		}
+
+		public void netKeyHandler(string keyPressed, int lineNo)
+		{
+			if (keyPressed == "Enter")
+			{
+				Task tmp = Focus($"addbutton");
+			}
+		}
+
+		public void suppKeyHandler(string keyPressed)
+		{
+			if (keyPressed == "Enter")
+			{
+				Task tmp = Focus("reference");
+			}
+		}
+		public void dateKeyHandler(string keyPressed)
+		{
+			string nextField = "site";
+
+			if (keyPressed == "Enter")
+			{
+				if (sites.Length == 1)
 				{
-					VatAmount = value - _GrossAmount;
+					nextField = "supplier";
+				}
+				Task tmp = Focus(nextField);
+			}
+		}
+		public void siteKeyHandler(string keyPressed)
+		{
+			if (keyPressed == "Enter")
+			{
+				Task tmp = Focus("supplier");
+			}
+		}
+		public void headingKeyHandler(string keyPressed)
+		{
+			if (keyPressed == "Enter")
+			{
+				Task tmp = Focus("paymentType");
+			}
+		}
+		public void payKeyHandler(string keyPressed)
+		{
+			if (keyPressed == "Enter")
+			{
+				Task tmp = Focus("addbutton");
+			}
+		}
+		public async Task Focus(string elementId)
+		{
+			await JSRuntime.InvokeVoidAsync("functionLibrary.focusElement", elementId);
+		}
+
+
+		public string informationModalReply
+		{
+			get
+			{
+				return null;
+			}
+
+			set
+			{
+				showInformationModal = false;
+			}
+
+		}
+
+		private int viewPeriodYearsSelected;
+		private ExpenseView[] getHeading(int headingId, int paymentType)
+		{
+			ExpenseView[] groupExpenses;
+			groupExpenses = Array.FindAll(expenseViews, f => (f.HeadingId == headingId) && (f.ExpensePaymentId == paymentType));
+
+			return groupExpenses;
+
+		}
+		private int expenseHeadingSelected;
+
+		private string _expenseHeadingSelectedName;
+		private string expenseHeadingSelectedName
+		{
+			get
+			{
+				return _expenseHeadingSelectedName;
+			}
+
+			set
+			{
+				InvoiceHeading tempHeading = Array.Find<InvoiceHeading>(expenseHeadings, f => f.Description == value);
+				if (tempHeading != null)
+				{
+					expenseHeadingSelected = tempHeading.Id;
+				}
+				else
+				{
+					InvoiceHeading expenseHeading = new InvoiceHeading();
+					expenseHeading.Description = value;
+
+					Task temp = addNewHeading(expenseHeading);
+				}
+
+				_expenseHeadingSelectedName = value;
+			}
+		}
+
+		private string GetVatCatDesc(int VatCatId)
+		{
+			return vatCategories.Where(f => f.Id == VatCatId).Select(g => g.Category).FirstOrDefault();
+		}
+
+		private async Task addNewHeading(InvoiceHeading newHeading)
+		{
+			await Http.PostJsonAsync<InvoiceHeading>("/api/InvoiceHeadings", newHeading);
+			expenseHeadings = await Http.GetJsonAsync<InvoiceHeading[]>("/api/InvoiceHeadings");
+			this.StateHasChanged();
+		}
+
+		private int siteSelected;
+		private string paymentTypeSelected;
+
+		private string _reconPaymentTypeSelected;
+		private string reconPaymentTypeSelected
+		{
+			get
+			{
+				return _reconPaymentTypeSelected;
+			}
+
+			set
+			{
+				_reconPaymentTypeSelected = value;
+				if (value == "ALL")
+				{
+					Task tmp = GetAllViewGroups();
+				}
+				else
+				{
+					Task tmp = GetViewGroup(int.Parse(value));
+				}
+			}
+		}
+
+		private string paymentTypeSelectedName;
+
+		private int supplierSelected;
+
+		private string _supplierSelectedName;
+		private string supplierSelectedName
+		{
+			get
+			{
+				return _supplierSelectedName;
+			}
+
+			set
+			{
+				ExpenseSupplier tempSupplier = Array.Find<ExpenseSupplier>(suppliers, f => f.Name == value);
+				if (tempSupplier != null)
+				{
+					supplierSelected = tempSupplier.Id;
+				}
+				else
+				{
+					Task tmp = addNewSupplier(value);
+				}
+				_supplierSelectedName = value;
+			}
+		}
+
+		private async Task addNewSupplier(String newSupplierName)
+		{
+			ExpenseSupplier newSupplier = new ExpenseSupplier();
+			newSupplier.Name = newSupplierName;
+			newSupplier.Deleted = false;
+
+			await Http.SendJsonAsync(HttpMethod.Post, "/api/ExpenseSuppliers/", newSupplier);
+			suppliers = await Http.GetJsonAsync<ExpenseSupplier[]>("/api/ExpenseSuppliers/");
+
+			// Get the new suppliers ID to store locally
+			newSupplier = Array.Find<ExpenseSupplier>(suppliers, f => f.Name == newSupplierName);
+			supplierSelected = newSupplier.Id;
+
+			this.StateHasChanged();
+		}
+
+		public string _siteSelectedName;
+
+		public string siteSelectedName
+		{
+			get
+			{
+				return _siteSelectedName;
+			}
+
+			set
+			{
+				_siteSelectedName = value;
+
+				Site site = Array.Find<Site>(sites, p => p.SiteName == value);
+				siteSelected = site.Id;
+			}
+		}
+
+		public decimal _VatAmount = 0;
+		public decimal VatAmount
+		{
+			get
+			{
+				return _VatAmount;
+			}
+
+			set
+			{
+				_VatAmount = value;
+			}
+		}
+
+		public decimal _GrossAmount = 0;
+		public decimal GrossAmount
+		{
+			get
+			{
+				return _GrossAmount;
+			}
+
+			set
+			{
+				_GrossAmount = value;
+			}
+		}
+
+		public decimal _NetAmount = 0;
+		public decimal NetAmount
+		{
+			get
+			{
+				return _NetAmount;
+			}
+			set
+			{
+				if (_VatAmount == 0)
+				{
+					if (_GrossAmount != value)
+					{
+						VatAmount = value - _GrossAmount;
+					}
+				}
+				else
+				{
+					if (_GrossAmount == 0)
+					{
+						GrossAmount = value - _VatAmount;
+					}
+				}
+				_NetAmount = value;
+			}
+
+		}
+
+
+		private void NetAmountKeyPress()
+		{
+			if (GrossAmount == 0)
+			{
+				if (VatAmount != 0 && NetAmount != 0)
+				{
+					GrossAmount = NetAmount - VatAmount;
 				}
 			}
 			else
 			{
-				if (_GrossAmount == 0)
-				{
-					GrossAmount = value - _VatAmount;
-				}
-			}
-			_NetAmount = value;
-		}
-
-	}
-
-
-	private void NetAmountKeyPress()
-	{
-		if (GrossAmount == 0)
-		{
-			if (VatAmount != 0 && NetAmount != 0)
-			{
-				GrossAmount = NetAmount - VatAmount;
+				NetAmount = GrossAmount + VatAmount;
 			}
 		}
-		else
+
+		private void clearInputValues()
 		{
-			NetAmount = GrossAmount + VatAmount;
-		}
-	}
+			newExpenseModel = new ExpenseModel();
+			newExpenseModel.expenseHead.CompanyID = companyId;
+			newExpenseModel.expenseHead.ExpenseReference = string.Empty;
 
-	private void clearInputValues()
-	{
-		expenseObj = new Expense(companyId);
-		expenseObj.Date = DateTime.Today;
-		supplierSelectedName = suppliers[0].Name;
-		siteSelectedName = sites[0].SiteName;
-		paymentTypeSelected = paymentTypes[0].Description;
-		expenseHeadingSelectedName = expenseHeadings[0].Description;
-		GrossAmount = 0;
-		VatAmount = 0;
-		NetAmount = 0;
-		expenseObj.ExpenseReference = "";
-		expenseObj.Description = "";
-	}
-
-	protected override async Task OnInitializedAsync()
-	{
-		companyId = AppData.CompanyId;
-
-		viewPeriodYears = await Http.GetJsonAsync<ViewPeriodYears[]>("api/ViewPeriodYears");
-		viewPeriodYearsSelected = int.Parse(currentPeriodYear);
-
-		expenseViews = await Http.GetJsonAsync<ExpenseView[]>("/api/ExpenseViews/Year/" + viewPeriodYearsSelected + "/" + companyId);
-
-		companies = await Http.GetJsonAsync<Company[]>("/api/Companies/");
-		sites = await Http.GetJsonAsync<Site[]>("api/Sites/Company/" + companyId);
-		suppliers = await Http.GetJsonAsync<Supplier[]>("api/Suppliers");
-		expenseHeadings = await Http.GetJsonAsync<InvoiceHeading[]>("api/InvoiceHeadings");
-		periods = await Http.GetJsonAsync<Period[]>("api/Periods/Company/" + companyId + "/Year/" + currentPeriodYear);
-		vatCategories = await GetVatCategories();
-		vatRates = await GetVatRates();
-
-		paymentTypes = await Http.GetJsonAsync<PaymentType[]>("api/PaymentTypes");
-		if (paymentTypes.Length == 0)
-		{
-			PaymentType paymentType = new PaymentType();
-			paymentType.Id = 0;
-			paymentType.Description = "No Payment Types";
-			paymentType.Type = "";
-
-			paymentTypes = new PaymentType[1];
-			paymentTypes[0] = paymentType;
+			supplierSelectedName = suppliers[0].Name;
+			siteSelectedName = sites[0].SiteName;
+			paymentTypeSelected = paymentTypes[0].Description;
+			expenseHeadingSelectedName = expenseHeadings[0].Description;
+			GrossAmount = 0;
+			VatAmount = 0;
+			NetAmount = 0;
 		}
 
-		try
+
+
+		private async Task<VatCategory[]> GetVatCategories()
 		{
-			defaultPaymentTypeId = Array.Find(paymentTypes, f => f.Type == "DD").Id;
-		}
-		catch (NullReferenceException ex)
-		{
-			defaultPaymentTypeId = 0;
-		}
-		catch (Exception ex)
-		{
-			defaultPaymentTypeId = 0;
-		}
-		await GetViewGroup(defaultPaymentTypeId);
-
-		if (sites.Length == 0)
-		{
-			Site site = new Site();
-			site.Id = 0;
-			site.SiteName = "No Sites";
-			sites = new Site[1];
-			sites[0] = site;
-		}
-		defaultSiteId = sites[0].Id;
-		defaultSiteName = sites[0].SiteName;
-
-
-		defaultPaymentTypeName = paymentTypes[0].Description;
-
-		expenseObj.Date = DateTime.Today;
-
-		siteSelected = defaultSiteId;
-		siteSelectedName = defaultSiteName;
-		paymentTypeSelected = defaultPaymentTypeId.ToString();
-
-		if (expenseHeadings.Length == 0)
-		{
-			InvoiceHeading expenseHeading = new InvoiceHeading();
-			expenseHeading.Id = 0;
-			expenseHeading.Description = "No Headings";
-			expenseHeadings = new InvoiceHeading[1];
-			expenseHeadings[0] = expenseHeading;
-		}
-		expenseHeadingSelected = expenseHeadings[0].Id;
-		expenseHeadingSelectedName = expenseHeadings[0].Description;
-
-		Period tmp = getCurrentPeriod();
-		await Focus("date");
-	}
-
-	private async Task<VatCategory[]> GetVatCategories()
-	{
-		VatCategory[] vatCategories;
-		try
-		{
-			vatCategories = await Http.GetJsonAsync<VatCategory[]>("api/VatCategories");
-
-			return vatCategories;
-		}
-		catch (Exception ex)
-		{
-			return new VatCategory[0];
-		}
-	}
-
-	private async Task<VatRate[]> GetVatRates()
-	{
-		VatRate[] vatRates;
-
-		try
-		{
-			vatRates = await Http.GetJsonAsync<VatRate[]>("api/VatRates");
-			return vatRates;
-		}
-		catch (Exception ex)
-		{
-			return new VatRate[0];
-		}
-	}
-
-	private Decimal GetVatRate(int vatRateId)
-	{
-		Decimal vatRate = 0;
-		try
-		{
-			vatRate = vatRates.Where(f => f.Id == vatRateId).FirstOrDefault().Rate;
-		}
-		catch (Exception ex)
-		{
-			System.Diagnostics.Debug.WriteLine(ex.Message);
-		}
-
-		return vatRate;
-	}
-
-	void AddNewExpense()
-	{
-		if (!validateNewExpense())
-		{
-			showInformationModal = true;
-		}
-		else
-		{
-
+			VatCategory[] vatCategories;
 			try
 			{
-				expenseObj.SiteID = siteSelected;
+				vatCategories = await Http.GetJsonAsync<VatCategory[]>("api/VatCategories");
+
+				return vatCategories;
 			}
 			catch (Exception ex)
 			{
-				expenseObj.SiteID = defaultSiteId;
+				return new VatCategory[0];
 			}
+		}
+
+		private async Task<VatRate[]> GetVatRates()
+		{
+			VatRate[] vatRates;
 
 			try
 			{
-				expenseObj.PaymentTypeID = int.Parse(paymentTypeSelected);
+				vatRates = await Http.GetJsonAsync<VatRate[]>("api/VatRates");
+				return vatRates;
 			}
 			catch (Exception ex)
 			{
-				expenseObj.PaymentTypeID = defaultPaymentTypeId;
+				return new VatRate[0];
+			}
+		}
+
+		private Decimal GetVatRate(int vatRateId)
+		{
+			Decimal vatRate = 0;
+			try
+			{
+				vatRate = vatRates.Where(f => f.Id == vatRateId).FirstOrDefault().Rate;
+			}
+			catch (Exception ex)
+			{
+				System.Diagnostics.Debug.WriteLine(ex.Message);
 			}
 
-			expenseObj.Paid = !GetPaymentType(expenseObj.PaymentTypeID).ReconcileFlag;
+			return vatRate;
+		}
 
-			expenseObj.SupplierID = supplierSelected;
-			expenseObj.GrossAmount = GrossAmount;
-			expenseObj.VATAmount = CalcVat(GrossAmount,expenseObj.CategoryID);
-			expenseObj.NetAmount = CalcNet(GrossAmount, expenseObj.CategoryID);
-			expenseObj.EditDate = DateTime.Now;
 
-			expenseObj.Heading = expenseHeadingSelected;
 
-			Period expensePeriod = getPeriod(expenseObj.Date);
-			expenseObj.PeriodNo = expensePeriod.PeriodKey;
-			expenseObj.PeriodId = expensePeriod.PeriodId;
-			expenseObj.Notes = expenseNotes;
-			expenseObj.CompanyID = companyId;
+		private bool validateNewExpense()
+		{
+			bool isValid = true;
 
-			Task d = PostExpense();
+			if (supplierSelectedName == null)
+			{
+				isValid = false;
+			}
+
+			if (GrossAmount == 0)
+			{
+				isValid = false;
+			}
+
+			//if (expenseObj.Description == null)
+			//{
+			//	isValid = false;
+			//}
+			return isValid;
+		}
+
+		private Period getCurrentPeriod()
+		{
+			return GetPeriod(DateTime.Now);
+		}
+
+		private Period GetPeriod(DateTime? inDateTime)
+		{
+			Period period = Array.Find<Period>(periods, f => inDateTime >= f.StartDate && inDateTime <= f.EndDate);
+			return period;
+		}
+
+
+
+		private async Task GetViewGroup(int paymentType)
+		{
+			viewExpenseGroups = await Http.GetJsonAsync<ViewExpenseGroup[]>("/api/ViewExpenseGroups/PayType/" + paymentType + "/" + companyId);
+			this.StateHasChanged();
+		}
+
+		private async Task GetAllViewGroups()
+		{
+			viewExpenseGroups = await Http.GetJsonAsync<ViewExpenseGroup[]>("/api/ViewExpenseGroups/Company/" + companyId);
+			this.StateHasChanged();
+		}
+
+		private void AddExpenseNotes()
+		{
+			//expenseNotes = expenseObj.Notes;
+			showNotes = true;
 			StateHasChanged();
 		}
-
-	}
-
-	private PaymentType GetPaymentType(int paymentType)
-	{
-		return Array.Find(paymentTypes, f => f.Id == paymentType);
-	}
-
-	private bool validateNewExpense()
-	{
-		bool isValid = true;
-
-		if (supplierSelectedName == null)
+		public void updateExpenseNotes(string newNotes)
 		{
-			isValid = false;
+			expenseNotes = newNotes;
 		}
 
-		if (GrossAmount == 0)
+		// Edit Method
+		private void EditExpense(ExpenseModel expenseModel)
 		{
-			isValid = false;
+			ToggleNewExpenseTable();
+			newExpenseModel = expenseModel;
+			siteSelected = expenseModel.expenseHead.SiteID;
+			supplierSelected = expenseModel.expenseHead.SupplierID;
+			supplierSelectedName = GetSupplierName(supplierSelected);
+			hideNewExpenseTable = false;
 		}
 
-		if (expenseObj.Description == null)
+		// Delete Method
+		protected async Task DeleteExpense(ExpenseModel expenseModel)
 		{
-			isValid = false;
-		}
-		return isValid;
-	}
-
-	private Period getCurrentPeriod()
-	{
-		return getPeriod(DateTime.Now);
-	}
-
-	private Period getPeriod(DateTime inDateTime)
-	{
-		Period period = Array.Find<Period>(periods, f => DateTime.Compare(inDateTime, f.StartDate) >= 0 && DateTime.Compare(inDateTime, f.EndDate) <= 0);
-		return period;
-	}
-
-	protected async Task PostExpense()
-	{
-		if (updateFlag)
-		{
-			await Http.SendJsonAsync(HttpMethod.Put, "/api/Expenses/" + expenseObj.ID, expenseObj);
-		}
-		else
-		{
-			expenseObj.CreatedDate = DateTime.Now;
 			try
 			{
-				await Http.SendJsonAsync(HttpMethod.Post, "/api/Expenses/", expenseObj);
+				await Http.DeleteAsync($"api/ExpenseHeads/{expenseModel.expenseHead.Id}");
+				await Http.DeleteAsync($"api/ExpenseLines/ExpenseHead/{expenseModel.expenseHead.Id}");
+
+				expenseModels.Remove(expenseModel);
+
+				StateHasChanged();
 			}
 			catch (Exception ex)
 			{
-				System.Diagnostics.Debug.WriteLine("Error: " + ex.Message);
-
+				throw new Exception(ex.Message);
 			}
 		}
-		expenseViews = await Http.GetJsonAsync<ExpenseView[]>("/api/ExpenseViews/Year/" + viewPeriodYearsSelected + "/" + companyId);
-		clearInputValues();
-		this.StateHasChanged();
 
 	}
-
-	private async Task GetViewGroup(int paymentType)
-	{
-		viewExpenseGroups = await Http.GetJsonAsync<ViewExpenseGroup[]>("/api/ViewExpenseGroups/PayType/" + paymentType + "/" + companyId);
-		this.StateHasChanged();
-	}
-
-	private async Task GetAllViewGroups()
-	{
-		viewExpenseGroups = await Http.GetJsonAsync<ViewExpenseGroup[]>("/api/ViewExpenseGroups/Company/" + companyId);
-		this.StateHasChanged();
-	}
-
-	private void AddExpenseNotes()
-	{
-		expenseNotes = expenseObj.Notes;
-		showNotes = true;
-		StateHasChanged();
-	}
-	public void updateExpenseNotes(string newNotes)
-	{
-		expenseNotes = newNotes;
-	}
-
-	// Edit Method
-	private void EditExpense(ExpenseView expenseView)
-	{
-		expenseObj = new Expense(companyId);
-
-		expenseObj.ID = expenseView.ExpenseId;
-		expenseObj.ExpenseReference = expenseView.ExpenseReference;
-		expenseObj.Description = expenseView.ExpenseDescription;
-		expenseObj.GrossAmount = Math.Round(expenseView.ExpenseGross, 2);
-		expenseObj.VATAmount = Math.Round(expenseView.ExpenseVAT, 2);
-		expenseObj.NetAmount = Math.Round(expenseView.ExpenseNet, 2);
-		expenseObj.PaymentTypeID = expenseView.ExpensePaymentId;
-		expenseObj.SupplierID = expenseView.ExpenseSupplierId;
-		expenseObj.SiteID = expenseView.ExpenseSiteId;
-		expenseObj.Notes = expenseView.ExpenseNotes;
-		expenseObj.Date = expenseView.ExpenseDate;
-		expenseObj.CreatedDate = expenseView.ExpenseCreatedDate;
-
-		updateFlag = true;
-		Supplier supplier = Array.Find<Supplier>(suppliers, p => p.Id == expenseObj.SupplierID);
-		Site site = Array.Find<Site>(sites, p => p.Id == expenseObj.SiteID);
-
-		siteSelectedName = site.SiteName;
-		supplierSelectedName = supplier.Name;
-		GrossAmount = expenseObj.GrossAmount;
-		VatAmount = expenseObj.VATAmount;
-		NetAmount = expenseObj.NetAmount;
-
-		expenseNotes = "init";
-		this.StateHasChanged();
-	}
-
-	// Delete Method
-	protected async Task DeleteExpense(ExpenseView expenseView)
-	{
-
-		await Http.DeleteAsync("/api/Expenses/" + expenseView.ExpenseId);
-
-		expenseViews = await Http.GetJsonAsync<ExpenseView[]>("/api/ExpenseViews/Year/" + viewPeriodYearsSelected + "/" + companyId);
-	}
-
-}

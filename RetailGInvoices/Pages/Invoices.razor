@@ -11,10 +11,7 @@
 
 	<InformationModal showModal="showInformationModal" modalTextHeader="Error" modalTextBody="Cannot Add Invoice Missing Mandatory Fields" @bind-reply="informationModalReply" />
 }
-@if (showNotes)
-{
-	<InvoiceNotes showModal="@showNotes" @bind-notes="invoiceNotes" />
-}
+
 @if (viewPeriodYears == null)
 {
 	<p>Loading ..</p>
@@ -95,788 +92,1157 @@ else
 }
 
 <!-- Add a new Invoice -->
+<button class="btn btn-info" @onclick="@(x => ToggleNewInvoiceTable())" disabled="@disableCreateButton">Create New Invoice</button>
+<p hidden="@hideNewInvoiceTable">
+	@if (newInvoiceModel != null)
+	{
+		<table>
+			<thead>
+				<tr style="background-color:darkseagreen">
+					<td width="5%">*Invoice Date</td>
+					<td width="10%">*Site</td>
+					<td width="15%">*Supplier</td>
+					<td width="10%">Reference</td>
+					<td width="5%">*Pay Type</td>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td>
+						<input id="invoicedate" type="date" class="form-control" @bind="newInvoiceModel.invoiceHead.InvoiceDate" @onkeypress="@(e => dateKeyHandler(e.Key))" style="width:100%" />
+					</td>
 
-
-<table class="table-borderless">
-	<tr>
-		<td>
-			<label for="Invoice Date" class="control-label">*Invoice Date</label>
-		</td>
-		<td>
-			<label for="Site" class="control-label">*Site</label>
-		</td>
-		<td>
-			<label for="Supplier" class="control-label">*Supplier</label>
-		</td>
-		<td>
-			<label for="Reference" class="control-label">Reference</label>
-		</td>
-		<td>
-			<label for="Description" class="control-label">*Description</label>
-		</td>
-		<td>
-			<label for="Heading" class="control-label">*Heading</label>
-		</td>
-		<td>
-			<label for="PaymentType" class="control-label">*Pay Type</label>
-		</td>
-		<td class="amount">
-			<label for="Gross Amount" class="control-label">*Gross Amount</label>
-		</td>
-		<td class="amount">
-			<label for="Vat Amount" class="control-label">VAT Amount</label>
-		</td>
-		<td class="amount">
-			<label for="Net Amount" class="control-label">*Net Amount</label>
-		</td>
-	</tr>
-	<tr>
-		<td>
-			<input id="date" type="date" class="form-control" @bind="invoiceObj.Date" @onkeypress="@(e => dateKeyHandler(e.Key))" />
-		</td>
-
-
-		<td style="width:200px">
-			@if (sites != null)
-			{
-				<select id="site" class="form-control" @bind="siteSelected" @onkeypress="@(e => siteKeyHandler(e.Key))">
-					@foreach (var site in sites)
-					{
-						<option value="@site.Id">@site.SiteName</option>
-					}
-
-				</select>
-			}
-		</td>
-		<td style="width:200px">
-			<input id="supplier" list="supplierList" @bind="supplierSelectedName" @onkeypress="@(e => suppKeyHandler(e.Key))">
-			@if (suppliers != null)
-			{
-				<datalist id="supplierList">
-					@foreach (var supplier in suppliers)
-					{
-						<option value="@supplier.Name"></option>
-					}
-				</datalist>
-			}
-		</td>
-		<td style="width: 100px">
-			<input id="reference" type="text" class="form-control" @bind="invoiceObj.InvoiceReference" @onkeypress="@(e => refKeyHandler(e.Key))" />
-		</td>
-		<td>
-			<input id="description" type="text" class="form-control" @bind="invoiceObj.Description" @onkeypress="@(e => descKeyHandler(e.Key))" />
-		</td>
-		<td style="width:200px">
-			<input id="heading" list="HeadingList" @bind="invoiceHeadingSelectedName" @onkeypress="@(e => headingKeyHandler(e.Key))">
-			@if (invoiceHeadings != null)
-			{
-				<datalist id="HeadingList">
-					@foreach (var invoiceHeading in invoiceHeadings)
-					{
-						<option value="@invoiceHeading.Description"></option>
-					}
-
-				</datalist>
-			}
-		</td>
-
-		<td style="width: 100px">
-			@if (paymentTypes != null)
-			{
-				<select id="paymentType" class="form-control" @bind="paymentTypeSelected" @onkeypress="@(e => payKeyHandler(e.Key))">
-					@foreach (var paymentType in paymentTypes)
-					{
-						@if (paymentType.Type == "DD")
+					<td>
+						@if (sites != null)
 						{
-							<option selected="selected" value="@paymentType.Id">@paymentType.Type</option>
-						}
-						else
-						{
-							<option value="@paymentType.Id">@paymentType.Type</option>
-						}
-					}
+							@if (sites.Length == 1)
+							{
+								<input id="site" value="@(GetSiteName(defaultSiteId))" disabled="disabled" style="width:100%" />
+							}
+							else
+							{
+								<select id="site" class="form-control" @bind="siteSelected" @onkeypress="@(e => siteKeyHandler(e.Key))" style="width:100%">
+									@foreach (var site in sites)
+									{
+										<option value="@site.Id">@site.SiteName</option>
+									}
 
-				</select>
-			}
-		</td>
-		<td>
-			<input id="grossAmount" type="text" class="form-control" style="text-align:right" @bind="GrossAmount" @onkeypress="@(e => grossKeyHandler(e.Key))" onfocus="this.select()" />
-		</td>
-		<td>
-			<input id="vatAmount" type="text" class="form-control" style="text-align:right" @bind="VatAmount" @onkeypress="@(e => vatKeyHandler(e.Key))" onfocus="this.select()" />
-		</td>
-		<td>
-			<input id="netAmount" type="text" class="form-control" style="text-align:right" @bind-value="NetAmount" @onkeypress="@(e => netKeyHandler(e.Key))" @onblur="@(e => NetAmountKeyPress())" onfocus="this.select()" />
-		</td>
-	</tr>
-	<tr>
-		<td>
-			<button class="btn btn-info" @onclick="@AddInvoiceNotes">Notes</button>
-		</td>
-		<td>
-			<button id="btnAddInvoice" type="button" class="btn-success" @onclick="@AddNewInvoice">Update</button>
-		</td>
-		<td>
-			<button type="button" class="btn-secondary" @onclick="@clearInputValues">Clear</button>
-		</td>
-	</tr>
-	<tr>
-		<td>
-			<p>* - Manditory Field</p>
-		</td>
-	</tr>
-</table>
-@if (invoiceViews == null)
-{
-	<p><em>Loading....</em></p>
-}
-else
-{
-	<Table TableItem="InvoiceView" Items="invoiceViews" @ref="Table" PageSize="50" ColumnReorder="true" RowClickAction="EditInvoice" TableRowClass="x => x.RowClass">
-		<Column TableItem="InvoiceView" Title="ID" Field="@(x => x.InvoiceId)" Sortable="true" Width="10%" DefaultSortColumn="true" />
-		<Column TableItem="InvoiceView" Title="Invoice Date" Field="@(x => x.InvoiceDate)" Sortable="true" Width="10%" DefaultSortColumn="true">
-			<Template>
-				@(context.InvoiceDate.ToShortDateString())
-			</Template>
-		</Column>
-		<Column TableItem="InvoiceView" Title="Site" Field="@(x => x.SiteName)" Sortable="true" Width="10%" DefaultSortColumn="true">
-		</Column>
-		<Column TableItem="InvoiceView" Title="Supplier" Field="@(x => x.SupplierName)" Sortable="true" Width="10%" />
-		<Column TableItem="InvoiceView" Title="Reference" Field="@(x => x.InvoiceReference)" Sortable="true" Width="10%" DefaultSortColumn="true" />
-		<Column TableItem="InvoiceView" Title="Description" Field="@(x => x.InvoiceDescription)" Sortable="true" Width="10%" />
-		<Column TableItem="InvoiceView" Title="Heading" Field="@(x => x.InvoiceHeading)" Sortable="true" Width="10%" />
-		<Column TableItem="InvoiceView" Title="Payment Type" Field="@(x => x.InvoicePaymentDescription)" Sortable="true" Width="10%" DefaultSortColumn="true" />
-		<Column TableItem="InvoiceView" Title="Gross" Field="@(x => x.InvoiceGross)" Format="£###.00" Sortable="true" Width="10%" DefaultSortColumn="true" Align="Align.Right" />
-		<Column TableItem="InvoiceView" Title="Vat" Field="@(x => x.InvoiceVAT)" Format="£###.00" Sortable="true" Width="10%" DefaultSortColumn="true" Align="Align.Right" />
-		<Column TableItem="InvoiceView" Title="Total" Field="@(x => x.InvoiceNet)" Format="£###.00" Sortable="true" Width="10%" Align="Align.Right" />
-		<Column TableItem="InvoiceView" Title="Del">
-			<Template>
-				<button class="btn-sm" @onclick="c => DeleteInvoice(context) ">X</button>
-			</Template>
-		</Column>
-		<Pager ShowPageNumber="true" ShowTotalCount="true" ShowPageSizes="true" />
+								</select>
+							}
+						}
+					</td>
+					<td>
+						<input id="supplier" list="supplierList" @bind="supplierSelectedName" @onkeypress="@(e => suppKeyHandler(e.Key))" style="width:100%">
+						@if (suppliers != null)
+						{
+							<datalist id="supplierList">
+								@foreach (var supplier in suppliers)
+								{
+									if (supplier.Id == supplierSelected)
+									{
+										<option value="@supplier.Name" selected="selected">@supplier.Name</option>
+									}
+									else
+									{
+										<option value="@supplier.Name"></option>
+									}
+								}
+							</datalist>
+						}
+					</td>
+					<td>
+						<input id="reference" type="text" class="form-control" @bind="newInvoiceModel.invoiceHead.Reference" @onkeypress="@(e => refKeyHandler(e.Key))" style="width:100%" />
+					</td>
+					<td>
+						@if (paymentTypes != null)
+						{
+							<select id="paymenttype" class="form-control" @bind="newInvoiceModel.invoiceHead.PaymentTypeID" @onkeypress="@(e => payKeyHandler(e.Key))" style="width:100%">
+								@foreach (var paymentType in paymentTypes)
+								{
+									@if (paymentType.Type == "DD")
+									{
+										<option selected="selected" value="@paymentType.Id">@paymentType.Type</option>
+									}
+									else
+									{
+										<option value="@paymentType.Id">@paymentType.Type</option>
+									}
+								}
+
+							</select>
+						}
+					</td>
+				</tr>
+			</tbody>
+		</table>
+
+		<Table TableItem="InvoiceLine" Items="newInvoiceModel.InvoiceLines">
+			<Column TableItem="InvoiceLine" Title="Line" Field="@(x => x.LineNo)" Width="5%" />
+			<Column TableItem="InvoiceLine" Title="Description" Field="@(x => x.Description)" Width="30%">
+				<Template>
+					<input id="desc@(context.LineNo)" type="text" @bind="context.Description" style="width:100%" @onkeypress="@(e => descKeyHandler(e.Key, context.LineNo))" />
+				</Template>
+			</Column>
+			<Column TableItem="InvoiceLine" Title="Total Amount" Format="£###.00" Width="10%">
+				<Template>
+					<input id="totalamount@(context.LineNo)" type="text" style="text-align:right; width:100%" @bind="@(context.NetAmount)" @onkeypress="@(e => netKeyHandler(e.Key, context.LineNo))" onfocus="this.select()" />
+				</Template>
+			</Column>
+			<Column TableItem="InvoiceLine" Title="VAT Amount" Width="10%">
+				<Template>
+	
+	</Template>
+	</Column>
+	<Column TableItem="InvoiceLine" Title="Gross Amount" Width="10%">
+		<Template>
+			<p id="grossamount@(context.LineNo)" style="text-align:right; width:100%">@CalcGross(context.NetAmount, context.VATAmount)</p>
+		</Template>
+	</Column>
+	<Column TableItem="InvoiceLine" Title="" Width="5%">
+		<Template>
+			<button class="btn" style="color:red" @onclick="@(x => DeleteLine(newInvoiceModel, context))">X</button>
+		</Template>
+	</Column>
 	</Table>
-
-
+	<table class="table-borderless">
+		<tr style="width:100px">
+			<td width="10%">
+				<button id="addbutton" class="btn btn-info" @onclick="@(x => AddNewLine(newInvoiceModel))">Add Line</button>
+			</td>
+			<td width="10%">
+				<button id="submitbutton" class="btn btn-info" @onclick="@(x => SubmitInvoiceModel(newInvoiceModel))">Submit Invoice</button>
+			</td>
+			<td width="10%">
+				<button id="exitbutton" class="btn btn-info" @onclick="@(x => ExitInvoiceModel(newInvoiceModel))">Exit No Save</button>
+			</td>
+		</tr>
+	</table>
 }
-
-@code {
-	[Parameter]
-	public int companyId { get; set; }
-
-	private bool showNotes = false;
-	private ITable<InvoiceView> Table;
-	private void ToggleEdit()
-	{
-		Table.ToggleEditMode();
-	}
-	private bool updateFlag = false;
-	private int currentPeriod = 1;
-	private string currentPeriodYear = DateTime.Today.ToString("yy");
-	private string today = DateTime.Today.ToString("dd/MM/yyyy");
-
-	private bool showInformationModal = false;
-	private string _invoiceNotes;
-	public string invoiceNotes
-	{
-		get
-		{
-			return _invoiceNotes;
-		}
-		set
-		{
-			_invoiceNotes = value;
-			showNotes = false;
-			Task tmp = Focus("btnAddInvoice");
-		}
-	}
-
-	private int defaultSiteId;
-	private string defaultSiteName;
-	private string defaultSupplierName;
-	private int defaultPaymentTypeId;
-	private string defaultPaymentTypeName;
-
-	private Company[] companies;
-	private Site[] sites;
-	private Supplier[] suppliers;
-	private PaymentType[] paymentTypes;
-	private InvoiceView[] invoiceViews;
-	private InvoiceHeading[] invoiceHeadings;
-	private ViewInvoiceGroup[] viewInvoiceGroups;
-	private Period[] periods;
-	private ViewPeriodYears[] viewPeriodYears;
+	</p>
 
 
-	Company companyObj = new Company();
-	Invoice invoiceObj = new Invoice();
-	Site siteObj = new Site();
-	Supplier supplierObj = new Supplier();
-	PaymentType paymentTypeObj = new PaymentType();
-	InvoiceView invoiceViewObj = new InvoiceView();
-	InvoiceHeading invoiceHeadingObj = new InvoiceHeading();
-	ViewPeriodYears viewPeriodYearsObj = new ViewPeriodYears();
+	@if (invoiceModels == null)
+	{
+		<p><em>Loading....</em></p>
+	}
+	else
+	{
+		<Table TableItem="InvoiceModel" Items="invoiceModels" @ref="Table" PageSize="50" ColumnReorder="true">
+			<Column Title="Invoice Date" TableItem="InvoiceModel" Field="@(x => x.invoiceHead.InvoiceDate)">
+				<Template>
+					@(context.invoiceHead.InvoiceDate.ToString("dd/MM/yyyy"))
+				</Template>
+			</Column>
+			<Column Title="Site" TableItem="InvoiceModel" Field="@(x => x.invoiceHead.SiteID)">
+				<Template>
+					<p>@(GetSite(context.invoiceHead.SiteID).SiteName)</p>
+				</Template>
+			</Column>
+			<Column Title="Supplier" TableItem="InvoiceModel" Field="@(x => x.invoiceHead.SupplierID)">
+				<Template>
+					<p>@(GetSupplier(context.invoiceHead.SupplierID).Name)</p>
+				</Template>
+			</Column>
+			<Column Title="Reference" TableItem="InvoiceModel" Field="@(x => x.invoiceHead.Reference)" />
+			<Column Title="Pay Type" TableItem="InvoiceModel" Field="@(x => x.invoiceHead.PaymentTypeID)">
+				<Template>
+					<p>@(GetPaymentType(context.invoiceHead.PaymentTypeID).Description)</p>
+				</Template>
+			</Column>
+			<Column Title="Total" TableItem="InvoiceModel" Field="@(x => x.TotalInvoice)" Format="£###.00" />
+			<Column Title="" TableItem="InvoiceModel">
+				<Template>
+					<table class="table-borderless">
+						<tr>
+							<td>
+								<img src="images/edit-24.png" @onclick="@(x => EditInvoice(context))" style="cursor: pointer;" />
+							</td>
+							<td>
+								<img src="images/trash-16.png" @onclick="@(x => DeleteInvoice(context))" style="cursor: pointer;" />
+							</td>
+						</tr>
+					</table>
 
-	public void refKeyHandler(string keyPressed)
-	{
-		if (keyPressed == "Enter")
-		{
-			Task tmp = Focus("description");
-		}
-	}
-	public void descKeyHandler(string keyPressed)
-	{
-		if (keyPressed == "Enter")
-		{
-			Task tmp = Focus("heading");
-		}
-	}
-	public void grossKeyHandler(string keyPressed)
-	{
-		if (keyPressed == "Enter")
-		{
-			Task tmp = Focus("vatAmount");
-		}
-	}
-	public void vatKeyHandler(string keyPressed)
-	{
-		if (keyPressed == "Enter")
-		{
-			Task tmp = Focus("netAmount");
-		}
-	}
+				</Template>
+			</Column>
+			<DetailTemplate TableItem="InvoiceModel">
+				<Table TableItem="InvoiceLine" Items="context.InvoiceLines">
+					<Column TableItem="InvoiceLine" Title="Line" Field="@(x => x.LineNo)" />
+					<Column TableItem="InvoiceLine" Title="Description" Field="@(x => x.Description)" />
+					<Column TableItem="InvoiceLine" Title="Total" Field="@(x => x.NetAmount)" Format="£###.00" />
+					<Column TableItem="InvoiceLine" Title="Vat Amount" Format="£###.00">
+						<Template Context="expLineContext">
+							<p id="vatamountdetail@(expLineContext.LineNo)" style="text-align:right; width:100%">@CalcVat(expLineContext.NetAmount, expLineContext.GrossAmount)</p>
+						</Template>
+					</Column>
+					<Column TableItem="InvoiceLine" Title="Gross Amount" Format="£###.00">
+						<Template Context="expLineContext">
+							<p id="grossamountdetail@(expLineContext.LineNo)" style="text-align:right; width:100%">@CalcGross(expLineContext.NetAmount, expLineContext.VATAmount)</p>
+						</Template>
+					</Column>
+				</Table>
+			</DetailTemplate>
+			<Pager ShowPageNumber="true" ShowTotalCount="true" ShowPageSizes="true" />
+		</Table>
 
-	public void netKeyHandler(string keyPressed)
-	{
-		if (keyPressed == "Enter")
-		{
-			Task tmp = Focus("btnAddInvoice");
-		}
-	}
-
-	public void suppKeyHandler(string keyPressed)
-	{
-		if (keyPressed == "Enter")
-		{
-			Task tmp = Focus("reference");
-		}
-	}
-	public void dateKeyHandler(string keyPressed)
-	{
-		if (keyPressed == "Enter")
-		{
-			Task tmp = Focus("site");
-		}
-	}
-	public void siteKeyHandler(string keyPressed)
-	{
-		if (keyPressed == "Enter")
-		{
-			Task tmp = Focus("supplier");
-		}
-	}
-	public void headingKeyHandler(string keyPressed)
-	{
-		if (keyPressed == "Enter")
-		{
-			Task tmp = Focus("paymentType");
-		}
-	}
-	public void payKeyHandler(string keyPressed)
-	{
-		if (keyPressed == "Enter")
-		{
-			Task tmp = Focus("grossAmount");
-		}
-	}
-	public async Task Focus(string elementId)
-	{
-		await JSRuntime.InvokeVoidAsync("functionLibrary.focusElement", elementId);
-	}
-
-	public string informationModalReply
-	{
-		get
-		{
-			return null;
-		}
-
-		set
-		{
-			showInformationModal = false;
-		}
 
 	}
 
-	private int viewPeriodYearsSelected;
-	private InvoiceView[] getHeading(int headingId, int paymentType)
-	{
-		InvoiceView[] groupInvoices;
-		groupInvoices = Array.FindAll(invoiceViews, f => (f.InvoiceHeadingId == headingId) && (f.InvoicePaymentId == paymentType));
+	@code {
+		[Parameter]
+		public int companyId { get; set; }
 
-		return groupInvoices;
-
-	}
-	private int invoiceHeadingSelected;
-
-	private string _invoiceHeadingSelectedName;
-	private string invoiceHeadingSelectedName
-	{
-		get
+		private bool showNotes = false;
+		private ITable<InvoiceModel> Table;
+		private void ToggleEdit()
 		{
-			return _invoiceHeadingSelectedName;
+			Table.ToggleEditMode();
 		}
+		private bool updateFlag = false;
+		private int currentPeriod = 1;
+		private string currentPeriodYear = DateTime.Today.ToString("yy");
+		private string today = DateTime.Today.ToString("dd/MM/yyyy");
 
-		set
+		private bool showInformationModal = false;
+		private bool hideNewInvoiceTable = true;
+		private bool disableCreateButton = true;
+
+		private string _invoiceNotes;
+		public string invoiceNotes
 		{
-			InvoiceHeading tempInvoiceHeading = Array.Find<InvoiceHeading>(invoiceHeadings, f => f.Description == value);
-			if (tempInvoiceHeading != null)
+			get
 			{
-				invoiceHeadingSelected = tempInvoiceHeading.Id;
+				return _invoiceNotes;
 			}
-			else
+			set
 			{
-				InvoiceHeading invoiceHeading = new InvoiceHeading();
-				invoiceHeading.Description = value;
-
-				Task temp = addNewInvoiceHeading(invoiceHeading);
-			}
-
-			_invoiceHeadingSelectedName = value;
-		}
-	}
-
-	private async Task addNewInvoiceHeading(InvoiceHeading newInvoiceHeading)
-	{
-		await Http.PostJsonAsync<InvoiceHeading>("/api/InvoiceHeadings", newInvoiceHeading);
-		invoiceHeadings = await Http.GetJsonAsync<InvoiceHeading[]>("/api/InvoiceHeadings");
-		this.StateHasChanged();
-	}
-
-	private int siteSelected;
-	private string paymentTypeSelected;
-
-	private string _reconPaymentTypeSelected;
-	private string reconPaymentTypeSelected
-	{
-		get
-		{
-			return _reconPaymentTypeSelected;
-		}
-
-		set
-		{
-			_reconPaymentTypeSelected = value;
-			if (value == "ALL")
-			{
-				Task tmp = GetAllViewGroups();
-			}
-			else
-			{
-				Task tmp = GetViewGroup(int.Parse(value));
+				_invoiceNotes = value;
+				showNotes = false;
+				Task tmp = Focus("btnAddInvoice");
 			}
 		}
-	}
 
-	private string paymentTypeSelectedName;
+		private int newLineAdded = 0;
 
-	private int supplierSelected;
+		private int defaultSiteId;
+		private int defaultSupplierId;
+		private string defaultSiteName;
+		private string defaultSupplierName;
+		private int defaultPaymentTypeId;
+		private string defaultPaymentTypeName;
 
-	private string _supplierSelectedName;
-	private string supplierSelectedName
-	{
-		get
+		private Company[] companies;
+		private Site[] sites;
+		private Supplier[] suppliers;
+		private PaymentType[] paymentTypes;
+		private InvoiceView[] invoiceViews;
+		private InvoiceHeading[] invoiceHeadings;
+		private ViewInvoiceGroup[] viewInvoiceGroups;
+		private Period[] periods;
+		private ViewPeriodYears[] viewPeriodYears;
+		private VatCategory[] vatCategories;
+		private VatRate[] vatRates;
+		private List<InvoiceModel> invoiceModels;
+
+		Company companyObj = new Company();
+		InvoiceModel newInvoiceModel;
+		InvoiceModel tmpInvoiceModel;
+
+		Site siteObj = new Site();
+		Supplier supplierObj = new Supplier();
+		PaymentType paymentTypeObj = new PaymentType();
+		InvoiceView invoiceViewObj = new InvoiceView();
+		InvoiceHeading invoiceHeadingObj = new InvoiceHeading();
+		ViewPeriodYears viewPeriodYearsObj = new ViewPeriodYears();
+
+		protected override async Task OnInitializedAsync()
 		{
-			return _supplierSelectedName;
-		}
+			companyId = AppData.CompanyId;
+			tmpInvoiceModel = new InvoiceModel();
 
-		set
-		{
-			Supplier tempSupplier = Array.Find<Supplier>(suppliers, f => f.Name == value);
-			if (tempSupplier != null)
+			viewPeriodYears = await Http.GetJsonAsync<ViewPeriodYears[]>("api/ViewPeriodYears");
+			viewPeriodYearsSelected = int.Parse(currentPeriodYear);
+
+			invoiceViews = await Http.GetJsonAsync<InvoiceView[]>("/api/InvoiceViews/Year/" + viewPeriodYearsSelected + "/" + companyId);
+
+			companies = await Http.GetJsonAsync<Company[]>("/api/Companies/");
+
+			sites = await Http.GetJsonAsync<Site[]>("api/Sites/Company/" + companyId);
+			if (sites.Length == 1)
 			{
-				supplierSelected = tempSupplier.Id;
+				siteSelected = 0;
+				siteSelectedName = sites[0].SiteName;
 			}
-			else
+
+			suppliers = await Http.GetJsonAsync<Supplier[]>("api/Suppliers");
+			periods = await Http.GetJsonAsync<Period[]>("api/Periods/Company/" + companyId + "/Year/" + currentPeriodYear);
+			vatCategories = await GetVatCategories();
+			vatRates = await GetVatRates();
+
+			paymentTypes = await Http.GetJsonAsync<PaymentType[]>("api/PaymentTypes");
+			if (paymentTypes.Length == 0)
 			{
-				Task tmp = addNewSupplier(value);
+				PaymentType paymentType = new PaymentType();
+				paymentType.Id = 0;
+				paymentType.Description = "No Payment Types";
+				paymentType.Type = "";
+
+				paymentTypes = new PaymentType[1];
+				paymentTypes[0] = paymentType;
 			}
-			_supplierSelectedName = value;
-		}
-	}
 
-	private async Task addNewSupplier(String newSupplierName)
-	{
-		Supplier newSupplier = new Supplier();
-		newSupplier.Name = newSupplierName;
-
-		await Http.SendJsonAsync(HttpMethod.Post, "/api/Suppliers/", newSupplier);
-		suppliers = await Http.GetJsonAsync<Supplier[]>("/api/Suppliers/");
-
-		// Get the new suppliers ID to store locally
-		newSupplier = Array.Find<Supplier>(suppliers, f => f.Name == newSupplierName);
-		supplierSelected = newSupplier.Id;
-
-		this.StateHasChanged();
-	}
-
-	public string _siteSelectedName;
-
-	public string siteSelectedName
-	{
-		get
-		{
-			return _siteSelectedName;
-		}
-
-		set
-		{
-			_siteSelectedName = value;
-
-			Site site = Array.Find<Site>(sites, p => p.SiteName == value);
-			siteSelected = site.Id;
-		}
-	}
-
-	public decimal _VatAmount = 0;
-	public decimal VatAmount
-	{
-		get
-		{
-			return _VatAmount;
-		}
-
-		set
-		{
-			_VatAmount = value;
-		}
-	}
-
-	public decimal _GrossAmount = 0;
-	public decimal GrossAmount
-	{
-		get
-		{
-			return _GrossAmount;
-		}
-
-		set
-		{
-			_GrossAmount = value;
-		}
-	}
-
-	public decimal _NetAmount = 0;
-	public decimal NetAmount
-	{
-		get
-		{
-			return _NetAmount;
-		}
-		set
-		{
-			if (_VatAmount == 0)
+			try
 			{
-				if (_GrossAmount != value)
+				defaultPaymentTypeId = Array.Find(paymentTypes, f => f.Type == "DD").Id;
+			}
+			catch (NullReferenceException ex)
+			{
+				defaultPaymentTypeId = 0;
+			}
+			catch (Exception ex)
+			{
+				defaultPaymentTypeId = 0;
+			}
+			await GetViewGroup(defaultPaymentTypeId);
+
+			if (sites.Length == 0)
+			{
+				Site site = new Site();
+				site.Id = 0;
+				site.SiteName = "No Sites";
+				sites = new Site[1];
+				sites[0] = site;
+			}
+
+			defaultSiteId = sites[0].Id;
+
+			if (suppliers.Length == 0)
+			{
+				Supplier supplier = new Supplier();
+				supplier.Id = 0;
+				supplier.Name = "No Suppliers";
+				suppliers = new Supplier[1];
+				suppliers[0] = supplier;
+			}
+			defaultSupplierId = suppliers[0].Id;
+
+			defaultPaymentTypeName = paymentTypes[0].Description;
+
+			ResetNewInvoiceModel();
+
+			invoiceModels = await GetInvoiceModels();
+
+			siteSelected = defaultSiteId;
+			paymentTypeSelected = defaultPaymentTypeId.ToString();
+
+			Period tmp = getCurrentPeriod();
+			disableCreateButton = false;
+		}
+
+		protected override Task OnAfterRenderAsync(bool firstRender)
+		{
+			if (!firstRender)
+			{
+				if (newLineAdded != 0)
 				{
-					VatAmount = value - _GrossAmount;
+					Task tmp = Focus($"desc{newLineAdded}");
+					newLineAdded = 0;
+				}
+			}
+
+			return base.OnAfterRenderAsync(firstRender);
+		}
+
+		private Site GetSite(int siteId)
+		{
+			Site site = sites.Where(f => f.Id == siteId).FirstOrDefault();
+			if (site == null)
+			{
+				site = new Site();
+			}
+
+			return site;
+		}
+
+		private Supplier GetSupplier(int supplierId)
+		{
+			Supplier supplier = suppliers.Where(f => f.Id == supplierId).FirstOrDefault();
+			if (supplier == null)
+			{
+				supplier = new Supplier();
+			}
+
+			return supplier;
+		}
+
+		private PaymentType GetPaymentType(int paymentTypeId)
+		{
+			PaymentType paymentType = paymentTypes.Where(f => f.Id == paymentTypeId).FirstOrDefault();
+
+			if (paymentType == null)
+			{
+				paymentType = new PaymentType();
+			}
+
+			return paymentType;
+		}
+
+		private async Task<List<InvoiceModel>> GetInvoiceModels()
+		{
+			List<InvoiceModel> invoiceModels = new List<InvoiceModel>();
+
+			try
+			{
+				List<InvoiceHead> invoiceHeads = await Http.GetJsonAsync<List<InvoiceHead>>("api/InvoiceHeads");
+				foreach (InvoiceHead invoiceHead in invoiceHeads)
+				{
+					InvoiceModel invoiceModel = new InvoiceModel(invoiceHead);
+					invoiceModel.InvoiceLines = await GetInvoiceLines(invoiceHead);
+
+					invoiceModels.Add(invoiceModel);
+					invoiceModel.TotalInvoice = GetInvoiceTotal(invoiceModel.InvoiceLines);
+				}
+				return invoiceModels;
+			}
+			catch (Exception ex)
+			{
+				return new List<InvoiceModel>();
+			}
+		}
+
+		private async Task<List<InvoiceLine>> GetInvoiceLines(InvoiceHead invoiceHead)
+		{
+			try
+			{
+				return await Http.GetJsonAsync<List<InvoiceLine>>($"api/InvoiceLines/InvoiceHead/{invoiceHead.Id}");
+			}
+			catch (Exception ex)
+			{
+				System.Diagnostics.Debug.WriteLine(ex.Message);
+				return new List<InvoiceLine>();
+			}
+		}
+
+		private decimal GetInvoiceTotal(List<InvoiceLine> invoiceLines)
+		{
+			decimal total = 0;
+
+			foreach (InvoiceLine invoiceLine in invoiceLines)
+			{
+				total += invoiceLine.NetAmount;
+			}
+
+			return total;
+		}
+
+		private int GetLastLineNo(InvoiceModel invoiceModel)
+		{
+			int reply = 0;
+			foreach (InvoiceLine invoiceLine in invoiceModel.InvoiceLines)
+			{
+				if (invoiceLine.LineNo > reply)
+				{
+					reply = invoiceLine.LineNo;
+				}
+			}
+
+			return reply;
+		}
+
+		private void AddNewLine(InvoiceModel invoiceModel)
+		{
+			tmpInvoiceModel = invoiceModel.Clone();
+
+
+			int newLineNo = GetLastLineNo(invoiceModel) + 1;
+			InvoiceLine invoiceLine = new InvoiceLine(invoiceModel.invoiceHead.Id, newLineNo);
+
+			invoiceModel.InvoiceLines.Add(invoiceLine);
+			StateHasChanged();
+			newLineAdded = newLineNo;
+		}
+
+		private void DeleteLine(InvoiceModel invoiceModel, InvoiceLine invoiceLine)
+		{
+			if (invoiceLine != null)
+			{
+				invoiceModel.InvoiceLines.Remove(invoiceLine);
+			}
+		}
+
+		private void ToggleNewInvoiceTable()
+		{
+			hideNewInvoiceTable = !hideNewInvoiceTable;
+			Task tmp = Focus("invoicedate");
+			disableCreateButton = true;
+		}
+
+		private void ExitInvoiceModel(InvoiceModel invoiceModel)
+		{
+			invoiceModel = tmpInvoiceModel.Clone();
+			disableCreateButton = false;
+			ResetNewInvoiceModel();
+			ToggleNewInvoiceTable();
+		}
+
+		private async Task SubmitInvoiceModel(InvoiceModel invoiceModel)
+		{
+			InvoiceHead invoiceHead;
+			bool isEdit = false;
+
+			Period invoicePeriod = GetPeriod(invoiceModel.invoiceHead.InvoiceDate);
+			invoiceModel.invoiceHead.PeriodID = invoicePeriod.PeriodId;
+			invoiceModel.invoiceHead.PeriodNo = invoicePeriod.PeriodKey;
+			invoiceModel.invoiceHead.SiteID = siteSelected;
+			invoiceModel.invoiceHead.SupplierID = supplierSelected;
+
+			if (invoiceModel.invoiceHead.Id == 0)
+			{
+				invoiceHead = await PostInvoiceHead(invoiceModel.invoiceHead);
+			}
+			else
+			{
+				isEdit = true;
+				UpdateInvoiceHead(invoiceModel.invoiceHead);
+				invoiceModel.TotalInvoice = GetInvoiceTotal(invoiceModel.InvoiceLines);
+			}
+
+			foreach (InvoiceLine invoiceLine in invoiceModel.InvoiceLines)
+			{
+				if (invoiceLine.Id == 0)
+				{
+					invoiceLine.InvoiceID = invoiceModel.invoiceHead.Id;
+					await PostInvoiceLine(invoiceLine);
+				}
+				else
+				{
+					UpdateInvoiceLine(invoiceLine);
+				}
+			}
+
+			ResetNewInvoiceModel();
+			ToggleNewInvoiceTable();
+			disableCreateButton = false;
+
+			if (isEdit)
+			{
+				this.StateHasChanged();
+			}
+			else
+			{
+				await GetInvoiceModels();
+			}
+		}
+
+		private void ResetNewInvoiceModel()
+		{
+			newInvoiceModel = new InvoiceModel(companyId);
+			newInvoiceModel.invoiceHead.SiteID = defaultSiteId;
+			siteSelected = 0;
+			supplierSelected = 0;
+		}
+
+		private async Task<InvoiceHead> PostInvoiceHead(InvoiceHead invoiceHead)
+		{
+			try
+			{
+				return await Http.PostJsonAsync<InvoiceHead>("api/InvoiceHeads", invoiceHead);
+			}
+			catch (Exception ex)
+			{
+				System.Diagnostics.Debug.WriteLine(ex.Message);
+				return new InvoiceHead();
+			}
+		}
+		private void UpdateInvoiceHead(InvoiceHead invoiceHead)
+		{
+			try
+			{
+				string payload = JsonConvert.SerializeObject(invoiceHead);
+
+				StringContent content = new StringContent(payload, System.Text.Encoding.UTF8, "application/json");
+				HttpResponseMessage response = Http.PutAsync($"api/InvoiceHeads/{invoiceHead.Id}", content).Result;
+
+				if (!response.IsSuccessStatusCode)
+				{
+					throw new Exception($"{response.StatusCode} Error updating invoice Head: id: {invoiceHead.Id}");
+				}
+			}
+			catch (Exception ex)
+			{
+				throw new System.Exception(ex.Message);
+			}
+		}
+
+		private async Task<InvoiceLine> PostInvoiceLine(InvoiceLine invoiceLine)
+		{
+			try
+			{
+				return await Http.PostJsonAsync<InvoiceLine>($"api/InvoiceLines", invoiceLine);
+			}
+			catch (Exception ex)
+			{
+				throw new Exception(ex.Message);
+			}
+		}
+
+		private void UpdateInvoiceLine(InvoiceLine invoiceLine)
+		{
+			try
+			{
+				string payload = JsonConvert.SerializeObject(invoiceLine);
+
+				StringContent content = new StringContent(payload, System.Text.Encoding.UTF8, "application/json");
+				HttpResponseMessage response = Http.PutAsync($"api/InvoiceLines/{invoiceLine.Id}", content).Result;
+
+				if (!response.IsSuccessStatusCode)
+				{
+					throw new Exception($"{response.StatusCode} Error updating invoice Line: id: {invoiceLine.Id}");
+				}
+			}
+			catch (Exception ex)
+			{
+				throw new Exception(ex.Message);
+			}
+		}
+
+		private string GetSiteName(int siteId)
+		{
+			string reply;
+
+			if (sites == null)
+			{
+				reply = string.Empty;
+			}
+			else
+			{
+				string siteName = sites.Where(f => f.Id == siteId).Select(g => g.SiteName).FirstOrDefault();
+				if (siteName == null)
+				{
+					reply = string.Empty;
+				}
+				else
+				{
+					reply = siteName;
+				}
+			}
+
+			return reply;
+		}
+
+		private string GetSupplierName(int supplierId)
+		{
+			string reply;
+
+			if (suppliers == null)
+			{
+				reply = string.Empty;
+			}
+			else
+			{
+				reply = suppliers.Where(f => f.Id == supplierId).Select(g => g.Name).FirstOrDefault();
+			}
+
+			return reply;
+		}
+
+		private int GetCatVatRate(int vatCategoryId)
+		{
+			try
+			{
+				if (vatCategories == null)
+				{
+					return 0;
+				}
+				else
+				{
+					return vatCategories.Where(f => f.Id == vatCategoryId).Select(g => g.VatRate).FirstOrDefault();
+				}
+			}
+			catch (Exception ex)
+			{
+				return 0;
+			}
+		}
+
+		private Decimal CalcGross(Decimal netAmount, decimal vatAmount)
+		{
+			return netAmount - vatAmount;
+		}
+
+		private Decimal CalcVat(Decimal netAmount, decimal grossAmount)
+		{
+			return grossAmount - netAmount; ;
+		}
+
+		private Decimal CalcNet(Decimal grossAmount, decimal vatAmount)
+		{
+			return grossAmount + vatAmount;
+		}
+
+
+		public void refKeyHandler(string keyPressed)
+		{
+			if (keyPressed == "Enter")
+			{
+				Task tmp = Focus("paymenttype");
+			}
+		}
+
+		public void vatCatKeyHandler(string keyPressed, int lineNo)
+		{
+			if (keyPressed == "Enter")
+			{
+				Task tmp = Focus($"totalamount{lineNo}");
+			}
+		}
+		public void descKeyHandler(string keyPressed, int lineNo)
+		{
+			if (keyPressed == "Enter")
+			{
+				Task tmp = Focus($"vatcat{lineNo}");
+			}
+		}
+		public void grossKeyHandler(string keyPressed)
+		{
+			if (keyPressed == "Enter")
+			{
+				Task tmp = Focus("btnAddInvoice");
+			}
+		}
+		public void vatKeyHandler(string keyPressed)
+		{
+			if (keyPressed == "Enter")
+			{
+				Task tmp = Focus("netAmount");
+			}
+		}
+
+		public void netKeyHandler(string keyPressed, int lineNo)
+		{
+			if (keyPressed == "Enter")
+			{
+				Task tmp = Focus($"addbutton");
+			}
+		}
+
+		public void suppKeyHandler(string keyPressed)
+		{
+			if (keyPressed == "Enter")
+			{
+				Task tmp = Focus("reference");
+			}
+		}
+		public void dateKeyHandler(string keyPressed)
+		{
+			string nextField = "site";
+
+			if (keyPressed == "Enter")
+			{
+				if (sites.Length == 1)
+				{
+					nextField = "supplier";
+				}
+				Task tmp = Focus(nextField);
+			}
+		}
+		public void siteKeyHandler(string keyPressed)
+		{
+			if (keyPressed == "Enter")
+			{
+				Task tmp = Focus("supplier");
+			}
+		}
+		public void headingKeyHandler(string keyPressed)
+		{
+			if (keyPressed == "Enter")
+			{
+				Task tmp = Focus("paymentType");
+			}
+		}
+		public void payKeyHandler(string keyPressed)
+		{
+			if (keyPressed == "Enter")
+			{
+				Task tmp = Focus("addbutton");
+			}
+		}
+		public async Task Focus(string elementId)
+		{
+			await JSRuntime.InvokeVoidAsync("functionLibrary.focusElement", elementId);
+		}
+
+
+		public string informationModalReply
+		{
+			get
+			{
+				return null;
+			}
+
+			set
+			{
+				showInformationModal = false;
+			}
+
+		}
+
+		private int viewPeriodYearsSelected;
+		private InvoiceView[] getHeading(int headingId, int paymentType)
+		{
+			InvoiceView[] groupInvoices;
+			groupInvoices = Array.FindAll(invoiceViews, f => (f.InvoiceHeadingId == headingId) && (f.InvoicePaymentId == paymentType));
+
+			return groupInvoices;
+
+		}
+		private int invoiceHeadingSelected;
+
+		private string _invoiceHeadingSelectedName;
+		private string invoiceHeadingSelectedName
+		{
+			get
+			{
+				return _invoiceHeadingSelectedName;
+			}
+
+			set
+			{
+				InvoiceHeading tempHeading = Array.Find<InvoiceHeading>(invoiceHeadings, f => f.Description == value);
+				if (tempHeading != null)
+				{
+					invoiceHeadingSelected = tempHeading.Id;
+				}
+				else
+				{
+					InvoiceHeading invoiceHeading = new InvoiceHeading();
+					invoiceHeading.Description = value;
+
+					Task temp = addNewHeading(invoiceHeading);
+				}
+
+				_invoiceHeadingSelectedName = value;
+			}
+		}
+
+		private string GetVatCatDesc(int VatCatId)
+		{
+			return vatCategories.Where(f => f.Id == VatCatId).Select(g => g.Category).FirstOrDefault();
+		}
+
+		private async Task addNewHeading(InvoiceHeading newHeading)
+		{
+			await Http.PostJsonAsync<InvoiceHeading>("/api/InvoiceHeadings", newHeading);
+			invoiceHeadings = await Http.GetJsonAsync<InvoiceHeading[]>("/api/InvoiceHeadings");
+			this.StateHasChanged();
+		}
+
+		private int siteSelected;
+		private string paymentTypeSelected;
+
+		private string _reconPaymentTypeSelected;
+		private string reconPaymentTypeSelected
+		{
+			get
+			{
+				return _reconPaymentTypeSelected;
+			}
+
+			set
+			{
+				_reconPaymentTypeSelected = value;
+				if (value == "ALL")
+				{
+					Task tmp = GetAllViewGroups();
+				}
+				else
+				{
+					Task tmp = GetViewGroup(int.Parse(value));
+				}
+			}
+		}
+
+		private string paymentTypeSelectedName;
+
+		private int supplierSelected;
+
+		private string _supplierSelectedName;
+		private string supplierSelectedName
+		{
+			get
+			{
+				return _supplierSelectedName;
+			}
+
+			set
+			{
+				Supplier tempSupplier = Array.Find<Supplier>(suppliers, f => f.Name == value);
+				if (tempSupplier != null)
+				{
+					supplierSelected = tempSupplier.Id;
+				}
+				else
+				{
+					Task tmp = addNewSupplier(value);
+				}
+				_supplierSelectedName = value;
+			}
+		}
+
+		private async Task addNewSupplier(String newSupplierName)
+		{
+			Supplier newSupplier = new Supplier();
+			newSupplier.Name = newSupplierName;
+			newSupplier.Deleted = false;
+
+			await Http.SendJsonAsync(HttpMethod.Post, "/api/Suppliers/", newSupplier);
+			suppliers = await Http.GetJsonAsync<Supplier[]>("/api/Suppliers/");
+
+			// Get the new suppliers ID to store locally
+			newSupplier = Array.Find<Supplier>(suppliers, f => f.Name == newSupplierName);
+			supplierSelected = newSupplier.Id;
+
+			this.StateHasChanged();
+		}
+
+		public string _siteSelectedName;
+
+		public string siteSelectedName
+		{
+			get
+			{
+				return _siteSelectedName;
+			}
+
+			set
+			{
+				_siteSelectedName = value;
+
+				Site site = Array.Find<Site>(sites, p => p.SiteName == value);
+				siteSelected = site.Id;
+			}
+		}
+
+		public decimal _VatAmount = 0;
+		public decimal VatAmount
+		{
+			get
+			{
+				return _VatAmount;
+			}
+
+			set
+			{
+				_VatAmount = value;
+			}
+		}
+
+		public decimal _GrossAmount = 0;
+		public decimal GrossAmount
+		{
+			get
+			{
+				return _GrossAmount;
+			}
+
+			set
+			{
+				_GrossAmount = value;
+			}
+		}
+
+		public decimal _NetAmount = 0;
+		public decimal NetAmount
+		{
+			get
+			{
+				return _NetAmount;
+			}
+			set
+			{
+				if (_VatAmount == 0)
+				{
+					if (_GrossAmount != value)
+					{
+						VatAmount = value - _GrossAmount;
+					}
+				}
+				else
+				{
+					if (_GrossAmount == 0)
+					{
+						GrossAmount = value - _VatAmount;
+					}
+				}
+				_NetAmount = value;
+			}
+
+		}
+
+
+		private void NetAmountKeyPress()
+		{
+			if (GrossAmount == 0)
+			{
+				if (VatAmount != 0 && NetAmount != 0)
+				{
+					GrossAmount = NetAmount - VatAmount;
 				}
 			}
 			else
 			{
-				if (_GrossAmount == 0)
-				{
-					GrossAmount = value - _VatAmount;
-				}
-			}
-			_NetAmount = value;
-		}
-
-	}
-
-
-	private void NetAmountKeyPress()
-	{
-		if (GrossAmount == 0)
-		{
-			if (VatAmount != 0 && NetAmount != 0)
-			{
-				GrossAmount = NetAmount - VatAmount;
+				NetAmount = GrossAmount + VatAmount;
 			}
 		}
-		else
+
+		private void clearInputValues()
 		{
-			NetAmount = GrossAmount + VatAmount;
-		}
-	}
+			newInvoiceModel = new InvoiceModel();
+			newInvoiceModel.invoiceHead.CompanyID = companyId;
+			newInvoiceModel.invoiceHead.Reference = string.Empty;
 
-	private void clearInputValues()
-	{
-		invoiceObj = new Invoice(companyId);
-		invoiceObj.Date = DateTime.Today;
-		supplierSelectedName = suppliers[0].Name;
-		siteSelectedName = sites[0].SiteName;
-		paymentTypeSelected = paymentTypes[0].Description;
-		invoiceHeadingSelectedName = invoiceHeadings[0].Description;
-		GrossAmount = 0;
-		VatAmount = 0;
-		NetAmount = 0;
-		invoiceObj.InvoiceReference = "";
-		invoiceObj.Description = "";
-	}
-
-	protected override async Task OnInitializedAsync()
-	{
-		companyId = AppData.CompanyId;
-		viewPeriodYears = await Http.GetJsonAsync<ViewPeriodYears[]>("api/ViewPeriodYears");
-		viewPeriodYearsSelected = int.Parse(currentPeriodYear);
-
-		invoiceViews = await Http.GetJsonAsync<InvoiceView[]>("/api/InvoiceViews/Year/" + viewPeriodYearsSelected + "/" + companyId);
-
-		companies = await Http.GetJsonAsync<Company[]>("/api/Companies/");
-		sites = await Http.GetJsonAsync<Site[]>("api/Sites/Company/" + companyId);
-		suppliers = await Http.GetJsonAsync<Supplier[]>("api/Suppliers");
-		invoiceHeadings = await Http.GetJsonAsync<InvoiceHeading[]>("api/InvoiceHeadings");
-		periods = await Http.GetJsonAsync<Period[]>("api/Periods/Company/" + companyId + "/Year/" + currentPeriodYear);
-
-		paymentTypes = await Http.GetJsonAsync<PaymentType[]>("api/PaymentTypes");
-		if (paymentTypes.Length == 0)
-		{
-			PaymentType paymentType = new PaymentType();
-			paymentType.Id = 0;
-			paymentType.Description = "No Payment Types";
-			paymentType.Type = "";
-
-			paymentTypes = new PaymentType[1];
-			paymentTypes[0] = paymentType;
+			supplierSelectedName = suppliers[0].Name;
+			siteSelectedName = sites[0].SiteName;
+			paymentTypeSelected = paymentTypes[0].Description;
+			invoiceHeadingSelectedName = invoiceHeadings[0].Description;
+			GrossAmount = 0;
+			VatAmount = 0;
+			NetAmount = 0;
 		}
 
-		try
+
+
+		private async Task<VatCategory[]> GetVatCategories()
 		{
-			defaultPaymentTypeId = Array.Find(paymentTypes, f => f.Type == "DD").Id;
-		}
-		catch (NullReferenceException ex)
-		{
-			defaultPaymentTypeId = 0;
-		}
-		catch (Exception ex)
-		{
-			defaultPaymentTypeId = 0;
-		}
-		await GetViewGroup(defaultPaymentTypeId);
-
-		if (sites.Length == 0)
-		{
-			Site site = new Site();
-			site.Id = 0;
-			site.SiteName = "No Sites";
-			sites = new Site[1];
-			sites[0] = site;
-		}
-		defaultSiteId = sites[0].Id;
-		defaultSiteName = sites[0].SiteName;
-
-
-		defaultPaymentTypeName = paymentTypes[0].Description;
-
-		invoiceObj.Date = DateTime.Today;
-
-		siteSelected = defaultSiteId;
-		siteSelectedName = defaultSiteName;
-		paymentTypeSelected = defaultPaymentTypeId.ToString();
-
-		if (invoiceHeadings.Length == 0)
-		{
-			InvoiceHeading invoiceHeading = new InvoiceHeading();
-			invoiceHeading.Id = 0;
-			invoiceHeading.Description = "No Headings";
-			invoiceHeadings = new InvoiceHeading[1];
-			invoiceHeadings[0] = invoiceHeading;
-		}
-		invoiceHeadingSelected = invoiceHeadings[0].Id;
-		invoiceHeadingSelectedName = invoiceHeadings[0].Description;
-
-		Period tmp = getCurrentPeriod();
-		await Focus("date");
-	}
-
-	void AddNewInvoice()
-	{
-		if (!validateNewInvoice())
-		{
-			showInformationModal = true;
-		}
-		else
-		{
-
+			VatCategory[] vatCategories;
 			try
 			{
-				invoiceObj.SiteID = siteSelected;
+				vatCategories = await Http.GetJsonAsync<VatCategory[]>("api/VatCategories");
+
+				return vatCategories;
 			}
 			catch (Exception ex)
 			{
-				invoiceObj.SiteID = defaultSiteId;
+				return new VatCategory[0];
 			}
+		}
+
+		private async Task<VatRate[]> GetVatRates()
+		{
+			VatRate[] vatRates;
 
 			try
 			{
-				invoiceObj.PaymentTypeID = int.Parse(paymentTypeSelected);
+				vatRates = await Http.GetJsonAsync<VatRate[]>("api/VatRates");
+				return vatRates;
 			}
 			catch (Exception ex)
 			{
-				invoiceObj.PaymentTypeID = defaultPaymentTypeId;
+				return new VatRate[0];
 			}
-
-			invoiceObj.Paid = !GetPaymentType(invoiceObj.PaymentTypeID).ReconcileFlag;
-
-			invoiceObj.SupplierID = supplierSelected;
-			invoiceObj.GrossAmount = GrossAmount;
-			invoiceObj.VATAmount = VatAmount;
-			invoiceObj.NetAmount = NetAmount;
-			invoiceObj.EditDate = DateTime.Now;
-
-			invoiceObj.Heading = invoiceHeadingSelected;
-
-			Period invoicePeriod = getPeriod(invoiceObj.Date);
-			invoiceObj.PeriodNo = invoicePeriod.PeriodKey;
-			invoiceObj.PeriodId = invoicePeriod.PeriodId;
-			invoiceObj.Notes = invoiceNotes;
-			invoiceObj.CompanyID = companyId;
-
-			Task d = PostInvoice();
 		}
 
-	}
-
-	private PaymentType GetPaymentType(int paymentType)
-	{
-		return Array.Find(paymentTypes, f => f.Id == paymentType);
-	}
-
-	private bool validateNewInvoice()
-	{
-		bool isValid = true;
-
-		if (supplierSelectedName == null)
+		private Decimal GetVatRate(int vatRateId)
 		{
-			isValid = false;
-		}
-
-		if (GrossAmount == 0)
-		{
-			isValid = false;
-		}
-
-		if (NetAmount == 0)
-		{
-			isValid = false;
-		}
-
-		if (invoiceObj.Description == null)
-		{
-			isValid = false;
-		}
-		return isValid;
-	}
-
-	private Period getCurrentPeriod()
-	{
-		return getPeriod(DateTime.Now);
-	}
-
-	private Period getPeriod(DateTime inDateTime)
-	{
-		Period period = Array.Find<Period>(periods, f => DateTime.Compare(inDateTime, f.StartDate) >= 0 && DateTime.Compare(inDateTime, f.EndDate) <= 0);
-		return period;
-	}
-
-	protected async Task PostInvoice()
-	{
-		if (updateFlag)
-		{
-			await Http.SendJsonAsync(HttpMethod.Put, "/api/Invoices/" + invoiceObj.ID, invoiceObj);
-		}
-		else
-		{
-			invoiceObj.CreatedDate = DateTime.Now;
+			Decimal vatRate = 0;
 			try
 			{
-				await Http.SendJsonAsync(HttpMethod.Post, "/api/Invoices/", invoiceObj);
+				vatRate = vatRates.Where(f => f.Id == vatRateId).FirstOrDefault().Rate;
 			}
 			catch (Exception ex)
 			{
-				System.Diagnostics.Debug.WriteLine("Error: " + ex.Message);
+				System.Diagnostics.Debug.WriteLine(ex.Message);
+			}
 
+			return vatRate;
+		}
+
+
+
+		private bool validateNewInvoice()
+		{
+			bool isValid = true;
+
+			if (supplierSelectedName == null)
+			{
+				isValid = false;
+			}
+
+			if (GrossAmount == 0)
+			{
+				isValid = false;
+			}
+
+			//if (invoiceObj.Description == null)
+			//{
+			//	isValid = false;
+			//}
+			return isValid;
+		}
+
+		private Period getCurrentPeriod()
+		{
+			return GetPeriod(DateTime.Now);
+		}
+
+		private Period GetPeriod(DateTime? inDateTime)
+		{
+			Period period = Array.Find<Period>(periods, f => inDateTime >= f.StartDate && inDateTime <= f.EndDate);
+			return period;
+		}
+
+
+
+		private async Task GetViewGroup(int paymentType)
+		{
+			viewInvoiceGroups = await Http.GetJsonAsync<ViewInvoiceGroup[]>("/api/ViewInvoiceGroups/PayType/" + paymentType + "/" + companyId);
+			this.StateHasChanged();
+		}
+
+		private async Task GetAllViewGroups()
+		{
+			viewInvoiceGroups = await Http.GetJsonAsync<ViewInvoiceGroup[]>("/api/ViewInvoiceGroups/Company/" + companyId);
+			this.StateHasChanged();
+		}
+
+		private void AddInvoiceNotes()
+		{
+			//invoiceNotes = invoiceObj.Notes;
+			showNotes = true;
+			StateHasChanged();
+		}
+		public void updateInvoiceNotes(string newNotes)
+		{
+			invoiceNotes = newNotes;
+		}
+
+		// Edit Method
+		private void EditInvoice(InvoiceModel invoiceModel)
+		{
+			ToggleNewInvoiceTable();
+			newInvoiceModel = invoiceModel;
+			siteSelected = invoiceModel.invoiceHead.SiteID;
+			supplierSelected = invoiceModel.invoiceHead.SupplierID;
+			supplierSelectedName = GetSupplierName(supplierSelected);
+			hideNewInvoiceTable = false;
+		}
+
+		// Delete Method
+		protected async Task DeleteInvoice(InvoiceModel invoiceModel)
+		{
+			try
+			{
+				await Http.DeleteAsync($"api/InvoiceHeads/{invoiceModel.invoiceHead.Id}");
+				await Http.DeleteAsync($"api/InvoiceLines/InvoiceHead/{invoiceModel.invoiceHead.Id}");
+
+				invoiceModels.Remove(invoiceModel);
+
+				StateHasChanged();
+			}
+			catch (Exception ex)
+			{
+				throw new Exception(ex.Message);
 			}
 		}
-		invoiceViews = await Http.GetJsonAsync<InvoiceView[]>("/api/InvoiceViews/Year/" + viewPeriodYearsSelected + "/" + companyId);
-		clearInputValues();
-		this.StateHasChanged();
 
 	}
-
-	private async Task GetViewGroup(int paymentType)
-	{
-		viewInvoiceGroups = await Http.GetJsonAsync<ViewInvoiceGroup[]>("/api/ViewInvoiceGroups/PayType/" + paymentType + "/" + companyId);
-		this.StateHasChanged();
-	}
-
-	private async Task GetAllViewGroups()
-	{
-		viewInvoiceGroups = await Http.GetJsonAsync<ViewInvoiceGroup[]>("/api/ViewInvoiceGroups/Company/" + companyId);
-		this.StateHasChanged();
-	}
-
-	private void AddInvoiceNotes()
-	{
-		invoiceNotes = invoiceObj.Notes;
-		showNotes = true;
-		StateHasChanged();
-	}
-	public void updateInvoiceNotes(string newNotes)
-	{
-		invoiceNotes = newNotes;
-	}
-
-	// Edit Method
-	private void EditInvoice(InvoiceView invoiceView)
-	{
-		invoiceObj = new Invoice(companyId);
-
-		invoiceObj.ID = invoiceView.InvoiceId;
-		invoiceObj.InvoiceReference = invoiceView.InvoiceReference;
-		invoiceObj.Description = invoiceView.InvoiceDescription;
-		invoiceObj.GrossAmount = Math.Round(invoiceView.InvoiceGross, 2);
-		invoiceObj.VATAmount = Math.Round(invoiceView.InvoiceVAT, 2);
-		invoiceObj.NetAmount = Math.Round(invoiceView.InvoiceNet, 2);
-		invoiceObj.PaymentTypeID = invoiceView.InvoicePaymentId;
-		invoiceObj.SupplierID = invoiceView.InvoiceSupplierId;
-		invoiceObj.SiteID = invoiceView.InvoiceSiteId;
-		invoiceObj.Notes = invoiceView.InvoiceNotes;
-		invoiceObj.Date = invoiceView.InvoiceDate;
-		invoiceObj.CreatedDate = invoiceView.InvoiceCreatedDate;
-
-		updateFlag = true;
-		Supplier supplier = Array.Find<Supplier>(suppliers, p => p.Id == invoiceObj.SupplierID);
-		Site site = Array.Find<Site>(sites, p => p.Id == invoiceObj.SiteID);
-
-		siteSelectedName = site.SiteName;
-		supplierSelectedName = supplier.Name;
-		GrossAmount = invoiceObj.GrossAmount;
-		VatAmount = invoiceObj.VATAmount;
-		NetAmount = invoiceObj.NetAmount;
-
-		invoiceNotes = "init";
-		this.StateHasChanged();
-	}
-
-	// Delete Method
-	protected async Task DeleteInvoice(InvoiceView invoiceView)
-	{
-
-		await Http.DeleteAsync("/api/Invoices/" + invoiceView.InvoiceId);
-
-		invoiceViews = await Http.GetJsonAsync<InvoiceView[]>("/api/InvoiceViews/Year/" + viewPeriodYearsSelected + "/" + companyId);
-	}
-
-}
