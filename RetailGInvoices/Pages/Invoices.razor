@@ -58,38 +58,6 @@ else
 	</table>
 
 }
-@if (invoiceViews == null)
-{
-	<p>Loading Reconciliation Data..</p>
-}
-else
-{
-	<h2>Summary Table</h2>
-	<Table TableItem="ViewInvoiceGroup" Items="viewInvoiceGroups" PageSize="50" ColumnReorder="true">
-		<Column TableItem="ViewInvoiceGroup" Title="Heading " Field="@(x => x.InvoiceHeading)" Sortable="true" Width="10%" />
-		<Column TableItem="ViewInvoiceGroup" Title="Gross" Field="@(x => x.InvoiceGross)" Sortable="true" Width="10%" Format="£###.00" Align="Align.Right" />
-		<Column TableItem="ViewInvoiceGroup" Title="VAT" Field="@(x => x.InvoiceVAT)" Sortable="true" Width="10%" Aggregate="AggregateType.Sum" Format="£###.00" Align="Align.Right" />
-		<Column TableItem="ViewInvoiceGroup" Title="Total" Field="@(x => x.InvoiceNet)" Sortable="true" Width="10%" Aggregate="AggregateType.Sum" Format="£###.00" Align="Align.Right" />
-		<DetailTemplate TableItem="ViewInvoiceGroup">
-			<Table TableItem="InvoiceView" Items="@getHeading(context.InvoiceHeadingId, context.InvoicePaymentId)" PageSize="10" ColumnReorder="true" ShowFooter="true">
-				<Column TableItem="InvoiceView" Title="Site" Field="@(x => x.SiteName)" Width="10%" DefaultSortColumn="true" SetFooterValue="Totals" />
-				<Column TableItem="InvoiceView" Title="Supplier" Field="@(x => x.SupplierName)" Width="10%" />
-				<Column TableItem="InvoiceView" Title="Reference" Field="@(x => x.InvoiceReference)" Width="10%" DefaultSortColumn="true" />
-				<Column TableItem="InvoiceView" Title="Description" Field="@(x => x.InvoiceDescription)" Width="10%" />
-				<Column TableItem="InvoiceView" Title="Payment Type" Field="@(x => x.InvoicePaymentDescription)" Width="10%" DefaultSortColumn="true" />
-				<Column TableItem="InvoiceView" Title="Gross" Field="@(x => x.InvoiceGross)" Format="£###.00" Width="10%" DefaultSortColumn="true" Aggregate="AggregateType.Sum" Align="Align.Right" />
-				<Column TableItem="InvoiceView" Title="Vat" Field="@(x => x.InvoiceVAT)" Format="£###.00" Width="10%" DefaultSortColumn="true" Aggregate="AggregateType.Sum" Align="Align.Right" />
-				<Column TableItem="InvoiceView" Title="Total" Field="@(x => x.InvoiceNet)" Format="£###.00" Width="10%" Aggregate="AggregateType.Sum" Align="Align.Right" />
-			</Table>
-		</DetailTemplate>
-		<EmptyDataTemplate>
-			<div class="text-center">
-				No Summary Information
-			</div>
-		</EmptyDataTemplate>
-		<Pager ShowPageNumber="true" ShowTotalCount="true" ShowPageSizes="true" />
-	</Table>
-}
 
 <!-- Add a new Invoice -->
 <button class="btn btn-info" @onclick="@(x => ToggleNewInvoiceTable())" disabled="@disableCreateButton">Create New Invoice</button>
@@ -185,19 +153,19 @@ else
 			</Column>
 			<Column TableItem="InvoiceLine" Title="Total Amount" Format="£###.00" Width="10%">
 				<Template>
-					<input id="totalamount@(context.LineNo)" type="text" style="text-align:right; width:100%" @bind="@(context.NetAmount)" @onkeypress="@(e => netKeyHandler(e.Key, context.LineNo))" onfocus="this.select()" />
+					<input id="totalamount@(context.LineNo)" type="text" style="text-align:right; width:100%" @bind="@(context.GrossAmount)" @onkeypress="@(e => grossKeyHandler(e.Key, context.LineNo))" onfocus="this.select()"/>
 				</Template>
 			</Column>
 			<Column TableItem="InvoiceLine" Title="VAT Amount" Width="10%">
 				<Template>
-	
-	</Template>
-	</Column>
-	<Column TableItem="InvoiceLine" Title="Gross Amount" Width="10%">
-		<Template>
-			<p id="grossamount@(context.LineNo)" style="text-align:right; width:100%">@CalcGross(context.NetAmount, context.VATAmount)</p>
-		</Template>
-	</Column>
+					<input id="vatamount@(context.LineNo)" type="text" style="text-align:right; width:100%" @bind="@(context.VATAmount)" @onkeypress="@(e => vatKeyHandler(e.Key, context.LineNo))" onfocus="this.select()"  @onblur="@(x => vatBlurCalc(context))" />
+				</Template>
+			</Column>
+			<Column TableItem="InvoiceLine" Title="Net Amount" Width="10%">
+				<Template>
+					<input id="netamount@(context.LineNo)" type="text" style="text-align:right; width:100%" @bind="@(context.NetAmount)" @onkeypress="@(e => netKeyHandler(e.Key, context.LineNo))" onfocus="this.select()" @onblur="@(x => netBlurCalc(context))"/>
+				</Template>
+			</Column>
 	<Column TableItem="InvoiceLine" Title="" Width="5%">
 		<Template>
 			<button class="btn" style="color:red" @onclick="@(x => DeleteLine(newInvoiceModel, context))">X</button>
@@ -289,8 +257,8 @@ else
 	}
 
 	@code {
-		[Parameter]
-		public int companyId { get; set; }
+			[Parameter]
+			public int companyId { get; set; }
 
 		private bool showNotes = false;
 		private ITable<InvoiceModel> Table;
@@ -800,21 +768,65 @@ else
 		{
 			if (keyPressed == "Enter")
 			{
-				Task tmp = Focus($"vatcat{lineNo}");
+				Task tmp = Focus($"totalamount{lineNo}");
 			}
 		}
-		public void grossKeyHandler(string keyPressed)
+		public void grossKeyHandler(string keyPressed, int lineNo)
 		{
 			if (keyPressed == "Enter")
 			{
-				Task tmp = Focus("btnAddInvoice");
+				Task tmp = Focus($"vatamount{lineNo}");
 			}
 		}
-		public void vatKeyHandler(string keyPressed)
+		public void vatKeyHandler(string keyPressed, int lineNo)
 		{
 			if (keyPressed == "Enter")
 			{
-				Task tmp = Focus("netAmount");
+				Task tmp = Focus($"netamount{lineNo}");
+			}
+		}
+
+		public void vatBlurCalc(InvoiceLine invoiceLine)
+		{
+			if (invoiceLine.VATAmount == 0)
+			{
+				if (invoiceLine.NetAmount == 0)
+				{
+					invoiceLine.NetAmount = invoiceLine.GrossAmount;
+				}
+				else
+				{
+					if (invoiceLine.GrossAmount == 0)
+					{
+						invoiceLine.GrossAmount = invoiceLine.NetAmount;
+					}
+					else
+					{
+						if (invoiceLine.GrossAmount > invoiceLine.NetAmount)
+						{
+							invoiceLine.VATAmount = invoiceLine.GrossAmount - invoiceLine.NetAmount;
+						}
+					}
+				}
+			}
+			else
+			{
+				if (invoiceLine.NetAmount == 0)
+				{
+					invoiceLine.NetAmount = invoiceLine.GrossAmount - invoiceLine.VATAmount;
+				}
+				else
+				{
+					if (invoiceLine.GrossAmount == 0)
+					{
+						invoiceLine.GrossAmount = invoiceLine.NetAmount + invoiceLine.VATAmount;
+					}
+					else
+					{
+						invoiceLine.NetAmount = invoiceLine.GrossAmount - invoiceLine.VATAmount;
+					}
+				}
+
 			}
 		}
 
@@ -824,6 +836,11 @@ else
 			{
 				Task tmp = Focus($"addbutton");
 			}
+		}
+
+		public void netBlurCalc(InvoiceLine invoiceLine)
+		{
+
 		}
 
 		public void suppKeyHandler(string keyPressed)
@@ -872,7 +889,7 @@ else
 			await JSRuntime.InvokeVoidAsync("functionLibrary.focusElement", elementId);
 		}
 
-
+		
 		public string informationModalReply
 		{
 			get

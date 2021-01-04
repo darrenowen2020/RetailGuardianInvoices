@@ -11,12 +11,18 @@ namespace RetailGInvoices.Data
         public InvoiceLine()
         {
             this.CreatedDateTime = DateTime.Now;
+            this.NetAmount = 0;
+            this.VATAmount = 0;
+            this.GrossAmount = 0;
         }
         public InvoiceLine(int expenseId, int lineNumber)
         {
             this.InvoiceID = expenseId;
             this.LineNo = lineNumber;
             this.CreatedDateTime = DateTime.Now;
+            this.NetAmount = 0;
+            this.VATAmount = 0;
+            this.GrossAmount = 0;
         }
 
         [Key]

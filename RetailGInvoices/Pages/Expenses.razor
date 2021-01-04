@@ -58,43 +58,6 @@ else
 	</table>
 
 }
-@if (expenseViews == null)
-{
-	<p>Loading Reconciliation Data..</p>
-}
-else
-{
-	<h2>Summary Table</h2>
-	<Table TableItem="ViewExpenseGroup" Items="viewExpenseGroups" PageSize="50" ColumnReorder="true">
-		<Column TableItem="ViewExpenseGroup" Title="Heading " Field="@(x => x.Heading)" Sortable="true" Width="10%" />
-		<Column TableItem="ViewExpenseGroup" Title="Gross" Field="@(x => x.ExpenseGross)" Sortable="true" Width="10%" Format="£###.00" Align="Align.Right" />
-		<Column TableItem="ViewExpenseGroup" Title="VAT" Field="@(x => x.ExpenseVAT)" Sortable="true" Width="10%" Aggregate="AggregateType.Sum" Format="£###.00" Align="Align.Right" />
-		<Column TableItem="ViewExpenseGroup" Title="Total" Field="@(x => x.ExpenseNet)" Sortable="true" Width="10%" Aggregate="AggregateType.Sum" Format="£###.00" Align="Align.Right" />
-		<DetailTemplate TableItem="ViewExpenseGroup">
-			<Table TableItem="ExpenseView" Items="@getHeading(context.HeadingId, context.ExpensePaymentId)" PageSize="10" ColumnReorder="true" ShowFooter="true">
-				<Column TableItem="ExpenseView" Title="Site" Field="@(x => x.SiteName)" Width="10%" DefaultSortColumn="true" SetFooterValue="Totals" />
-				<Column TableItem="ExpenseView" Title="Supplier" Field="@(x => x.SupplierName)" Width="10%" />
-				<Column TableItem="ExpenseView" Title="Reference" Field="@(x => x.ExpenseReference)" Width="10%" DefaultSortColumn="true" />
-				<Column TableItem="ExpenseView" Title="Description" Field="@(x => x.ExpenseDescription)" Width="10%" />
-				<Column TableItem="ExpenseView" Title="Payment Type" Field="@(x => x.ExpensePaymentDescription)" Width="10%" DefaultSortColumn="true" />
-				<Column TableItem="ExpenseView" Title="Vat Category" Width="15%">
-					<Template Context="expContext">
-						<p>@GetVatCatDesc(expContext.ExpenseVatCategory)</p>
-					</Template>
-				</Column>
-				<Column TableItem="ExpenseView" Title="Gross" Field="@(x => x.ExpenseGross)" Format="£###.00" Width="10%" DefaultSortColumn="true" Aggregate="AggregateType.Sum" Align="Align.Right" />
-				<Column TableItem="ExpenseView" Title="Vat" Field="@(x => x.ExpenseVAT)" Format="£###.00" Width="10%" DefaultSortColumn="true" Aggregate="AggregateType.Sum" Align="Align.Right" />
-				<Column TableItem="ExpenseView" Title="Total" Field="@(x => x.ExpenseNet)" Format="£###.00" Width="10%" Aggregate="AggregateType.Sum" Align="Align.Right" />
-			</Table>
-		</DetailTemplate>
-		<EmptyDataTemplate>
-			<div class="text-center">
-				No Summary Information
-			</div>
-		</EmptyDataTemplate>
-		<Pager ShowPageNumber="true" ShowTotalCount="true" ShowPageSizes="true" />
-	</Table>
-}
 
 <!-- Add a new Expense -->
 <button class="btn btn-info" @onclick="@(x => ToggleNewExpenseTable())" disabled="@disableCreateButton">Create New Expense</button>
@@ -203,17 +166,17 @@ else
 			</Column>
 			<Column TableItem="ExpenseLine" Title="Total Amount" Format="£###.00" Width="10%">
 				<Template>
-					<input id="totalamount@(context.Line)" type="text" style="text-align:right; width:100%" @bind="@(context.NetAmount)" @onkeypress="@(e => netKeyHandler(e.Key, context.Line))" onfocus="this.select()" />
+					<input id="totalamount@(context.Line)" type="text" style="text-align:right; width:100%" @bind="@(context.GrossAmount)" @onkeypress="@(e => netKeyHandler(e.Key, context.Line))" onfocus="this.select()" />
 				</Template>
 			</Column>
 			<Column TableItem="ExpenseLine" Title="VAT Amount" Width="10%">
 				<Template>
-					<p id="vatamount@(context.Line)" style="text-align:right; width:100%">@CalcVat(context.NetAmount, context.VATCategory)</p>
+					<p id="vatamount@(context.Line)" style="text-align:right; width:100%">@CalcVat(context.GrossAmount, context.VATCategory)</p>
 				</Template>
 			</Column>
-			<Column TableItem="ExpenseLine" Title="Gross Amount" Width="10%">
+			<Column TableItem="ExpenseLine" Title="Nett Amount" Width="10%">
 				<Template>
-					<p id="grossamount@(context.Line)" style="text-align:right; width:100%">@CalcGross(context.NetAmount, context.VATCategory)</p>
+					<p id="nettamount@(context.Line)" style="text-align:right; width:100%">@CalcNet(context.GrossAmount, context.VATCategory)</p>
 				</Template>
 			</Column>
 			<Column TableItem="ExpenseLine" Title="" Width="5%">
@@ -292,15 +255,15 @@ else
 					<p>@(GetVatCatDesc(vatcatcontext.VATCategory))</p>
 				</Template>
 			</Column>
-			<Column TableItem="ExpenseLine" Title="Total" Field="@(x => x.NetAmount)" Format="£###.00" />
+			<Column TableItem="ExpenseLine" Title="Total" Field="@(x => x.GrossAmount)" Format="£###.00" />
 			<Column TableItem="ExpenseLine" Title="Vat Amount" Format="£###.00">
 				<Template Context="expLineContext">
-					<p id="vatamountdetail@(expLineContext.Line)" style="text-align:right; width:100%" >@CalcVat(expLineContext.NetAmount, expLineContext.VATCategory)</p>
+					<p id="vatamountdetail@(expLineContext.Line)" style="text-align:right; width:100%" >£@CalcVat(expLineContext.GrossAmount, expLineContext.VATCategory)</p>
 				</Template>
 			</Column>
-			<Column TableItem="ExpenseLine" Title="Gross Amount" Format="£###.00">
+			<Column TableItem="ExpenseLine" Title="Nett Amount" Format="£###.00">
 				<Template Context="expLineContext">
-					<p id="grossamountdetail@(expLineContext.Line)" style="text-align:right; width:100%">@CalcGross(expLineContext.NetAmount, expLineContext.VATCategory)</p>
+					<p id="grossamountdetail@(expLineContext.Line)" style="text-align:right; width:100%">£@CalcNet(expLineContext.GrossAmount, expLineContext.VATCategory)</p>
 				</Template>
 			</Column>
 		</Table>
@@ -610,7 +573,7 @@ else
 
 		private async Task SubmitExpenseModel(ExpenseModel expenseModel)
 		{
-			ExpenseHead expenseHead;
+			ExpenseHead newExpenseHead;
 			bool isEdit = false;
 
 			Period expensePeriod = GetPeriod(expenseModel.expenseHead.ExpenseDate);
@@ -621,10 +584,11 @@ else
 
 			if (expenseModel.expenseHead.Id == 0)
 			{
-				expenseHead = await PostExpenseHead(expenseModel.expenseHead);
+				newExpenseHead = await PostExpenseHead(expenseModel.expenseHead);
 			}
 			else
 			{
+				newExpenseHead = new ExpenseHead();
 				isEdit = true;
 				UpdateExpenseHead(expenseModel.expenseHead);
 				expenseModel.TotalExpense = GetExpenseTotal(expenseModel.ExpenseLines);
@@ -634,9 +598,9 @@ else
 			{
 				if (expenseLine.Id == 0)
 				{
-					expenseLine.ExpenseId = expenseModel.expenseHead.Id;
-					expenseLine.VATAmount = CalcVat(expenseLine.NetAmount, expenseLine.VATCategory);
-					expenseLine.GrossAmount = CalcGross(expenseLine.NetAmount, expenseLine.VATCategory);
+					expenseLine.ExpenseId = newExpenseHead.Id;
+					expenseLine.VATAmount = CalcVat(expenseLine.GrossAmount, expenseLine.VATCategory);
+					expenseLine.NetAmount = CalcNet(expenseLine.GrossAmount, expenseLine.VATCategory);
 					expenseLine.VATRate = GetCatVatRate(expenseLine.VATCategory);
 					await PostExpenseLine(expenseLine);
 				}
@@ -650,14 +614,12 @@ else
 			ToggleNewExpenseTable();
 			disableCreateButton = false;
 
-			if (isEdit)
+			if (!isEdit)
 			{
-				this.StateHasChanged();
+				expenseModels = await GetExpenseModels();
 			}
-			else
-			{
-				await GetExpenseModels();
-			}
+
+			this.StateHasChanged();
 		}
 
 		private void ResetNewExpenseModel()
@@ -802,8 +764,7 @@ else
 			}
 			else
 			{
-				grossAmount = Math.Round(netAmount / (1 + vatRate), 2);
-
+				grossAmount = Math.Round(netAmount - (netAmount * vatRate), 2);
 			}
 
 			return grossAmount;
@@ -814,23 +775,7 @@ else
 			return Math.Round(NetAmount, 2);
 		}
 
-		private Decimal CalcVat(Decimal netAmount, int catId)
-		{
-			Decimal vatAmount = 0;
-			Decimal vatRate = GetVatRate(GetCatVatRate(catId));
 
-			if (vatRate == 0)
-			{
-				vatAmount = 0;
-			}
-			else
-			{
-				vatAmount = netAmount - Math.Round(CalcGross(netAmount,catId),2);
-
-			}
-
-			return vatAmount;
-		}
 
 		private Decimal CalcNet(Decimal grossAmount, int catId)
 		{
@@ -843,13 +788,30 @@ else
 			}
 			else
 			{
-				netAmount = Math.Round(grossAmount - (grossAmount * vatRate), 2);
+				netAmount = Math.Round(grossAmount / (1 + vatRate), 2);
 
 			}
 
 			return netAmount;
 		}
 
+		private Decimal CalcVat(Decimal grossAmount, int catId)
+		{
+			Decimal vatAmount = 0;
+			Decimal vatRate = GetVatRate(GetCatVatRate(catId));
+
+			if (vatRate == 0)
+			{
+				vatAmount = 0;
+			}
+			else
+			{
+				vatAmount = grossAmount - Math.Round(CalcNet(grossAmount, catId), 2);
+
+			}
+
+			return vatAmount;
+		}
 
 		public void refKeyHandler(string keyPressed)
 		{
@@ -958,10 +920,10 @@ else
 		}
 
 		private int viewPeriodYearsSelected;
-		private ExpenseView[] getHeading(int headingId, int paymentType)
+		private ExpenseView[] getViewDetails(int paymentType)
 		{
 			ExpenseView[] groupExpenses;
-			groupExpenses = Array.FindAll(expenseViews, f => (f.HeadingId == headingId) && (f.ExpensePaymentId == paymentType));
+			groupExpenses = Array.FindAll(expenseViews, f => f.ExpensePaymentId == paymentType);
 
 			return groupExpenses;
 
@@ -1255,9 +1217,10 @@ else
 			return GetPeriod(DateTime.Now);
 		}
 
-		private Period GetPeriod(DateTime? inDateTime)
+		private Period GetPeriod(DateTime inDateTime)
 		{
-			Period period = Array.Find<Period>(periods, f => inDateTime >= f.StartDate && inDateTime <= f.EndDate);
+			DateTime testDateTime = inDateTime.Date;
+			Period period = Array.Find<Period>(periods, f => testDateTime >= f.StartDate && testDateTime <= f.EndDate);
 			return period;
 		}
 

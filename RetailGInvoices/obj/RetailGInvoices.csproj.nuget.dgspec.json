@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\darre\\source\\repos\\RetailGInvoices\\RetailGInvoices\\RetailGInvoices.csproj": {}
+    "C:\\Users\\Darren\\source\\repos\\RetailGuardianInvoices\\RetailGInvoices\\RetailGInvoices.csproj": {}
   },
   "projects": {
-    "C:\\Users\\darre\\source\\repos\\RetailGInvoices\\RetailGInvoices\\RetailGInvoices.csproj": {
+    "C:\\Users\\Darren\\source\\repos\\RetailGuardianInvoices\\RetailGInvoices\\RetailGInvoices.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\darre\\source\\repos\\RetailGInvoices\\RetailGInvoices\\RetailGInvoices.csproj",
+        "projectUniqueName": "C:\\Users\\Darren\\source\\repos\\RetailGuardianInvoices\\RetailGInvoices\\RetailGInvoices.csproj",
         "projectName": "RetailGInvoices",
-        "projectPath": "C:\\Users\\darre\\source\\repos\\RetailGInvoices\\RetailGInvoices\\RetailGInvoices.csproj",
-        "packagesPath": "C:\\Users\\darre\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\darre\\source\\repos\\RetailGInvoices\\RetailGInvoices\\obj\\",
+        "projectPath": "C:\\Users\\Darren\\source\\repos\\RetailGuardianInvoices\\RetailGInvoices\\RetailGInvoices.csproj",
+        "packagesPath": "C:\\Users\\Darren\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\Darren\\source\\repos\\RetailGuardianInvoices\\RetailGInvoices\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\darre\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\Darren\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
@@ -111,7 +111,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\3.1.402\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\3.1.403\\RuntimeIdentifierGraph.json"
         }
       }
     }
